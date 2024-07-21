@@ -33,14 +33,19 @@ from .depends import (
     ExtractCode,
 )
 
+__version__ = "1.0.0"
 __plugin_meta__ = PluginMetadata(
     name="exe_code",
     description="在对话中执行 Python 代码",
     usage="code {Your code here...}",
     type="application",
+    homepage="https://github.com/wyf7685/nonebot-plugin-exe-code",
     config=Config,
     supported_adapters=inherit_supported_adapters(*requirements),
-    extra={"author": "wyf7685"},
+    extra={
+        "author": "wyf7685",
+        "version": __version__,
+    },
 )
 
 
