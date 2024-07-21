@@ -26,6 +26,7 @@ from .code_context import Context
 from .config import Config
 from .depends import (
     EXECODE_ENABLED,
+    CodeContext,
     EventImage,
     EventReply,
     EventReplyMessage,
@@ -73,10 +74,9 @@ async def handle_exec(
 
 @code_getraw.handle()
 async def handle_getraw(
-    session: EventSession,
+    ctx: CodeContext,
     message: EventReplyMessage,
 ):
-    ctx = Context.get_context(session)
     ctx.set_gem(message)
     ctx.set_gurl(await UniMessage.generate(message=message))
     await UniMessage.text(str(message)).send()
@@ -84,11 +84,10 @@ async def handle_getraw(
 
 @code_getmid.handle()
 async def handle_getmid(
-    session: EventSession,
+    ctx: CodeContext,
     reply: EventReply,
     reply_msg: EventReplyMessage,
 ):
-    ctx = Context.get_context(session)
     ctx.set_gem(reply_msg)
     ctx.set_gurl(await UniMessage.generate(message=reply_msg))
     await UniMessage.text(reply.id).send()
@@ -98,7 +97,7 @@ async def handle_getmid(
 async def handle_getimg(
     bot: Bot,
     event: Event,
-    session: EventSession,
+    ctx: CodeContext,
     matcher: Matcher,
     image: EventImage,
 ):
@@ -113,7 +112,6 @@ async def handle_getimg(
     except Exception as err:
         await matcher.finish(f"保存图片时出错: {err}")
 
-    ctx = Context.get_context(session)
     ctx.set_gurl(image)
     ctx.set_value(varname, Image_open(BytesIO(img_bytes)))
     await matcher.finish(f"图片已保存至变量 {varname}")

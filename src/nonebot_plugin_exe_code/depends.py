@@ -9,6 +9,7 @@ from nonebot_plugin_alconna.uniseg import MsgTarget, UniMessage, UniMsg, reply_f
 from nonebot_plugin_alconna.uniseg.segment import At, Image, Reply, Text
 from nonebot_plugin_session import EventSession
 
+from .code_context import Context
 from .config import config
 
 
@@ -29,6 +30,14 @@ def ExeCodeEnabled() -> Rule:
         )
 
     return Rule(check)
+
+
+def _CodeContext():
+
+    async def code_context(session: EventSession) -> Context:
+        return Context.get_context(session)
+
+    return Depends(code_context)
 
 
 def _ExtractCode():
@@ -106,6 +115,7 @@ def _EventReplyMessage():
 
 
 EXECODE_ENABLED: Rule = ExeCodeEnabled()
+CodeContext = Annotated[Context, _CodeContext()]
 ExtractCode = Annotated[str, _ExtractCode()]
 EventTarget = Annotated[str, _EventTarget()]
 EventImage = Annotated[Image, _EventImage()]
