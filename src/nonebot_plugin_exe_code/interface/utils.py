@@ -1,0 +1,235 @@
+import asyncio
+import functools
+import inspect
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Coroutine,
+    Iterable,
+    Optional,
+    Self,
+    cast,
+    overload,
+)
+
+from nonebot.adapters import Bot, Message, MessageSegment
+from nonebot.log import logger
+from nonebot_plugin_alconna.uniseg import (
+    CustomNode,
+    Receipt,
+    Reference,
+    Segment,
+    Target,
+    UniMessage,
+)
+from nonebot_plugin_session import Session
+from typing_extensions import TypeIs
+
+from ..constant import (
+    INTERFACE_EXPORT_METHOD,
+    INTERFACE_METHOD_DESCRIPTION,
+    T_API_Result,
+    T_Context,
+    T_Message,
+)
+
+WRAPPER_ASSIGNMENTS = (
+    *functools.WRAPPER_ASSIGNMENTS,
+    INTERFACE_EXPORT_METHOD,
+    INTERFACE_METHOD_DESCRIPTION,
+)
+
+
+def export[**P, R](call: Callable[P, R]) -> Callable[P, R]:
+    """将一个方法标记为导出函数"""
+    setattr(call, INTERFACE_EXPORT_METHOD, True)
+    return call
+
+
+type Coro[T] = Coroutine[None, None, T]
+
+
+@overload
+def debug_log[**P, R](call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
+
+
+@overload
+def debug_log[**P, R](call: Callable[P, R]) -> Callable[P, R]: ...
+
+
+def debug_log[**P, R](call: Callable[P, Coro[R] | R]) -> Callable[P, Coro[R] | R]:
+    def log(*args: P.args, **kwargs: P.kwargs):
+        logger.debug(f"{call.__name__}: args={args}, kwargs={kwargs}")
+
+    if inspect.iscoroutinefunction(call):
+        # 本来应该用 # pyright: ignore[reportRedeclaration]
+        # 但是格式化后有点难绷，所以直接用了 # type: ignore
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:  # type: ignore
+            log(*args, **kwargs)
+            return await cast(Callable[P, Coro[R]], call)(*args, **kwargs)
+
+    else:
+
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            log(*args, **kwargs)
+            return cast(Callable[P, R], call)(*args, **kwargs)
+
+    return functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS)
+
+
+def is_export_method(call: Callable[..., Any]) -> bool:
+    return getattr(call, INTERFACE_EXPORT_METHOD, False)
+
+
+def is_super_user(bot: Bot, uin: str) -> bool:
+    return (
+        f"{bot.adapter.get_name().split(maxsplit=1)[0].lower()}:{uin}"
+        in bot.config.superusers
+        or uin in bot.config.superusers
+    )
+
+
+class Buffer:
+    _user_buf: ClassVar[dict[str, Self]] = {}
+    _buffer: str = ""
+
+    def __new__(cls, uin: str) -> Self:
+        if uin not in cls._user_buf:
+            cls._user_buf[uin] = super(Buffer, cls).__new__(cls)
+        return cls._user_buf[uin]
+
+    def write(self, text: str) -> None:
+        assert isinstance(text, str)
+        self._buffer += text
+
+    def getvalue(self) -> str:
+        value, self._buffer = self._buffer, ""
+        return value
+
+
+class Result:
+    error: Optional[Exception] = None
+    _data: T_API_Result
+
+    def __init__(self, data: T_API_Result):
+        self._data = data
+        if isinstance(data, dict):
+            self.error = data.get("error")
+            for k, v in data.items():
+                setattr(self, k, v)
+
+    def __getitem__(self, key: str | int) -> Any:
+        if isinstance(self._data, dict) and isinstance(key, str):
+            return self._data[key]
+        elif isinstance(self._data, list) and isinstance(key, int):
+            return self._data[key]
+        elif self._data is not None:
+            raise KeyError(f"{key!r} 不能作为索引")
+        else:
+            raise ValueError("None")
+
+    def __repr__(self) -> str:
+        if self.error is not None:
+            return f"<Result error={self.error!r}>"
+        return f"<Result data={self._data!r}>"
+
+
+def is_message_t(message: Any) -> TypeIs[T_Message]:
+    return isinstance(message, (str, Message, MessageSegment, UniMessage, Segment))
+
+
+async def as_unimsg(message: T_Message) -> UniMessage:
+    if isinstance(message, MessageSegment):
+        message = cast(type[Message], message.get_message_class())(message)
+    if isinstance(message, (str, Segment)):
+        message = UniMessage(message)
+    elif isinstance(message, Message):
+        message = await UniMessage.generate(message=message)
+
+    return message
+
+
+def _send_message(limit: int):
+    class ReachLimit(Exception):
+        def __init__(self, msg: str, count: int) -> None:
+            self.msg, self.count = msg, count
+
+    call_cnt: dict[int, int] = {}
+
+    def clean_cnt(key: int):
+        if key in call_cnt:
+            del call_cnt[key]
+
+    async def send_message(
+        bot: Bot,
+        session: Session,
+        target: Optional[Target],
+        message: T_Message,
+    ) -> Receipt:
+        key = hash(f"{id(bot)}${id(session)}")
+        if key not in call_cnt:
+            call_cnt[key] = 1
+            asyncio.get_event_loop().call_later(60, clean_cnt, key)
+        elif call_cnt[key] >= limit or call_cnt[key] < 0:
+            call_cnt[key] = -1
+            raise ReachLimit("消息发送触发次数限制", limit)
+        else:
+            call_cnt[key] += 1
+
+        message = await as_unimsg(message)
+        return await message.send(target, bot)
+
+    return send_message
+
+
+send_message = _send_message(limit=6)
+
+
+async def send_forward_message(
+    bot: Bot,
+    session: Session,
+    target: Optional[Target],
+    msgs: Iterable[T_Message],
+) -> Receipt:
+    async def create_node(msg: T_Message) -> CustomNode:
+        return CustomNode(
+            uid=bot.self_id,
+            name="forward",
+            content=await as_unimsg(msg),
+        )
+
+    nodes = await asyncio.gather(*[create_node(msg) for msg in msgs])
+    return await send_message(
+        bot=bot,
+        session=session,
+        target=target,
+        message=Reference(nodes=nodes),
+    )
+
+
+def _export_manager():
+    def f(s: set[str], x: str):
+        return (s.remove if x in s else s.add)(x) or x in s
+
+    def set_usr(x: Any) -> bool:
+        from ..config import config
+
+        return f(config.user, str(x))
+
+    def set_grp(x: Any) -> bool:
+        from ..config import config
+
+        return f(config.group, str(x))
+
+    def export_manager(ctx: T_Context) -> None:
+        from ..code_context import Context
+
+        ctx["get_ctx"] = Context.get_context
+        ctx["set_usr"] = set_usr
+        ctx["set_grp"] = set_grp
+
+    return export_manager
+
+
+export_manager = _export_manager()
