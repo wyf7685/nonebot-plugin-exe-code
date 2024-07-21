@@ -99,7 +99,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
   具体参考 [`~depends:_ExtractCode`](./nonebot_plugin_exe_code/depends.py)
 
-- `getraw` 获取引用消息的消息段文本形式。
+- `getraw` 获取引用消息的消息段的文本形式。
 
   例：对于 `OneBot V11` 适配器，将返回消息的 `CQ码`。
 
@@ -169,4 +169,4 @@ print("NoneBot", "Plugin", sep="-")
 
 - [nonebot/nonebot2](https://github.com/nonebot/nonebot2): 跨平台 Python 异步机器人框架 
 - [nonebot/plugin-alconna](https://github.com/nonebot/plugin-alconna): 跨平台的消息处理接口
-- [nonebot-plugin-session](https://github.com/noneplugin/nonebot-plugin-session): 会话信息提取
+- [noneplugin/nonebot-plugin-session](https://github.com/noneplugin/nonebot-plugin-session): 会话信息提取
