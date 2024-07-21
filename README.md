@@ -97,7 +97,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
   代码中包含的 `图片` 消息段将被转换为 `图片URL` 字符串。
 
-  具体参考 [`~depends:_ExtractCode`](./src/nonebot_plugin_exe_code/depends.py)
+  具体参考 [`~depends:_ExtractCode`](./nonebot_plugin_exe_code/depends.py)
 
 - `getraw` 获取引用消息的消息段文本形式。
 
@@ -127,19 +127,19 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 ### 执行环境
 
-用户执行环境保存于 [`~code_context:Context._contexts`](./src/nonebot_plugin_exe_code/code_context.py)，随 NoneBot 重启而重置。
+用户执行环境保存于 [`~code_context:Context._contexts`](./nonebot_plugin_exe_code/code_context.py)，随 NoneBot 重启而重置。
 
-用户执行环境由 [`初始环境`](./src/nonebot_plugin_exe_code/interface/user_const_var.py) 深拷贝生成，包含 `UniMessage` 及一些常用消息段。
+用户执行环境由 [`初始环境`](./nonebot_plugin_exe_code/interface/user_const_var.py) 深拷贝生成，包含 `UniMessage` 及一些常用消息段。
 
-在传入代码开始执行前，用户执行环境将获得一个 [`API`](./src/nonebot_plugin_exe_code/interface/api.py) 实例，变量名固定为 `api`。同时，`qid` 变量将被设置为执行者的 `用户ID`，`gid` 变量将被设置为当前 `群组ID` (私聊则为 `None`)
+在传入代码开始执行前，用户执行环境将获得一个 [`API`](./nonebot_plugin_exe_code/interface/api.py) 实例，变量名固定为 `api`。同时，`qid` 变量将被设置为执行者的 `用户ID`，`gid` 变量将被设置为当前 `群组ID` (私聊则为 `None`)
 
 `api` 中被 `@export` 装饰的方法将被导出到用户执行环境。例： `print`，`feedback`，`help`，...
 
-传入的代码经过一次异步函数包装后，可以正常执行异步代码。具体参考 [`~code_context:Context._solve_code`](./src/nonebot_plugin_exe_code/code_context.py)。
+传入的代码经过一次异步函数包装后，可以正常执行异步代码。具体参考 [`~code_context:Context._solve_code`](./nonebot_plugin_exe_code/code_context.py)。
 
 对于供用户使用的接口方法，插件中使用 `@descript` 装饰器添加了描述。在执行代码时，可以通过 `await help(api.method)` 获取函数信息。
 
-对于部分协议，插件提供了额外的接口，便于执行一些平台特化的操作。目前提供适配的协议：[`OneBot V11`](./src/nonebot_plugin_exe_code/interface/adapter_api/onebot11.py)、[`QQ`](./src/nonebot_plugin_exe_code/interface/adapter_api/qq.py)。
+对于部分协议，插件提供了额外的接口，便于执行一些平台特化的操作。目前提供适配的协议：[`OneBot V11`](./nonebot_plugin_exe_code/interface/adapter_api/onebot11.py)、[`QQ`](./nonebot_plugin_exe_code/interface/adapter_api/qq.py)。
 
 ### 示例
 
