@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-exe-code"
-version = "1.0.0"
+version = "1.0.1"
 description = "在聊天中执行带有上下文的 Python 代码"
 authors = [
     {name = "wyf7685", email = "wyf7685@163.com"},

@@ -34,7 +34,7 @@ from .depends import (
     ExtractCode,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __plugin_meta__ = PluginMetadata(
     name="exe_code",
     description="在对话中执行 Python 代码",
