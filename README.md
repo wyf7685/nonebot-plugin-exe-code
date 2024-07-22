@@ -175,6 +175,10 @@ print("NoneBot", "Plugin", sep="-")
 <details>
     <summary>更新日志</summary>
 
+- 2024.07.21 v1.0.2
+
+  修复消息混排处理
+
 - 2024.07.21 v1.0.1
 
   插件开源
