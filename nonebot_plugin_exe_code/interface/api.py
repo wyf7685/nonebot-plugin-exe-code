@@ -267,7 +267,7 @@ class API(Interface):
     )
     @debug_log
     def reset(self) -> None:
-        from ..code_context import Context
+        from ..context import Context
 
         context = Context.get_context(self.session).ctx
         context.clear()

@@ -200,7 +200,7 @@ with contextlib.suppress(ImportError):
         @debug_log
         async def img_summary(self, summary: str, url: Optional[str] = None) -> None:
             if url is None:
-                from ...code_context import Context
+                from ...context import Context
 
                 url = Context.get_context(self.session).ctx.get("gurl")
 

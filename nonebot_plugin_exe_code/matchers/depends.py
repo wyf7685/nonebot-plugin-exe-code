@@ -9,11 +9,11 @@ from nonebot_plugin_alconna.uniseg import MsgTarget, UniMessage, UniMsg, reply_f
 from nonebot_plugin_alconna.uniseg.segment import At, Image, Reply, Text
 from nonebot_plugin_session import EventSession
 
-from .code_context import Context
-from .config import config
+from ..context import Context
+from ..config import config
 
 
-def ExeCodeEnabled() -> Rule:
+def _ExeCodeEnabled() -> Rule:
     global_config = get_driver().config
     try:
         from nonebot.adapters.console import Bot as ConsoleBot
@@ -21,20 +21,26 @@ def ExeCodeEnabled() -> Rule:
         ConsoleBot = None
 
     def check(bot: Bot, session: EventSession, target: MsgTarget):
-        # ConsoleBot 仅有标准输入，跳过检查
+        # ConsoleBot 仅有标准输入, 跳过检查
         if ConsoleBot is not None and isinstance(bot, ConsoleBot):
             return True
 
-        return (session.id1 or "") in (global_config.superusers | config.user) or (
-            not target.private and target.id in config.group
-        )
+        # 对于 superuser 和 配置允许的用户, 在任意对话均可触发
+        if (session.id1 or "") in (global_config.superusers | config.user):
+            return True
+
+        # 当触发对话为群组时, 仅配置允许的群组可触发
+        if not target.private and target.id in config.group:
+            return True
+
+        return False
 
     return Rule(check)
 
 
 def _CodeContext():
 
-    async def code_context(session: EventSession) -> Context:
+    def code_context(session: EventSession) -> Context:
         return Context.get_context(session)
 
     return Depends(code_context)
@@ -62,26 +68,16 @@ def _ExtractCode():
     return Depends(extract_code)
 
 
-def _EventTarget():
-
-    async def event_target(event: Event, msg: UniMsg) -> str:
-        uin = event.get_user_id()
-        if msg.has(At):
-            uin = msg[At, 0].target
-        return uin
-
-    return Depends(event_target)
-
-
 def _EventImage():
 
     async def event_image(msg: UniMsg) -> Image:
         if msg.has(Image):
             return msg[Image, 0]
         elif msg.has(Reply):
-            reply_msg = msg[Reply, 0].msg
-            if isinstance(reply_msg, Message):
-                return await event_image(await UniMessage.generate(message=reply_msg))
+            reply = msg[Reply, 0].msg
+            if isinstance(reply, Message):
+                msg = await UniMessage.generate(message=reply)
+                return await event_image(msg)
         Matcher.skip()
 
     return Depends(event_image)
@@ -111,10 +107,9 @@ def _EventReplyMessage():
     return Depends(event_reply_message)
 
 
-EXECODE_ENABLED: Rule = ExeCodeEnabled()
+EXECODE_ENABLED: Rule = _ExeCodeEnabled()
 CodeContext = Annotated[Context, _CodeContext()]
 ExtractCode = Annotated[str, _ExtractCode()]
-EventTarget = Annotated[str, _EventTarget()]
 EventImage = Annotated[Image, _EventImage()]
 EventReply = Annotated[Reply, _EventReply()]
 EventReplyMessage = Annotated[Message, _EventReplyMessage()]
