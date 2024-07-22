@@ -43,15 +43,6 @@ def _CodeContext():
 def _ExtractCode():
 
     def extract_code(msg: UniMsg) -> str:
-        # 特例：@xxx code print(123)
-        #  --> "xxx" code print(123)
-        if (
-            msg.count(Text) == 0
-            or not isinstance(seg := msg[0], Text)
-            or not seg.text.startswith("code")
-        ):
-            Matcher.skip()
-
         code = ""
         for seg in msg:
             if isinstance(seg, Text):
@@ -60,6 +51,12 @@ def _ExtractCode():
                 code += f'"{seg.target}"'
             elif isinstance(seg, Image):
                 code += f'"{seg.url or "[url]"}"'
+
+        # 特例：@xxx code print(123)
+        #  --> "xxx" code print(123)
+        if not code.startswith("code"):
+            Matcher.skip()
+
         return code.removeprefix("code").strip()
 
     return Depends(extract_code)
