@@ -3,6 +3,7 @@ import functools
 import inspect
 from typing import (
     Any,
+    Awaitable,
     Callable,
     ClassVar,
     Coroutine,
@@ -168,13 +169,12 @@ def _send_message(limit: int):
         if key in call_cnt:
             del call_cnt[key]
 
-    async def send_message(
-        bot: Bot,
+    def send_message(
         session: Session,
         target: Optional[Target],
         message: T_Message,
-    ) -> Receipt:
-        key = hash(f"{id(bot)}${id(session)}")
+    ) -> Awaitable[Receipt]:
+        key = id(session)
         if key not in call_cnt:
             call_cnt[key] = 1
             asyncio.get_event_loop().call_later(60, clean_cnt, key)
@@ -184,8 +184,11 @@ def _send_message(limit: int):
         else:
             call_cnt[key] += 1
 
-        message = await as_unimsg(message)
-        return await message.send(target, bot)
+        async def send_message_inner():
+            msg = await as_unimsg(message)
+            return await msg.send(target)
+
+        return asyncio.create_task(send_message_inner())
 
     return send_message
 
@@ -193,26 +196,27 @@ def _send_message(limit: int):
 send_message = _send_message(limit=6)
 
 
-async def send_forward_message(
-    bot: Bot,
+def send_forward_message(
     session: Session,
     target: Optional[Target],
     msgs: Iterable[T_Message],
-) -> Receipt:
+) -> Awaitable[Receipt]:
     async def create_node(msg: T_Message) -> CustomNode:
         return CustomNode(
-            uid=bot.self_id,
+            uid="0",
             name="forward",
             content=await as_unimsg(msg),
         )
 
-    nodes = await asyncio.gather(*[create_node(msg) for msg in msgs])
-    return await send_message(
-        bot=bot,
-        session=session,
-        target=target,
-        message=Reference(nodes=nodes),
-    )
+    async def send_forward_inner():
+        nodes = await asyncio.gather(*[create_node(msg) for msg in msgs])
+        return await send_message(
+            session=session,
+            target=target,
+            message=Reference(nodes=nodes),
+        )
+
+    return asyncio.create_task(send_forward_inner())
 
 
 def _export_manager():
