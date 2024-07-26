@@ -3,7 +3,7 @@ import contextlib
 import functools
 import uuid
 from datetime import timedelta
-from typing import Any, Optional, override
+from typing import Any, Optional, override, Protocol, TYPE_CHECKING
 
 from nonebot import on_fullmatch, on_message
 from nonebot.log import logger
@@ -14,6 +14,10 @@ from ..api import register_api
 from ..help_doc import descript, message_alia
 from ..utils import Result, debug_log, export
 from .send_ark import SendArk
+
+if TYPE_CHECKING:
+    class _ApiCall(Protocol):
+        async def __call__(self, **kwargs: Any) -> Any: ...
 
 with contextlib.suppress(ImportError):
     from nonebot.adapters.onebot.v11 import (
@@ -140,7 +144,7 @@ with contextlib.suppress(ImportError):
                 raise RuntimeError(raise_text) from result.error
             return result
 
-        def __getattr__(self, name: str):
+        def __getattr__(self, name: str) -> "_ApiCall":
             if name.startswith("__") and name.endswith("__"):
                 raise AttributeError(
                     f"'{self.__class__.__name__}' object has no attribute '{name}'"
