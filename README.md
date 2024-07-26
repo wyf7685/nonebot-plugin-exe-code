@@ -175,6 +175,10 @@ print("NoneBot", "Plugin", sep="-")
 <details>
     <summary>更新日志</summary>
 
+- 2024.07.26 v1.0.3
+
+  发送消息类接口改为返回 Task, 允许不等待消息返回
+
 - 2024.07.21 v1.0.2
 
   修复消息混排处理
