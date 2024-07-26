@@ -51,7 +51,6 @@ def register_api(adapter: type[Adapter]):
     return decorator
 
 
-@register_api(Adapter)
 class API(Interface):
     __inst_name__: ClassVar[str] = "api"
 
