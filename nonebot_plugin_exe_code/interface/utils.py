@@ -50,6 +50,16 @@ def export[**P, R](call: Callable[P, R]) -> Callable[P, R]:
 type Coro[T] = Coroutine[None, None, T]
 
 
+def is_coroutine_callable(call: Callable[..., Any]) -> TypeIs[Callable[..., Coro[Any]]]:
+    """检查 call 是否是一个 callable 协程函数"""
+    if inspect.isroutine(call):
+        return inspect.iscoroutinefunction(call)
+    if inspect.isclass(call):
+        return False
+    func = getattr(call, "__call__", None)
+    return inspect.iscoroutinefunction(func)
+
+
 @overload
 def debug_log[**P, R](call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
 
@@ -59,20 +69,17 @@ def debug_log[**P, R](call: Callable[P, R]) -> Callable[P, R]: ...
 
 
 def debug_log[**P, R](call: Callable[P, Coro[R] | R]) -> Callable[P, Coro[R] | R]:
-    def log(*args: P.args, **kwargs: P.kwargs):
-        logger.debug(f"{call.__name__}: args={args}, kwargs={kwargs}")
-
-    if inspect.iscoroutinefunction(call):
+    if is_coroutine_callable(call):
         # 本来应该用 # pyright: ignore[reportRedeclaration]
         # 但是格式化后有点难绷，所以直接用了 # type: ignore
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:  # type: ignore
-            log(*args, **kwargs)
+            logger.debug(f"{call.__name__}: args={args}, kwargs={kwargs}")
             return await cast(Callable[P, Coro[R]], call)(*args, **kwargs)
 
     else:
 
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            log(*args, **kwargs)
+            logger.debug(f"{call.__name__}: args={args}, kwargs={kwargs}")
             return cast(Callable[P, R], call)(*args, **kwargs)
 
     return functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS)

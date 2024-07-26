@@ -106,7 +106,7 @@ def descript[**P, R](
                 result = DESCRIPTION_RESULT_TYPE
             elif sig.return_annotation is Receipt:
                 result = DESCRIPTION_RECEIPT_TYPE
-            elif "return" in ignore:
+            elif "return" not in ignore:
                 assert (
                     sig.return_annotation is None
                 ), f"方法 '{call.__name__}' 的返回值未添加描述"
