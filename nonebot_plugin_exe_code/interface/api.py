@@ -1,13 +1,13 @@
 import asyncio
-import contextlib
 import json
-from typing import Any, Awaitable, ClassVar, cast, override
+from typing import Any, Awaitable, ClassVar, Optional, cast, override
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot.internal.matcher import current_event
 from nonebot.log import logger
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage
 from nonebot_plugin_session import Session
+from nonebot_plugin_waiter import prompt as waiter_prompt
 
 from ..constant import (
     INTERFACE_METHOD_DESCRIPTION,
@@ -23,6 +23,7 @@ from .user import User
 from .user_const_var import default_context, load_const, set_const
 from .utils import (
     Buffer,
+    as_unimsg,
     debug_log,
     export,
     export_manager,
@@ -219,7 +220,17 @@ class API(Interface):
     @export
     @debug_log
     def print(self, *args: Any, sep: str = " ", end: str = "\n", **_):
-        Buffer(self.qid).write(sep.join(str(i) for i in args) + end)
+        Buffer.get(self.qid).write(str(sep).join(map(str, args)) + str(end))
+
+    @export
+    @debug_log
+    async def input(
+        self,
+        prompt: T_Message = "",
+        timeout: float = 30,
+    ) -> Optional[Message]:
+        prompt = await (await as_unimsg(prompt)).export() if prompt else ""
+        return await waiter_prompt(prompt, timeout=timeout)
 
     @export
     @descript(

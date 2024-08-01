@@ -100,18 +100,22 @@ def is_super_user(bot: Bot, uin: str) -> bool:
 
 class Buffer:
     _user_buf: ClassVar[dict[str, Self]] = {}
-    _buffer: str = ""
+    _buffer: str
 
-    def __new__(cls, uin: str) -> Self:
+    def __init__(self) -> None:
+        self._buffer = ""
+
+    @classmethod
+    def get(cls, uin: str) -> Self:
         if uin not in cls._user_buf:
-            cls._user_buf[uin] = super(Buffer, cls).__new__(cls)
+            cls._user_buf[uin] = cls()
         return cls._user_buf[uin]
 
     def write(self, text: str) -> None:
         assert isinstance(text, str)
         self._buffer += text
 
-    def getvalue(self) -> str:
+    def read(self) -> str:
         value, self._buffer = self._buffer, ""
         return value
 

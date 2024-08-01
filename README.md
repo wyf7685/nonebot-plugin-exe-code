@@ -155,7 +155,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 在传入代码开始执行前，用户执行环境将获得一个 [`API`](./nonebot_plugin_exe_code/interface/api.py) 实例，变量名固定为 `api`。同时，`qid` 变量将被设置为执行者的 `用户ID`，`gid` 变量将被设置为当前 `群组ID` (私聊则为 `None`)
 
-`api` 中被 `@export` 装饰的方法将被导出到用户执行环境。例： `print`，`feedback`，`help`，...
+`api` 中被 `@export` 装饰的方法将被导出到用户执行环境。例： `print`，`feedback`，`help`，`input`，...
 
 传入的代码经过一次异步函数包装后，可以正常执行异步代码。具体参考 [`~context:Context._solve_code`](./nonebot_plugin_exe_code/context.py)。
 

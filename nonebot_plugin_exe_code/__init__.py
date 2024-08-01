@@ -7,6 +7,7 @@ requirements = {
     "nonebot_plugin_datastore",
     "nonebot_plugin_session",
     "nonebot_plugin_userinfo",
+    "nonebot_plugin_waiter",
 }
 [require(i) for i in requirements]
 
