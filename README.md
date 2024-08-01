@@ -184,7 +184,7 @@ await receipt.recall()  # 撤回消息
 <details>
     <summary>更新日志</summary>
 
-- 2024.07.26 v1.0.3
+- 2024.08.01 v1.0.3
 
   发送消息类接口改为返回 Task, 允许不等待消息返回
 
