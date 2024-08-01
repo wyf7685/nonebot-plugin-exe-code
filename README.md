@@ -187,6 +187,10 @@ await receipt.recall()  # 撤回消息
 <details>
     <summary>更新日志</summary>
 
+- 2024.08.01 v1.0.5
+
+  新增函数 `input`, 用于从对话中获取输入
+
 - 2024.08.01 v1.0.4
 
   发送消息类接口改为返回 Task, 允许不等待消息返回
