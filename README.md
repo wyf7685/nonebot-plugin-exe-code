@@ -12,6 +12,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 [![license](https://img.shields.io/github/license/wyf7685/nonebot-plugin-exe-code.svg)](./LICENSE)
 [![publish](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml)
+[![pre-commit](https://results.pre-commit.ci/badge/github/wyf7685/nonebot-plugin-exe-code/master.svg)](https://results.pre-commit.ci/latest/github/wyf7685/nonebot-plugin-exe-code/master)
 [![pypi](https://img.shields.io/pypi/v/nonebot-plugin-exe-code.svg)](https://pypi.python.org/pypi/nonebot-plugin-exe-code)
 ![python](https://img.shields.io/badge/python-3.12+-blue.svg)
 
