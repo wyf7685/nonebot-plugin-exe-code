@@ -188,6 +188,8 @@ await receipt.recall()  # 撤回消息
 
   发送消息类接口改为返回 Task, 允许不等待消息返回
 
+  `api.set_const` 变量名添加 isidentifier 校验
+
 - 2024.07.21 v1.0.2
 
   修复消息混排处理
