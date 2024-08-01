@@ -1,6 +1,7 @@
 import inspect
 from collections.abc import Awaitable
 from dataclasses import dataclass
+from types import UnionType
 from typing import Any, Callable, Optional
 
 from nonebot.adapters import Message, MessageSegment
@@ -20,7 +21,7 @@ from .utils import Result
 EMPTY = inspect.Signature.empty
 
 
-type_alias: dict[type, str] = {
+type_alias: dict[type | UnionType, str] = {
     Receipt: "Receipt",
     Result: "Result",
     T_Message: "T_Message",
