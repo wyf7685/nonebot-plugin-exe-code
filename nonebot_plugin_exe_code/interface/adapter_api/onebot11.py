@@ -16,8 +16,10 @@ from ..utils import Result, debug_log, export
 from .send_ark import SendArk
 
 if TYPE_CHECKING:
+
     class _ApiCall(Protocol):
         async def __call__(self, **kwargs: Any) -> Any: ...
+
 
 with contextlib.suppress(ImportError):
     from nonebot.adapters.onebot.v11 import (
@@ -45,11 +47,12 @@ with contextlib.suppress(ImportError):
         class Config(BaseModel):
             class ExeCodeConfig(BaseModel):
                 qbot_id: int = 0
+                qbot_timeout: float = 30.0
 
             exe_code: ExeCodeConfig = ExeCodeConfig()
 
-        qbot_id = get_plugin_config(Config).exe_code.qbot_id
-        if not qbot_id:
+        _conf = get_plugin_config(Config).exe_code
+        if not _conf.qbot_id:
             logger.warning("官方机器人QQ账号未配置，ark卡片将不可用")
             raise RuntimeError
 
@@ -58,39 +61,29 @@ with contextlib.suppress(ImportError):
             ark: MessageArk,
         ) -> MessageSegment:
             loop = asyncio.get_running_loop()
-            fut = loop.create_future()
+            future: asyncio.Future[str] = loop.create_future()
 
             key = f"$ARK-{uuid.uuid4()}$"
-            timeout_secs = 30
 
             async def handle_qq(bot: QQBot, event: C2CMessageCreateEvent):
                 try:
                     await bot.send(event, QQMS.ark(ark))
                 except Exception as err:
-                    if not fut.done():
-                        fut.set_exception(err)
+                    if not future.done():
+                        future.set_exception(err)
 
             def rule(event: PrivateMessageEvent):
-                return event.user_id == qbot_id and len(event.message) == 1
+                return event.user_id == _conf.qbot_id and len(event.message) == 1
 
             async def handle_ob(event: PrivateMessageEvent):
                 card_json = event.message.include("json")[0].data["data"]
-                if not fut.done():
-                    fut.set_result(card_json)
+                if not future.done():
+                    future.set_result(card_json)
 
+            expire = timedelta(seconds=_conf.qbot_timeout)
             matchers = {
-                on_fullmatch(
-                    key,
-                    handlers=[handle_qq],
-                    temp=True,
-                    expire_time=timedelta(seconds=timeout_secs),
-                ),
-                on_message(
-                    rule=rule,
-                    handlers=[handle_ob],
-                    temp=True,
-                    expire_time=timedelta(seconds=timeout_secs),
-                ),
+                on_fullmatch(key, handlers=[handle_qq], temp=True, expire_time=expire),
+                on_message(rule, handlers=[handle_ob], temp=True, expire_time=expire),
             }
 
             def cleanup():
@@ -98,12 +91,12 @@ with contextlib.suppress(ImportError):
                     with contextlib.suppress(ValueError):
                         matcher.destroy()
 
-                if not fut.done():
-                    fut.set_exception(TimeoutError("卡片获取超时"))
+                if not future.done():
+                    future.set_exception(TimeoutError("卡片获取超时"))
 
-            await api.send_prv(qbot_id, key)
-            loop.call_later(timeout_secs, cleanup)
-            return MessageSegment.json(await fut)
+            await api.send_prv(_conf.qbot_id, key)
+            loop.call_later(_conf.qbot_timeout, cleanup)
+            return MessageSegment.json(await future)
 
     @register_api(Adapter)
     class API(SendArk, BaseAPI):
@@ -195,7 +188,7 @@ with contextlib.suppress(ImportError):
             return [Message(i["raw_message"]) for i in res["messages"]]
 
         @descript(
-            description="发送带有外显文本的图片",
+            description="[NapCat] 发送带有外显文本的图片",
             parameters=dict(
                 summary="外显文本",
                 url="图片链接，默认为当前环境gurl",
