@@ -31,5 +31,8 @@ jobs:
       - name: Install dependencies
         run: pdm install
 
+      - name: Configure venv
+        run: echo "$PWD/.venv/bin" >> $GITHUB_PATH
+
       - name: Run Pyright
         uses: jakebailey/pyright-action@v2
