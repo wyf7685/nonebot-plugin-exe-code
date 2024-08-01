@@ -18,6 +18,11 @@ requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "MIT"}
 
+[project.urls]
+homepage = "https://github.com/wyf7685/nonebot-plugin-exe-code"
+repository = "https://github.com/wyf7685/nonebot-plugin-exe-code"
+documentation = "https://github.com/wyf7685/nonebot-plugin-exe-code"
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
