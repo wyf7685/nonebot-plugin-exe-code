@@ -3,7 +3,7 @@ import contextlib
 import functools
 import uuid
 from datetime import timedelta
-from typing import Any, Optional, override, Protocol, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional, Protocol, override
 
 from nonebot import on_fullmatch, on_message
 from nonebot.log import logger

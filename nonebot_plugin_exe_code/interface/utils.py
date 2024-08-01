@@ -13,6 +13,7 @@ from typing import (
     cast,
     overload,
 )
+from typing_extensions import TypeIs
 
 from nonebot.adapters import Bot, Message, MessageSegment
 from nonebot.log import logger
@@ -25,7 +26,6 @@ from nonebot_plugin_alconna.uniseg import (
     UniMessage,
 )
 from nonebot_plugin_session import Session
-from typing_extensions import TypeIs
 
 from ..constant import (
     INTERFACE_EXPORT_METHOD,

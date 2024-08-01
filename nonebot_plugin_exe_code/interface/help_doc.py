@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 from nonebot.adapters import Message, MessageSegment
-from nonebot.typing import type_has_args
 from nonebot_plugin_alconna.uniseg import Receipt
 
 from ..constant import (

@@ -9,8 +9,8 @@ from nonebot_plugin_alconna.uniseg import MsgTarget, UniMessage, UniMsg, reply_f
 from nonebot_plugin_alconna.uniseg.segment import At, Image, Reply, Text
 from nonebot_plugin_session import EventSession
 
-from ..context import Context
 from ..config import config
+from ..context import Context
 
 
 def _ExeCodeEnabled() -> Rule:
