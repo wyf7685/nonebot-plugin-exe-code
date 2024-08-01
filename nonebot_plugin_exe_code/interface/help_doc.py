@@ -1,8 +1,10 @@
 import inspect
+from collections.abc import Awaitable
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 from nonebot.adapters import Message, MessageSegment
+from nonebot.typing import type_has_args
 from nonebot_plugin_alconna.uniseg import Receipt
 
 from ..constant import (
@@ -97,19 +99,21 @@ def descript[**P, R](
                 assert param.annotation is not EMPTY, f"{text} 未添加类型注释"
                 assert name in parameters, f"{text} 未添加描述"
 
-        assert (
-            sig.return_annotation is not EMPTY
-        ), f"方法 '{call.__name__}' 的返回值未添加类型注释"
+        ret = sig.return_annotation
+        if origin := getattr(ret, "__origin__", None):
+            args: tuple[type, ...] = getattr(ret, "__args__")
+            if origin is Awaitable:
+                ret = args[0]
+
+        assert ret is not EMPTY, f"方法 '{call.__name__}' 的返回值未添加类型注释"
 
         if result is None:
-            if sig.return_annotation is Result:
+            if ret is Result:
                 result = DESCRIPTION_RESULT_TYPE
-            elif sig.return_annotation is Receipt:
+            elif ret is Receipt:
                 result = DESCRIPTION_RECEIPT_TYPE
             elif "return" not in ignore:
-                assert (
-                    sig.return_annotation is None
-                ), f"方法 '{call.__name__}' 的返回值未添加描述"
+                assert ret is None, f"方法 '{call.__name__}' 的返回值未添加描述"
 
         setattr(
             call,
