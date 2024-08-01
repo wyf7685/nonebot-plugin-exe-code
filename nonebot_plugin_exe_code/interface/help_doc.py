@@ -95,7 +95,7 @@ def descript[**P, R](
             for name, param in sig.parameters.items():
                 if name == "self" or name in ignore:
                     continue
-                text = f"方法 '{call.__name__}' 的参数 '{name}'"
+                text = f"方法 {call.__name__!r} 的参数 {name!r}"
                 assert param.annotation is not EMPTY, f"{text} 未添加类型注释"
                 assert name in parameters, f"{text} 未添加描述"
 
@@ -105,7 +105,8 @@ def descript[**P, R](
             if origin is Awaitable:
                 ret = args[0]
 
-        assert ret is not EMPTY, f"方法 '{call.__name__}' 的返回值未添加类型注释"
+        text = f"方法 {call.__name__!r} 的返回值"
+        assert ret is not EMPTY, f"{text} 未添加类型注释"
 
         if result is None:
             if ret is Result:
@@ -113,7 +114,7 @@ def descript[**P, R](
             elif ret is Receipt:
                 result = DESCRIPTION_RECEIPT_TYPE
             elif "return" not in ignore:
-                assert ret is None, f"方法 '{call.__name__}' 的返回值未添加描述"
+                assert ret is None, f"{text} 未添加描述"
 
         setattr(
             call,

@@ -56,16 +56,9 @@ class Context:
             return str(session)
 
     @classmethod
-    def get_context(
-        cls,
-        session: Session | Event | str,
-        *,
-        create: bool = True,
-    ) -> Self:
+    def get_context(cls, session: Session | Event | str) -> Self:
         uin = cls._session2uin(session)
         if uin not in cls._contexts:
-            if not create:
-                raise KeyError(f"uin {uin} has no context")
             cls._contexts[uin] = cls(uin)
 
         return cls._contexts[uin]
@@ -115,7 +108,7 @@ class Context:
             self.task = get_event_loop().create_task(executor())
             result, self.task = await self.task, None
 
-            if buf := Buffer(self._session2uin(session)).getvalue().rstrip("\n"):
+            if buf := Buffer.get(self._session2uin(session)).read().rstrip("\n"):
                 await UniMessage.text(buf).send()
             if result is not None:
                 await UniMessage.text(repr(result)).send()

@@ -2,12 +2,6 @@ from typing import Any, Callable, Coroutine, Optional, Union
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Segment, UniMessage
-from nonebot_plugin_datastore import get_plugin_data
-
-
-def get_data_path():
-    return get_plugin_data().data_dir
-
 
 # description
 DESCRIPTION_FORMAT = "{decl}\n* 描述: {desc}\n* 参数:\n{params}\n* 返回值:\n  {res}\n"

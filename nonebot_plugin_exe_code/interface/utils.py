@@ -139,7 +139,7 @@ class Result:
         elif self._data is not None:
             raise KeyError(f"{key!r} 不能作为索引")
         else:
-            raise ValueError("None")
+            raise TypeError("返回值 None 不支持索引操作")
 
     def __repr__(self) -> str:
         if self.error is not None:
