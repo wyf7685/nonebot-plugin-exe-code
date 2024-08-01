@@ -13,7 +13,7 @@ requirements = {
 from . import matchers as _
 from .config import Config
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __plugin_meta__ = PluginMetadata(
     name="exe_code",
     description="在对话中执行 Python 代码",
