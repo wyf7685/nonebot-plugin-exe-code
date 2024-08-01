@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:4b67a226bb2d3f986748a0bd7994d4169a172645f78959d80b640e469ef4c0cd"
+content_hash = "sha256:3cab5056b481a7a27a986392664d5435ebbfdb6434f0809b01620cbd0bdfb594"
 
 [[metadata.targets]]
 requires_python = ">=3.12"
@@ -515,8 +515,8 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-qq"
-version = "1.4.4"
-requires_python = "<4.0,>=3.8"
+version = "1.5.0"
+requires_python = "<4.0,>=3.9"
 summary = "QQ adapter for nonebot2"
 groups = ["dev"]
 dependencies = [
@@ -526,13 +526,13 @@ dependencies = [
     "yarl<2.0.0,>=1.9.0",
 ]
 files = [
-    {file = "nonebot_adapter_qq-1.4.4-py3-none-any.whl", hash = "sha256:238aea3f94a54907be426ebb402893882893dbdc15e9e603106c6399b5d26a7f"},
-    {file = "nonebot_adapter_qq-1.4.4.tar.gz", hash = "sha256:258beebf06da2b699c792a8c86a8f41f2cb44cf2b8544678a24cdd2543ad57c6"},
+    {file = "nonebot_adapter_qq-1.5.0-py3-none-any.whl", hash = "sha256:27e6bcbc733d41102c085c844008aa5f2651a5cb1b9f17a3972bb5548ee0b695"},
+    {file = "nonebot_adapter_qq-1.5.0.tar.gz", hash = "sha256:1f46389389f99b19d1447c6032a34d6a7c0d1876468b63152e2ec68c3a042e29"},
 ]
 
 [[package]]
 name = "nonebot-plugin-alconna"
-version = "0.50.1"
+version = "0.50.2"
 requires_python = ">=3.9"
 summary = "Alconna Adapter for Nonebot"
 groups = ["default"]
@@ -546,8 +546,8 @@ dependencies = [
     "tarina>=0.5.4",
 ]
 files = [
-    {file = "nonebot_plugin_alconna-0.50.1-py3-none-any.whl", hash = "sha256:3328c554ea1556cc5e33ce2f68e097ffea2cb71292748065dd4db74571d9c61b"},
-    {file = "nonebot_plugin_alconna-0.50.1.tar.gz", hash = "sha256:f47d6bbfd06708cdc86ecdb63a5a3ff40e2d3bba902af2cadb39f33b6ffdcb78"},
+    {file = "nonebot_plugin_alconna-0.50.2-py3-none-any.whl", hash = "sha256:be641eaf539f6f9dfb2398be80e994fa27814064eeed89e7a46a03754756dfc1"},
+    {file = "nonebot_plugin_alconna-0.50.2.tar.gz", hash = "sha256:ebae23723cee5cbbc350aa864d9e3d95cb1ab8324ba8674130df3302066277b1"},
 ]
 
 [[package]]
@@ -618,7 +618,7 @@ files = [
 
 [[package]]
 name = "nonebot-plugin-waiter"
-version = "0.7.0"
+version = "0.7.1"
 requires_python = ">=3.9"
 summary = "An alternative for got-and-reject in Nonebot"
 groups = ["default"]
@@ -626,8 +626,8 @@ dependencies = [
     "nonebot2>=2.3.0",
 ]
 files = [
-    {file = "nonebot_plugin_waiter-0.7.0-py3-none-any.whl", hash = "sha256:e0f98472b68479765e99e7f6a242611cb7d38e77dd2b74d103a02857f95a68e1"},
-    {file = "nonebot_plugin_waiter-0.7.0.tar.gz", hash = "sha256:698b1a031a154dcf88634f484a33f926966da97b3f055027a948acf6c074914d"},
+    {file = "nonebot_plugin_waiter-0.7.1-py3-none-any.whl", hash = "sha256:b9967cc7aeea0db86053ada20929841830aea60bb8c7da26d0483eefda75635c"},
+    {file = "nonebot_plugin_waiter-0.7.1.tar.gz", hash = "sha256:8be2adc175e45ca794881e3df449302b8e6e045cd9bae97a809907f4200b4110"},
 ]
 
 [[package]]
