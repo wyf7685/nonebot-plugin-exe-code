@@ -42,10 +42,9 @@ def register_api(adapter: type[Adapter]):
 
     def decorator(api: type["API"]) -> type["API"]:
         api_registry[adapter] = api
-        with contextlib.suppress(NotImplementedError):
-            adapter_name = adapter.get_name()
-            for desc in api.__method_description__.values():
-                desc.description = f"[{adapter_name}] {desc.description}"
+        adapter_name = adapter.get_name()
+        for desc in api.__method_description__.values():
+            desc.description = f"[{adapter_name}] {desc.description}"
         return api
 
     return decorator

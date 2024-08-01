@@ -30,6 +30,9 @@ def _const_var_path(uin: str) -> Path:
 
 
 def set_const(uin: str, name: str, value: T_OptConstVar = None):
+    if not name.isidentifier():
+        raise ValueError(f"{name!r} 不是合法的 Python 标识符")
+
     fp = _const_var_path(uin)
     data = json.loads(fp.read_text())
     if value is not None:
