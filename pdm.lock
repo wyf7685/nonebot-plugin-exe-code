@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:3cab5056b481a7a27a986392664d5435ebbfdb6434f0809b01620cbd0bdfb594"
+content_hash = "sha256:9345a9854d79b50aaf3b684f68c7d96f0b884863399b8cf3613e35b62bc3fa1f"
 
 [[metadata.targets]]
 requires_python = ">=3.12"
@@ -91,7 +91,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna-tools"
-version = "0.7.6"
+version = "0.7.7"
 requires_python = ">=3.8"
 summary = "Builtin Tools for Alconna"
 groups = ["default"]
@@ -100,8 +100,8 @@ dependencies = [
     "nepattern<1.0.0,>=0.7.3",
 ]
 files = [
-    {file = "arclet_alconna_tools-0.7.6-py3-none-any.whl", hash = "sha256:fdd1cb900603ce6bb00295bf7bf7f60dfdb764f0614abe248cdcb754e5149edd"},
-    {file = "arclet_alconna_tools-0.7.6.tar.gz", hash = "sha256:7cb7dc54c1c2198529c63227739423401051b8489374f1a7a3efa0c4e70b2a22"},
+    {file = "arclet_alconna_tools-0.7.7-py3-none-any.whl", hash = "sha256:9f851a4fd51f4b5a4a796b45982f3ccdb9b32896de3673d82b4ef08a22c04b46"},
+    {file = "arclet_alconna_tools-0.7.7.tar.gz", hash = "sha256:9b73af440448842575fa46979385dad9cc42e6d55aa5dddf217d169aac3f48c2"},
 ]
 
 [[package]]
@@ -284,7 +284,7 @@ files = [
 
 [[package]]
 name = "importlib-metadata"
-version = "8.0.0"
+version = "8.2.0"
 requires_python = ">=3.8"
 summary = "Read metadata from Python packages"
 groups = ["default", "dev"]
@@ -293,8 +293,8 @@ dependencies = [
     "zipp>=0.5",
 ]
 files = [
-    {file = "importlib_metadata-8.0.0-py3-none-any.whl", hash = "sha256:15584cf2b1bf449d98ff8a6ff1abef57bf20f3ac6454f431736cd3e660921b2f"},
-    {file = "importlib_metadata-8.0.0.tar.gz", hash = "sha256:188bd24e4c346d3f0a933f275c2fec67050326a856b9a359881d7c2a697e8812"},
+    {file = "importlib_metadata-8.2.0-py3-none-any.whl", hash = "sha256:11901fa0c2f97919b288679932bb64febaeacf289d18ac84dd68cb2e74213369"},
+    {file = "importlib_metadata-8.2.0.tar.gz", hash = "sha256:72e8d4399996132204f9a16dcc751af254a48f8d1b20b9ff0f98d4a8f901e73d"},
 ]
 
 [[package]]
