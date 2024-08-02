@@ -1,18 +1,8 @@
 import asyncio
 import functools
 import inspect
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    ClassVar,
-    Coroutine,
-    Iterable,
-    Optional,
-    Self,
-    cast,
-    overload,
-)
+from collections.abc import Awaitable, Callable, Coroutine, Iterable
+from typing import Any, ClassVar, Self, cast, overload
 from typing_extensions import TypeIs
 
 from nonebot.adapters import Bot, Message, MessageSegment
@@ -121,7 +111,7 @@ class Buffer:
 
 
 class Result:
-    error: Optional[Exception] = None
+    error: Exception | None = None
     _data: T_API_Result
 
     def __init__(self, data: T_API_Result):
@@ -148,13 +138,13 @@ class Result:
 
 
 def is_message_t(message: Any) -> TypeIs[T_Message]:
-    return isinstance(message, (str, Message, MessageSegment, UniMessage, Segment))
+    return isinstance(message, T_Message)
 
 
 async def as_unimsg(message: T_Message) -> UniMessage:
     if isinstance(message, MessageSegment):
         message = cast(type[Message], message.get_message_class())(message)
-    if isinstance(message, (str, Segment)):
+    if isinstance(message, str | Segment):
         message = UniMessage(message)
     elif isinstance(message, Message):
         message = await UniMessage.generate(message=message)
@@ -175,7 +165,7 @@ def _send_message(limit: int):
 
     def send_message(
         session: Session,
-        target: Optional[Target],
+        target: Target | None,
         message: T_Message,
     ) -> Awaitable[Receipt]:
         key = id(session)
@@ -202,7 +192,7 @@ send_message = _send_message(limit=6)
 
 def send_forward_message(
     session: Session,
-    target: Optional[Target],
+    target: Target | None,
     msgs: Iterable[T_Message],
 ) -> Awaitable[Receipt]:
     async def create_node(msg: T_Message) -> CustomNode:

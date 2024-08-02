@@ -1,6 +1,6 @@
 from nonebot.adapters import Bot
 
-from . import adapter_api as _
+from . import adapter_api as adapter_api
 from .api import API as API
 from .api import api_registry
 from .user_const_var import default_context as default_context

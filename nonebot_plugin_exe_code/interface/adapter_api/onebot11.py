@@ -3,7 +3,7 @@ import contextlib
 import functools
 import uuid
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Optional, Protocol, override
+from typing import TYPE_CHECKING, Any, Protocol, override
 
 from nonebot import on_fullmatch, on_message
 from nonebot.log import logger
@@ -116,7 +116,7 @@ with contextlib.suppress(ImportError):
             self,
             api: str,
             *,
-            raise_text: Optional[str] = None,
+            raise_text: str | None = None,
             **data: Any,
         ) -> Result:
             res: dict[str, Any] | list[Any] | None = None
@@ -195,7 +195,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
-        async def img_summary(self, summary: str, url: Optional[str] = None) -> None:
+        async def img_summary(self, summary: str, url: str | None = None) -> None:
             if url is None:
                 from ...context import Context
 
@@ -210,7 +210,7 @@ with contextlib.suppress(ImportError):
 
         @override
         def export_to(self, context: T_Context) -> None:
-            super(API, self).export_to(context)
+            super().export_to(context)
             context["Message"] = Message
             context["MessageSegment"] = MessageSegment
 

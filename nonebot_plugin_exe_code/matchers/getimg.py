@@ -3,7 +3,7 @@ from io import BytesIO
 import PIL.Image
 from nonebot import on_startswith
 from nonebot.adapters import Bot, Event
-from nonebot_plugin_alconna.uniseg import image_fetch, UniMessage
+from nonebot_plugin_alconna.uniseg import UniMessage, image_fetch
 
 from .depends import EXECODE_ENABLED, CodeContext, EventImage
 

@@ -1,7 +1,7 @@
 import contextlib
 from asyncio import Future, Queue, Task, get_event_loop
 from copy import deepcopy
-from typing import Any, ClassVar, Optional, Self, cast
+from typing import Any, ClassVar, Self, cast
 
 from nonebot.adapters import Bot, Event, Message
 from nonebot.log import logger
@@ -37,7 +37,7 @@ class Context:
     ctx: T_Context
     locked: bool
     waitlist: Queue[Future[None]]
-    task: Optional[Task[Any]]
+    task: Task[Any] | None
 
     def __init__(self, uin: str) -> None:
         self.uin = uin
@@ -135,7 +135,7 @@ class Context:
         self.set_value("gem", msg)
 
     def set_gurl(self, msg: UniMessage[Image] | Image) -> None:
-        url: Optional[str] = None
+        url: str | None = None
         if isinstance(msg, UniMessage) and msg.has(Image):
             url = msg[Image, 0].url
         elif isinstance(msg, Image):

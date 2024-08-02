@@ -1,6 +1,7 @@
 import asyncio
 import json
-from typing import Any, Awaitable, ClassVar, Optional, cast, override
+from collections.abc import Awaitable
+from typing import Any, ClassVar, cast, override
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot.internal.matcher import current_event
@@ -62,7 +63,7 @@ class API(Interface):
     __is_super_user: bool
 
     def __init__(self, bot: Bot, session: Session) -> None:
-        super(API, self).__init__()
+        super().__init__()
         self.bot = bot
         self.qid = session.id1 or ""
         self.gid = session.id2
@@ -228,7 +229,7 @@ class API(Interface):
         self,
         prompt: T_Message = "",
         timeout: float = 30,
-    ) -> Optional[Message]:
+    ) -> Message | None:
         prompt = await (await as_unimsg(prompt)).export() if prompt else ""
         return await waiter_prompt(prompt, timeout=timeout)
 
@@ -279,7 +280,7 @@ class API(Interface):
 
     @override
     def export_to(self, context: T_Context) -> None:
-        super(API, self).export_to(context)
+        super().export_to(context)
 
         context.update(load_const(self.qid))
         context["qid"] = self.qid

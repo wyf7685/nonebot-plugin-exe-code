@@ -1,8 +1,8 @@
 import inspect
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from types import UnionType
-from typing import Any, Callable, Optional
+from typing import Any
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt
@@ -59,8 +59,8 @@ def func_declaration(func: Callable[..., Any], ignore: set[str]) -> str:
 @dataclass
 class FuncDescription:
     description: str
-    parameters: Optional[dict[str, str]]
-    result: Optional[str]
+    parameters: dict[str, str] | None
+    result: str | None
     ignore: set[str]
 
     def format(self, func: Callable[..., Any]):
@@ -79,10 +79,10 @@ class FuncDescription:
 # fmt: off
 def descript[**P, R](
     description: str,
-    parameters: Optional[dict[str, str]],
-    result: Optional[str] = None,
+    parameters: dict[str, str] | None,
+    result: str | None = None,
     *,
-    ignore: Optional[set[str]] = None,
+    ignore: set[str] | None = None,
 ) -> Callable[[Callable[P, R]], Callable[P, R]]:
     # fmt: on
     ignore = {"self", *(ignore or set())}

@@ -1,4 +1,5 @@
-from typing import Any, Callable, Coroutine, Optional, Union
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Segment, UniMessage
@@ -16,8 +17,8 @@ INTERFACE_METHOD_DESCRIPTION = "__method_description__"
 
 T_Context = dict[str, Any]
 T_Executor = Callable[[], Coroutine[None, None, Any]]
-T_API_Result = Optional[Union[dict[str, Any], list[Any]]]
-T_Message = Union[str, Message, MessageSegment, UniMessage, Segment]
+T_API_Result = dict[str, Any] | list[Any] | None
+T_Message = str | Message | MessageSegment | UniMessage | Segment
 T_ForwardMsg = list[T_Message]
-T_ConstVar = Union[str, bool, int, float, dict[str, "T_ConstVar"], list["T_ConstVar"]]
-T_OptConstVar = Optional[T_ConstVar]
+T_ConstVar = str | bool | int | float | dict[str, "T_ConstVar"] | list["T_ConstVar"]
+T_OptConstVar = T_ConstVar | None

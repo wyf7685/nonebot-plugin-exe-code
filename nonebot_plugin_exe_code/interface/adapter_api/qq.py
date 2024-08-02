@@ -30,6 +30,6 @@ with contextlib.suppress(ImportError):
 
         @override
         def export_to(self, context: T_Context) -> None:
-            super(API, self).export_to(context)
+            super().export_to(context)
             context["Message"] = Message
             context["MessageSegment"] = MessageSegment

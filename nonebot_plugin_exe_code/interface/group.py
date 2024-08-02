@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Awaitable, ClassVar
+from collections.abc import Awaitable
+from typing import TYPE_CHECKING, ClassVar
 
 from nonebot_plugin_alconna.uniseg import Receipt
 
@@ -17,7 +18,7 @@ class Group(Interface):
     uid: str
 
     def __init__(self, api: "API", uid: str) -> None:
-        super(Group, self).__init__()
+        super().__init__()
         self.api = api
         self.uid = uid
 

@@ -1,5 +1,5 @@
-from . import code as _
-from . import getimg as _
-from . import getmid as _
-from . import getraw as _
-from . import terminate as _
+from . import code as code
+from . import getimg as getimg
+from . import getmid as getmid
+from . import getraw as getraw
+from . import terminate as terminate

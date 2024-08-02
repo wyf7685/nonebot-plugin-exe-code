@@ -11,7 +11,7 @@ requirements = {
 }
 [require(i) for i in requirements]
 
-from . import matchers as _
+from . import matchers as matchers
 from .config import Config
 
 __version__ = "1.0.5"

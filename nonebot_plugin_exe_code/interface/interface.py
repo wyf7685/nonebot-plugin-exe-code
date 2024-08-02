@@ -1,4 +1,5 @@
-from typing import Any, Callable, ClassVar, Generator, NamedTuple, cast
+from collections.abc import Callable, Generator
+from typing import Any, ClassVar, NamedTuple, cast
 
 from ..constant import INTERFACE_INST_NAME, INTERFACE_METHOD_DESCRIPTION, T_Context
 from .help_doc import FuncDescription
@@ -20,7 +21,7 @@ class InterfaceMeta(type):
         # default instance name
         attrs.setdefault(INTERFACE_INST_NAME, name.lower())
 
-        Interface = super(InterfaceMeta, cls).__new__(cls, name, bases, attrs)
+        Interface = super().__new__(cls, name, bases, attrs)
         attr = Interface.__dict__  # shortcut
 
         # export
@@ -40,8 +41,7 @@ class InterfaceMeta(type):
     def get_export_method(self) -> Generator[str, None, None]:
         for cls in reversed(self.mro()):
             if isinstance(cls, InterfaceMeta) and hasattr(cls, "__export_method__"):
-                for name in cls.__export_method__:
-                    yield name
+                yield from cls.__export_method__
 
     def _get_method_description(self) -> Generator[_Desc, None, None]:
         inst_name: str = getattr(self, "__inst_name__")
