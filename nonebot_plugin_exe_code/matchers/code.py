@@ -14,7 +14,7 @@ matcher = on_startswith("code", rule=EXECODE_ENABLED)
 
 
 @matcher.handle()
-async def handle_exec(
+async def handle_code(
     bot: Bot,
     session: EventSession,
     code: ExtractCode,
@@ -22,7 +22,7 @@ async def handle_exec(
 ):
     try:
         await Context.execute(bot, session, code)
-    except Exception as e:
-        text = f"用户{uinfo.user_name}({uinfo.user_id}) 执行代码时发生错误: {e}"
-        logger.opt(exception=True).warning(text)
-        await UniMessage.text(f"执行失败: {e!r}").send()
+    except Exception as err:
+        text = f"用户{uinfo.user_name}({uinfo.user_id}) 执行代码时发生错误: {err}"
+        logger.opt(exception=err).warning(text)
+        await UniMessage.text(f"执行失败: {err!r}").send()

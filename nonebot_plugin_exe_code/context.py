@@ -59,6 +59,7 @@ class Context:
     def get_context(cls, session: Session | Event | str) -> Self:
         uin = cls._session2uin(session)
         if uin not in cls._contexts:
+            logger.debug(f"为用户 <y>{uin}</y> 创建 Context")
             cls._contexts[uin] = cls(uin)
 
         return cls._contexts[uin]
