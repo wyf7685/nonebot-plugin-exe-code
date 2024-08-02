@@ -16,7 +16,7 @@ class User(Interface):
     api: "API"
     uid: str
 
-    def __init__(self, api: "API", uid: str):
+    def __init__(self, api: "API", uid: str) -> None:
         super(User, self).__init__()
         self.api = api
         self.uid = uid

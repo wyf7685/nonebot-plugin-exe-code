@@ -20,7 +20,7 @@ def _ExeCodeEnabled() -> Rule:
     except ImportError:
         ConsoleBot = None
 
-    def check(bot: Bot, session: EventSession, target: MsgTarget):
+    def check(bot: Bot, session: EventSession, target: MsgTarget) -> bool:
         # ConsoleBot 仅有标准输入, 跳过检查
         if ConsoleBot is not None and isinstance(bot, ConsoleBot):
             return True

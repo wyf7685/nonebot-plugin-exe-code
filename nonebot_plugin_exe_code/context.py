@@ -65,6 +65,8 @@ class Context:
 
     @contextlib.asynccontextmanager
     async def _lock(self):
+        fut: Future[None]
+
         if self.locked:
             fut = get_event_loop().create_future()
             await self.waitlist.put(fut)
