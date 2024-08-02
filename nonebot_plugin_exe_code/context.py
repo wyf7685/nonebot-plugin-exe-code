@@ -140,3 +140,12 @@ class Context:
         elif isinstance(msg, Image):
             url = msg.url
         self.set_value("gurl", url)
+
+    def __getitem__(self, key: str, /) -> Any:
+        return self.ctx[key]
+
+    def __setitem__(self, key: str, value: Any, /) -> None:
+        self.ctx[key] = value
+
+    def __delitem__(self, key: str, /) -> None:
+        del self.ctx[key]
