@@ -1,9 +1,13 @@
 import contextlib
-from typing import ClassVar
+from typing import Any, ClassVar
+
+from nonebot.log import logger
 
 from ..help_doc import descript
 from ..interface import Interface
 from ..utils import debug_log
+
+logger = logger.opt(colors=True)
 
 
 def build_ark(
@@ -26,6 +30,7 @@ with contextlib.suppress(ImportError):
         template_id: int,
         data: dict[str, str | list[dict[str, str]]],
     ) -> MessageArk:
+        logger.debug(f"构建 ark 结构体: {template_id=}, {data=!r}")
         return MessageArk(template_id=template_id, kv=[
             MessageArkKv(key=key, value=val)
             if isinstance(val, str) else
@@ -97,6 +102,8 @@ class SendArk(Interface):
                 ],
             },
         )
+        params = f"{desc=!r}, {prompt=!r}, {lines=!r}"
+        logger.debug(f"发送 ark_23: {params}")
         await self._send_ark(ark)
 
     @descript(
@@ -128,6 +135,8 @@ class SendArk(Interface):
                 "#LINK#": link,
             },
         )
+        params = f"{title=!r}, {desc=!r}, {prompt=!r}, {img=!r}, {link=!r}"
+        logger.debug(f"发送 ark_24: {params}")
         await self._send_ark(ark)
 
     @descript(
@@ -159,4 +168,6 @@ class SendArk(Interface):
                 "#METAURL#": link,
             },
         )
+        params = f"{title=!r}, {subtitle=!r}, {prompt=!r}, {img=!r}, {link=!r}"
+        logger.debug(f"发送 ark_37: {params}")
         await self._send_ark(ark)

@@ -151,6 +151,7 @@ with contextlib.suppress(ImportError):
         )
         @debug_log
         async def recall(self, msg_id: int) -> Result:
+            logger.debug(f"[OneBot V11] 撤回消息: {msg_id=}")
             return await self.call_api(
                 "delete_msg",
                 message_id=msg_id,
@@ -165,6 +166,7 @@ with contextlib.suppress(ImportError):
         )
         @debug_log
         async def get_msg(self, msg_id: int) -> Message:
+            logger.debug(f"[OneBot V11] 获取消息: {msg_id=}")
             res = await self.call_api(
                 "get_msg",
                 message_id=msg_id,
@@ -180,6 +182,7 @@ with contextlib.suppress(ImportError):
         )
         @debug_log
         async def get_fwd(self, msg_id: int) -> list[Message]:
+            logger.debug(f"[OneBot V11] 获取合并转发消息: {msg_id=}")
             res = await self.call_api(
                 "get_forward_msg",
                 message_id=msg_id,
@@ -204,6 +207,7 @@ with contextlib.suppress(ImportError):
             if not url:
                 raise ValueError("无效 url")
 
+            logger.debug(f"[NapCat] 创建图片外显: <y>{summary}</y>, <c>{url}</c>")
             seg = MessageSegment.image(url)
             seg.data["summary"] = summary
             await self._native_send(Message(seg))
