@@ -1,5 +1,5 @@
 import contextlib
-from typing import override
+from typing import Any, override
 
 from ...constant import T_Context
 from ..api import API as BaseAPI
@@ -17,8 +17,8 @@ with contextlib.suppress(ImportError):
     @register_api(Adapter)
     class API(SendArk, BaseAPI):
         @override
-        async def _send_ark(self, ark: MessageArk) -> None:
-            await self._native_send(MessageSegment.ark(ark))
+        async def _send_ark(self, ark: MessageArk) -> Any:
+            return await self._native_send(MessageSegment.ark(ark))
 
         @descript(
             description="发送ark卡片",

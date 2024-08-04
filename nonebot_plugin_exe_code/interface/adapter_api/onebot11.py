@@ -215,5 +215,6 @@ with contextlib.suppress(ImportError):
             context["MessageSegment"] = MessageSegment
 
         @override
-        async def _send_ark(self, ark: "MessageArk") -> None:
-            await self._native_send(await create_ark_card(self, ark))
+        async def _send_ark(self, ark: "MessageArk") -> Any:
+            card = Message(await create_ark_card(self, ark))
+            return await self._native_send(card)

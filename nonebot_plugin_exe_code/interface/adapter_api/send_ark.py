@@ -52,7 +52,7 @@ class SendArk(Interface):
 
     __inst_name__: ClassVar[str] = "api"
 
-    async def _send_ark(self, ark: "MessageArk"):
+    async def _send_ark(self, ark: "MessageArk") -> Any:
         raise NotImplementedError
 
     @descript(

@@ -69,8 +69,8 @@ class API(Interface):
         self.session = session
         self.event = current_event.get()
 
-    async def _native_send(self, msg: str | Message | MessageSegment) -> None:
-        await self.bot.send(self.event, msg)
+    async def _native_send(self, msg: str | Message | MessageSegment) -> Any:
+        return await self.bot.send(self.event, msg)
 
     @descript(
         description="向QQ号为qid的用户发送私聊消息",
