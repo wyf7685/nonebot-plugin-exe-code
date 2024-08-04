@@ -7,9 +7,8 @@ from .user_const_var import default_context as default_context
 from .utils import Buffer as Buffer
 
 
-def get_api_class(bot: Bot):
+def get_api_class(bot: Bot) -> type[API]:
     for cls, api in api_registry.items():
         if isinstance(bot.adapter, cls):
             return api
-    else:
-        return API
+    return API

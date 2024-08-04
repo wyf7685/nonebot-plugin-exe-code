@@ -60,7 +60,6 @@ class API(Interface):
     gid: str | None
     session: Session
     event: Event
-    __is_super_user: bool
 
     def __init__(self, bot: Bot, session: Session) -> None:
         super().__init__()
@@ -69,7 +68,6 @@ class API(Interface):
         self.gid = session.id2
         self.session = session
         self.event = current_event.get()
-        self.__is_super_user = is_super_user(self.bot, self.qid)
 
     async def _native_send(self, msg: str | Message | MessageSegment) -> None:
         await self.bot.send(self.event, msg)
@@ -287,10 +285,8 @@ class API(Interface):
         context.update(load_const(self.qid))
         context["qid"] = self.qid
         context["gid"] = self.gid
-        # context["usr"] = self.user(self.qid)
-        # context["grp"] = self.group(self.gid) if self.gid else None
 
-        if self.__is_super_user:
+        if is_super_user(self.bot, self.qid):
             export_manager(context)
 
     def __repr__(self) -> str:

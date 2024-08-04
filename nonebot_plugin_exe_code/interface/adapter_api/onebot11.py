@@ -86,7 +86,7 @@ with contextlib.suppress(ImportError):
                 on_message(rule, handlers=[handle_ob], temp=True, expire_time=expire),
             }
 
-            def cleanup():
+            def cleanup() -> None:
                 for matcher in matchers:
                     with contextlib.suppress(ValueError):
                         matcher.destroy()
