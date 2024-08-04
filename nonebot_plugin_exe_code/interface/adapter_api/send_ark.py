@@ -56,16 +56,16 @@ class SendArk(Interface):
         raise NotImplementedError
 
     @descript(
-        description="构建ark结构体",
+        description="构建 ark 结构体",
         parameters=dict(
-            template_id="ark模板id, 目前可以为23/24/37",
+            template_id="ark模板id, 目前可为23/24/37",
             data="ark模板参数",
         ),
         result="ark结构体",
     )
     @debug_log
+    @staticmethod
     def build_ark(
-        self,
         template_id: int,
         data: dict[str, str | list[dict[str, str]]],
     ) -> "MessageArk":
