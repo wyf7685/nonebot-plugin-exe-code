@@ -1,7 +1,7 @@
 import asyncio
 import json
 from collections.abc import Awaitable
-from typing import Any, ClassVar, cast, override
+from typing import Any, ClassVar, override
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot.internal.matcher import current_event
@@ -243,9 +243,9 @@ class API(Interface):
     @debug_log
     def help(self, method: Any = ...) -> Awaitable[Receipt]:
         if method is not ...:
-            desc = cast(FuncDescription, getattr(method, INTERFACE_METHOD_DESCRIPTION))
+            desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
             text = desc.format(method)
-            if is_export_method(method):
+            if not is_export_method(method):
                 text = f"{self.__inst_name__}.{text}"
             return self.feedback(text)
 
