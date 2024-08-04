@@ -194,6 +194,13 @@ await receipt.recall()  # 撤回消息
 <details>
     <summary>更新日志</summary>
 
+- 2024.08.04 v1.0.6
+
+  - `Context` 添加字典操作
+  - `input` 函数改为返回 `UniMessage`, 超时改为抛出 `TimeoutError`
+  - 修复 `help` 函数获取单个方法信息时, 实例名显示错误
+  - `API._native_send` 改为返回平台接口数据
+
 - 2024.08.01 v1.0.5
 
   新增函数 `input`, 用于从对话中获取输入
