@@ -14,8 +14,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 [![pypi](https://img.shields.io/pypi/v/nonebot-plugin-exe-code.svg)](https://pypi.python.org/pypi/nonebot-plugin-exe-code)
 [![python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 
-[![pdm-managed](https://img.shields.io/endpoint?url=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fpdm-project%2F.github%2Fbadge.json
-)](https://pdm-project.org)
+[![pdm-managed](https://img.shields.io/endpoint?url=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fpdm-project%2F.github%2Fbadge.json)](https://pdm-project.org)
 [![pyright](https://img.shields.io/badge/types-pyright-797952.svg?logo=python&logoColor=edb641)](https://github.com/Microsoft/pyright)
 [![isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -24,7 +23,6 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 [![pre-commit](https://results.pre-commit.ci/badge/github/wyf7685/nonebot-plugin-exe-code/master.svg)](https://results.pre-commit.ci/latest/github/wyf7685/nonebot-plugin-exe-code/master)
 [![pyright](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pyright.yml/badge.svg?branch=master&event=push)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pyright.yml)
 [![publish](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml)
-
 
 </div>
 
@@ -223,6 +221,9 @@ await receipt.recall()  # 撤回消息
 
 ## 鸣谢
 
-- [nonebot/nonebot2](https://github.com/nonebot/nonebot2): 跨平台 Python 异步机器人框架
-- [nonebot/plugin-alconna](https://github.com/nonebot/plugin-alconna): 跨平台的消息处理接口
-- [noneplugin/nonebot-plugin-session](https://github.com/noneplugin/nonebot-plugin-session): 会话信息提取
+- [`nonebot/nonebot2`](https://github.com/nonebot/nonebot2): 跨平台 Python 异步机器人框架
+- [`nonebot/plugin-alconna`](https://github.com/nonebot/plugin-alconna): 跨平台的消息处理接口
+- [`he0119/nonebot-plugin-datastore`](https://github.com/he0119/nonebot-plugin-datastore): 插件数据存储
+- [`noneplugin/nonebot-plugin-session`](https://github.com/noneplugin/nonebot-plugin-session): 会话信息提取
+- [`noneplugin/nonebot-plugin-userinfo`](https://github.com/noneplugin/nonebot-plugin-userinfo): 用户信息获取
+- [`RF-Tar-Railt/nonebot-plugin-waiter`](https://github.com/RF-Tar-Railt/nonebot-plugin-waiter): 灵活获取用户输入
