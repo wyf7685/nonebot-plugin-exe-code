@@ -34,6 +34,9 @@ dev = [
   "nonebot-adapter-console>=0.6.0",
   "nonebot-adapter-onebot>=2.4.4",
   "nonebot-adapter-qq>=1.4.4",
+    "fastapi>=0.112.0",
+    "httpx>=0.27.0",
+    "websockets>=12.0",
 ]
 
 [tool.black]
@@ -85,3 +88,11 @@ pythonPlatform = "All"
 typeCheckingMode = "standard"
 reportShadowedImports = false
 disableBytesTypePromotions = true
+
+[tool.nonebot]
+adapters = [
+  # { name = "Console", module_name = "nonebot.adapters.console" },
+  { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
+  { name = "QQ", module_name = "nonebot.adapters.qq" },
+]
+plugins = ["nonebot_plugin_exe_code"]
