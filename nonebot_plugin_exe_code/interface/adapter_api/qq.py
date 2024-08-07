@@ -6,7 +6,7 @@ from ..api import API as BaseAPI
 from ..api import register_api
 from ..help_doc import descript, message_alia
 from ..utils import debug_log
-from .send_ark import SendArk
+from ._send_ark import SendArk
 
 with contextlib.suppress(ImportError):
     from nonebot.adapters.qq import Adapter, Message, MessageSegment

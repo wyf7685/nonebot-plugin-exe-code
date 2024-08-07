@@ -13,7 +13,7 @@ from ..api import API as BaseAPI
 from ..api import register_api
 from ..help_doc import descript, message_alia
 from ..utils import Result, debug_log, export
-from .send_ark import SendArk
+from ._send_ark import SendArk
 
 if TYPE_CHECKING:
 

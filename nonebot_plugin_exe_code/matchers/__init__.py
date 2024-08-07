@@ -1,5 +1,10 @@
-from . import code as code
-from . import getimg as getimg
-from . import getmid as getmid
-from . import getraw as getraw
-from . import terminate as terminate
+import importlib
+from pathlib import Path
+
+
+def load():
+    for name in (p.stem for p in Path(__file__).parent.iterdir()):
+        if name.startswith("_"):
+            continue
+
+        importlib.import_module(f"{__package__}.{name}")

@@ -11,7 +11,7 @@ requirements = {
 }
 [require(i) for i in requirements]
 
-from . import matchers as matchers
+from . import matchers
 from .config import Config
 
 __version__ = "1.0.6"
@@ -28,3 +28,5 @@ __plugin_meta__ = PluginMetadata(
         "version": __version__,
     },
 )
+
+matchers.load()

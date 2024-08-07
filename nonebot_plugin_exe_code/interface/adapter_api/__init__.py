@@ -1,8 +1,10 @@
 import importlib
 from pathlib import Path
 
-modules = [
-    importlib.import_module(f"{__package__}.{path.stem}")
-    for path in Path(__file__).parent.iterdir()
-    if not path.stem.startswith("_")
-]
+
+def load():
+    for name in (p.stem for p in Path(__file__).parent.iterdir()):
+        if name.startswith("_"):
+            continue
+
+        importlib.import_module(f"{__package__}.{name}")
