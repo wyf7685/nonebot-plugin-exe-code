@@ -32,7 +32,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 > [!warning]
 >
-> ### 重要安全提示
+> ### 🚨 重要安全提示
 >
 > 插件在未经验证的情况下解析执行外部代码，存在较高的安全风险。执行用户输入的代码可能导致系统崩溃、数据泄露或其他不可预见的安全问题。
 >
@@ -90,22 +90,38 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 ## ⚙️ 配置
 
-在 nonebot2 项目的`.env`文件中添加下表中的必填配置
+在 nonebot2 项目的 `.env` 文件中添加下表中的配置
+
+|      配置项       | 必填 | 默认值 |         说明          |
+| :---------------: | :--: | :----: | :-------------------: |
+| `exe_code__user`  |  否  |   []   | 允许执行代码的用户 ID |
+| `exe_code__group` |  否  |   []   | 允许执行代码的群组 ID |
+
+<details>
+  <summary>可选配置</summary>
+
+插件为 `OneBot V11` 适配器封装了发送 [`QQ官方机器人`](https://bot.q.qq.com/wiki/develop/api-v2/) 的 [`ark卡片消息`](https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/type/ark.html) 的接口，参考 [`这里`](https://github.com/wyf7685/nonebot-plugin-exe-code/blob/master/nonebot_plugin_exe_code/interface/adapter_api/onebot11.py#L59-L99)
+
+使用时需要在 `.env` 文件中添加如下配置，在 nonebot2 项目中配置 `OneBot V11` 适配器和 `QQ` 适配器，并连接到两个对应的 Bot 账号，并确保两者之间可以发送私聊消息。
 
 |          配置项          | 必填 | 默认值 |                     说明                     |
 | :----------------------: | :--: | :----: | :------------------------------------------: |
-|     `exe_code__user`     |  否  |   无   |            允许执行代码的用户 ID             |
-|    `exe_code__group`     |  否  |   无   |            允许执行代码的群组 ID             |
-|   `exe_code__qbot_id`    |  否  |   无   | `OneBot V11` 发送 ark 卡片所需的官 Bot QQ 号 |
+|   `exe_code__qbot_id`    |  是  |   无   | `OneBot V11` 发送 ark 卡片所需的官 Bot QQ 号 |
 | `exe_code__qbot_timeout` |  否  |  30.0  |   `OneBot V11` 发送 ark 卡片的超时时长(秒)   |
 
-### 权限说明
+</details>
+
+### 📄 权限说明
 
 对于 `exe_code__user` 中配置的用户，在私聊/任意群聊中均可触发命令。
 
 对于 `exe_code__group` 中配置的群组，任意用户均可触发命令。
 
-对于 NoneBot 默认配置项 `SUPERUSERS` 中配置的用户，在私聊/任意群聊中均可触发命令，且在执行环境中拥有额外管理权限。
+对于 NoneBot 默认配置项 [`SUPERUSERS`](https://nonebot.dev/docs/appendices/config#superusers) 中配置的用户，在私聊/任意群聊中均可触发命令，且在执行环境中拥有额外管理权限。
+
+### 📦️ 数据存储
+
+插件使用 [`nonebot/plugin-localstore`](https://github.com/nonebot/plugin-localstore) 存储用户数据，存储位置参考 [`这里`](https://github.com/nonebot/plugin-localstore?tab=readme-ov-file#%E5%AD%98%E5%82%A8%E8%B7%AF%E5%BE%84)
 
 ## 🎉 使用
 
