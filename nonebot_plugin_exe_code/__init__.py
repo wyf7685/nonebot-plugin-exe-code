@@ -4,7 +4,7 @@ from nonebot.plugin.load import inherit_supported_adapters
 
 requirements = {
     "nonebot_plugin_alconna",
-    "nonebot_plugin_datastore",
+    "nonebot_plugin_localstore",
     "nonebot_plugin_session",
     "nonebot_plugin_userinfo",
     "nonebot_plugin_waiter",
