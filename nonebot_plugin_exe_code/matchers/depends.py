@@ -1,5 +1,5 @@
 from typing import Annotated
-
+import contextlib
 from nonebot import get_driver
 from nonebot.adapters import Bot, Event, Message
 from nonebot.matcher import Matcher
@@ -15,14 +15,19 @@ from ..context import Context
 
 def _ExeCodeEnabled() -> Rule:
     global_config = get_driver().config
-    try:
-        from nonebot.adapters.console import Bot as ConsoleBot
-    except ImportError:
-        ConsoleBot = None
 
-    def check(bot: Bot, session: EventSession, target: MsgTarget) -> bool:
+    def check_console(bot: Bot) -> bool:  # pyright: ignore[reportRedeclaration]
+        return True
+
+    with contextlib.suppress(ImportError):
+        from nonebot.adapters.console import Bot as ConsoleBot
+
+        def check_console(bot: Bot) -> bool:
+            return isinstance(bot, ConsoleBot)
+
+    async def check(bot: Bot, session: EventSession, target: MsgTarget) -> bool:
         # ConsoleBot 仅有标准输入, 跳过检查
-        if ConsoleBot is not None and isinstance(bot, ConsoleBot):
+        if check_console(bot):
             return True
 
         # 对于 superuser 和 配置允许的用户, 在任意对话均可触发
@@ -40,7 +45,7 @@ def _ExeCodeEnabled() -> Rule:
 
 def _CodeContext():
 
-    def code_context(session: EventSession) -> Context:
+    async def code_context(session: EventSession) -> Context:
         return Context.get_context(session)
 
     return Depends(code_context)
@@ -48,7 +53,7 @@ def _CodeContext():
 
 def _ExtractCode():
 
-    def extract_code(msg: UniMsg) -> str:
+    async def extract_code(msg: UniMsg) -> str:
         code = ""
         for seg in msg:
             if isinstance(seg, Text):
