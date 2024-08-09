@@ -1,5 +1,6 @@
-from typing import Annotated
 import contextlib
+from typing import Annotated
+
 from nonebot import get_driver
 from nonebot.adapters import Bot, Event, Message
 from nonebot.matcher import Matcher

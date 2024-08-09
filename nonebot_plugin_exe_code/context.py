@@ -1,7 +1,8 @@
 import contextlib
 from asyncio import Future, Queue, Task, get_event_loop
 from copy import deepcopy
-from typing import Any, ClassVar, Self, cast
+from typing import Any, ClassVar, cast
+from typing_extensions import Self
 
 from nonebot.adapters import Bot, Event, Message
 from nonebot.log import logger

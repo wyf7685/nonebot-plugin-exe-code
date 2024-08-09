@@ -1,12 +1,12 @@
 import asyncio
 import functools
-import inspect
 from collections.abc import Callable, Coroutine, Iterable
-from typing import Any, ClassVar, Self, cast, overload
-from typing_extensions import TypeIs
+from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast, overload
+from typing_extensions import Self, TypeIs
 
 from nonebot.adapters import Bot, Message, MessageSegment
 from nonebot.log import logger
+from nonebot.utils import is_coroutine_callable
 from nonebot_plugin_alconna.uniseg import (
     CustomNode,
     Receipt,
@@ -31,49 +31,51 @@ WRAPPER_ASSIGNMENTS = (
     INTERFACE_METHOD_DESCRIPTION,
 )
 
+P = ParamSpec("P")
+R = TypeVar("R")
+T = TypeVar("T")
 
-def export[**P, R](call: Callable[P, R]) -> Callable[P, R]:
+
+def export(call: Callable[P, R]) -> Callable[P, R]:
     """将一个方法标记为导出函数"""
     setattr(call, INTERFACE_EXPORT_METHOD, True)
     return call
 
 
-type Coro[T] = Coroutine[None, None, T]
-
-
-def is_coroutine_callable(call: Callable[..., Any]) -> TypeIs[Callable[..., Coro[Any]]]:
-    """检查 call 是否是一个 callable 协程函数"""
-    if inspect.isroutine(call):
-        return inspect.iscoroutinefunction(call)
-    if inspect.isclass(call):
-        return False
-    func = getattr(call, "__call__", None)
-    return inspect.iscoroutinefunction(func)
+class Coro(Coroutine[None, None, T], Generic[T]): ...
 
 
 @overload
-def debug_log[**P, R](call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
+def debug_log(call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
 
 
 @overload
-def debug_log[**P, R](call: Callable[P, R]) -> Callable[P, R]: ...
+def debug_log(call: Callable[P, R]) -> Callable[P, R]: ...
 
 
-def debug_log[**P, R](call: Callable[P, Coro[R] | R]) -> Callable[P, Coro[R] | R]:
+def debug_log(
+    call: Callable[P, Coro[R]] | Callable[P, R]
+) -> Callable[P, Coro[R]] | Callable[P, R]:
     if is_coroutine_callable(call):
-        # 本来应该用 # pyright: ignore[reportRedeclaration]
-        # 但是格式化后有点难绷，所以直接用了 # type: ignore
-        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:  # type: ignore
+        call = cast(Callable[P, Coro[R]], call)
+
+        async def wrapper(  # pyright: ignore[reportRedeclaration]
+            *args: P.args, **kwargs: P.kwargs
+        ) -> R:
             logger.debug(f"{call.__name__}: args={args}, kwargs={kwargs}")
-            return await cast(Callable[P, Coro[R]], call)(*args, **kwargs)
+            return await call(*args, **kwargs)
 
     else:
+        call = cast(Callable[P, R], call)
 
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             logger.debug(f"{call.__name__}: args={args}, kwargs={kwargs}")
-            return cast(Callable[P, R], call)(*args, **kwargs)
+            return call(*args, **kwargs)
 
-    return functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS)
+    return cast(
+        Callable[P, Coro[R]] | Callable[P, R],
+        functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS),
+    )
 
 
 def is_export_method(call: Callable[..., Any]) -> bool:

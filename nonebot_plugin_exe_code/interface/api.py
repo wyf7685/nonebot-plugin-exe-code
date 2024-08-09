@@ -1,6 +1,7 @@
 import asyncio
 import json
-from typing import Any, ClassVar, override
+from typing import Any, ClassVar
+from typing_extensions import override
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot.internal.matcher import current_event

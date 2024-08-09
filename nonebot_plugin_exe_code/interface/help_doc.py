@@ -1,8 +1,7 @@
 import inspect
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from types import UnionType
-from typing import Any
+from typing import Any, ParamSpec, TypeVar
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt
@@ -19,9 +18,10 @@ from ..constant import (
 from .utils import Result
 
 EMPTY = inspect.Signature.empty
+P = ParamSpec("P")
+R = TypeVar("R")
 
-
-type_alias: dict[type | UnionType, str] = {
+type_alias: dict[Any, str] = {
     Receipt: "Receipt",
     Result: "Result",
     T_Message: "T_Message",
@@ -76,15 +76,13 @@ class FuncDescription:
         )
 
 
-# fmt: off
-def descript[**P, R](
+def descript(
     description: str,
     parameters: dict[str, str] | None,
     result: str | None = None,
     *,
     ignore: set[str] | None = None,
 ) -> Callable[[Callable[P, R]], Callable[P, R]]:
-    # fmt: on
     ignore = {"self", *(ignore or set())}
 
     def decorator(call: Callable[P, R]) -> Callable[P, R]:

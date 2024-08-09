@@ -12,7 +12,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 [![license](https://img.shields.io/github/license/wyf7685/nonebot-plugin-exe-code.svg)](./LICENSE)
 [![pypi](https://img.shields.io/pypi/v/nonebot-plugin-exe-code.svg)](https://pypi.python.org/pypi/nonebot-plugin-exe-code)
-[![python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
+[![python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 
 [![pdm-managed](https://img.shields.io/endpoint?url=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fpdm-project%2F.github%2Fbadge.json)](https://pdm-project.org)
 [![pyright](https://img.shields.io/badge/types-pyright-797952.svg?logo=python&logoColor=edb641)](https://github.com/Microsoft/pyright)
