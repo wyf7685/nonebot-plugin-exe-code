@@ -1,6 +1,5 @@
 import asyncio
 import json
-from collections.abc import Awaitable
 from typing import Any, ClassVar, override
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
@@ -80,8 +79,8 @@ class API(Interface):
         ),
     )
     @debug_log
-    def send_prv(self, qid: int | str, msg: T_Message) -> Awaitable[Receipt]:
-        return send_message(
+    async def send_prv(self, qid: int | str, msg: T_Message) -> Receipt:
+        return await send_message(
             session=self.session,
             target=Target.user(str(qid)),
             message=msg,
@@ -95,8 +94,8 @@ class API(Interface):
         ),
     )
     @debug_log
-    def send_grp(self, gid: int | str, msg: T_Message) -> Awaitable[Receipt]:
-        return send_message(
+    async def send_grp(self, gid: int | str, msg: T_Message) -> Receipt:
+        return await send_message(
             session=self.session,
             target=Target.group(str(gid)),
             message=msg,
@@ -111,8 +110,8 @@ class API(Interface):
         result="Receipt",
     )
     @debug_log
-    def send_prv_fwd(self, qid: int | str, msgs: T_ForwardMsg) -> Awaitable[Receipt]:
-        return send_forward_message(
+    async def send_prv_fwd(self, qid: int | str, msgs: T_ForwardMsg) -> Receipt:
+        return await send_forward_message(
             session=self.session,
             target=Target.group(str(qid)),
             msgs=msgs,
@@ -126,8 +125,8 @@ class API(Interface):
         ),
     )
     @debug_log
-    def send_grp_fwd(self, gid: int | str, msgs: T_ForwardMsg) -> Awaitable[Receipt]:
-        return send_forward_message(
+    async def send_grp_fwd(self, gid: int | str, msgs: T_ForwardMsg) -> Receipt:
+        return await send_forward_message(
             session=self.session,
             target=Target.group(str(gid)),
             msgs=msgs,
@@ -139,8 +138,8 @@ class API(Interface):
         parameters=dict(msgs="发送的消息列表"),
     )
     @debug_log
-    def send_fwd(self, msgs: T_ForwardMsg) -> Awaitable[Receipt]:
-        return send_forward_message(
+    async def send_fwd(self, msgs: T_ForwardMsg) -> Receipt:
+        return await send_forward_message(
             session=self.session,
             target=None,
             msgs=msgs,
@@ -155,15 +154,15 @@ class API(Interface):
         ),
     )
     @debug_log
-    def feedback(self, msg: Any, fwd: bool = False) -> Awaitable[Receipt]:
+    async def feedback(self, msg: Any, fwd: bool = False) -> Receipt:
         if isinstance(msg, list):
             if fwd and all(is_message_t(i) for i in msg):
-                return self.send_fwd(msg)
+                return await self.send_fwd(msg)
 
         if not is_message_t(msg):
             msg = str(msg)
 
-        return send_message(
+        return await send_message(
             session=self.session,
             target=None,
             message=msg,
@@ -239,13 +238,13 @@ class API(Interface):
         parameters=dict(method="需要获取帮助的函数，留空则为完整文档"),
     )
     @debug_log
-    def help(self, method: Any = ...) -> Awaitable[Receipt]:
+    async def help(self, method: Any = ...) -> Receipt:
         if method is not ...:
             desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
             text = desc.format(method)
             if not is_export_method(method):
                 text = f"{self.__inst_name__}.{text}"
-            return self.feedback(text)
+            return await self.feedback(text)
 
         content, description = self._get_all_description()
         msgs: list[T_Message] = [
@@ -253,7 +252,7 @@ class API(Interface):
             " - API说明文档 - 目录 - \n" + "\n".join(content),
             *description,
         ]
-        return self.send_fwd(msgs)
+        return await self.send_fwd(msgs)
 
     @export
     @descript(

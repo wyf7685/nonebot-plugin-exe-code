@@ -1,7 +1,7 @@
 import asyncio
 import functools
 import inspect
-from collections.abc import Awaitable, Callable, Coroutine, Iterable
+from collections.abc import Callable, Coroutine, Iterable
 from typing import Any, ClassVar, Self, cast, overload
 from typing_extensions import TypeIs
 
@@ -163,11 +163,11 @@ def _send_message(limit: int):
         if key in call_cnt:
             del call_cnt[key]
 
-    def send_message(
+    async def send_message(
         session: Session,
         target: Target | None,
         message: T_Message,
-    ) -> Awaitable[Receipt]:
+    ) -> Receipt:
         key = id(session)
         if key not in call_cnt:
             call_cnt[key] = 1
@@ -178,11 +178,8 @@ def _send_message(limit: int):
         else:
             call_cnt[key] += 1
 
-        async def send_message_inner():
-            msg = await as_unimsg(message)
-            return await msg.send(target)
-
-        return asyncio.create_task(send_message_inner())
+        msg = await as_unimsg(message)
+        return await msg.send(target)
 
     return send_message
 
@@ -190,11 +187,11 @@ def _send_message(limit: int):
 send_message = _send_message(limit=6)
 
 
-def send_forward_message(
+async def send_forward_message(
     session: Session,
     target: Target | None,
     msgs: Iterable[T_Message],
-) -> Awaitable[Receipt]:
+) -> Receipt:
     async def create_node(msg: T_Message) -> CustomNode:
         return CustomNode(
             uid="0",
@@ -202,15 +199,12 @@ def send_forward_message(
             content=await as_unimsg(msg),
         )
 
-    async def send_forward_inner():
-        nodes = await asyncio.gather(*[create_node(msg) for msg in msgs])
-        return await send_message(
-            session=session,
-            target=target,
-            message=Reference(nodes=nodes),
-        )
-
-    return asyncio.create_task(send_forward_inner())
+    nodes = await asyncio.gather(*[create_node(msg) for msg in msgs])
+    return await send_message(
+        session=session,
+        target=target,
+        message=Reference(nodes=nodes),
+    )
 
 
 def _export_manager():
