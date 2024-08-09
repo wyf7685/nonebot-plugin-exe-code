@@ -208,6 +208,12 @@ await receipt.recall()  # 撤回消息
 <details>
     <summary>更新日志</summary>
 
+- 2024.08.09 v1.0.7
+
+  - 使用 [`nonebot/plugin-localstore`](https://github.com/nonebot/plugin-localstore) 存储插件数据
+  - 回滚 `v1.0.4` 的消息发送接口修改
+  - 修改 Python 版本需求为 `>=3.10`
+
 - 2024.08.04 v1.0.6
 
   - `Context` 添加字典操作
@@ -223,7 +229,7 @@ await receipt.recall()  # 撤回消息
 
   - 发送消息类接口改为返回 Task, 允许不等待消息返回
 
-  `api.set_const` 变量名添加 isidentifier 校验
+  - `api.set_const` 变量名添加 isidentifier 校验
 
 - 2024.07.21 v1.0.2
 
