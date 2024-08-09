@@ -22,7 +22,7 @@ async def handle_code(
 ):
     try:
         await Context.execute(bot, session, code)
-    except Exception as err:
+    except BaseException as err:
         text = f"用户{uinfo.user_name}({uinfo.user_id}) 执行代码时发生错误: {err}"
         logger.opt(exception=err).warning(text)
         await UniMessage.text(f"执行失败: {err!r}").send()

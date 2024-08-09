@@ -1,4 +1,3 @@
-import contextlib
 from typing import Annotated
 
 from nonebot.adapters import Event
@@ -23,6 +22,5 @@ def _target(event: Event, target: Match[At]) -> str:
 
 @matcher.handle()
 async def handle_terminate(target: Annotated[str, Depends(_target)]):
-    with contextlib.suppress(KeyError):
-        if Context.get_context(target).cancel():
-            await UniMessage("中止").at(target).text("的执行任务").send()
+    if Context.get_context(target).cancel():
+        await UniMessage("中止").at(target).text("的执行任务").send()
