@@ -1,11 +1,11 @@
 import os
 
-import pytest
 import nonebot
-from nonebug import NONEBOT_INIT_KWARGS, App
+import pytest
 
 # from nonebot.adapters.qq import Adapter as QQAdapter
 from nonebot.adapters.onebot.v11 import Adapter as Onebot11Adapter
+from nonebug import NONEBOT_INIT_KWARGS, App
 
 superuser = 7685
 exe_code_user = 114514

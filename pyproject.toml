@@ -59,7 +59,7 @@ extend-exclude = '''
 profile = "black"
 line_length = 88
 skip_gitignore = true
-src_paths = ["nonebot_plugin_exe_code"]
+src_paths = ["nonebot_plugin_exe_code", "tests"]
 extra_standard_library = ["typing_extensions"]
 
 [tool.ruff]

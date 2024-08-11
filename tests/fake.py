@@ -25,6 +25,7 @@ fake_img_bytes = (
     b"\x00\x00\x00\x04\x00\x01\xf6\x178U\x00\x00\x00\x00IEND\xaeB`\x82"
 )
 
+
 def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
     from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
     from nonebot.adapters.onebot.v11.event import Sender

@@ -5,7 +5,6 @@ from nonebug import App
 from tests.conftest import exe_code_group
 from tests.fake import fake_group_exe_code, fake_user_id
 
-
 code_test_api_message = """\
 await feedback(1)
 await user(qid).send(MessageSegment.text("2"))
