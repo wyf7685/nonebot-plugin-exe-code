@@ -5,8 +5,8 @@ from nonebug import App
 from tests.conftest import exe_code_group, exe_code_user, superuser
 from tests.fake import (
     fake_group_exe_code,
-    fake_private_exe_code,
     fake_group_id,
+    fake_private_exe_code,
     fake_user_id,
 )
 

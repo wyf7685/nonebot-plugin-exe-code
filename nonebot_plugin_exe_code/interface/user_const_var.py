@@ -10,6 +10,7 @@ from ..constant import T_ConstVar, T_Context, T_OptConstVar
 default_context: T_Context = {}
 DATA_DIR = get_data_dir("nonebot_plugin_exe_code")
 
+
 def context_var(item: Any, name: str | None = None) -> None:
     key = name or getattr(item, "__name__", None)
     assert key is not None, f"Name for {item!r} cannot be empty"
