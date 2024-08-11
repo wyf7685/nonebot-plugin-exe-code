@@ -215,6 +215,11 @@ await receipt.recall()  # 撤回消息
 <details>
     <summary>更新日志</summary>
 
+- 2024.08.09 v1.0.8
+
+  - 使用 `Permission` 判断执行权限 (原为 `Rule`)
+  - 降低 [`nonebot/plugin-localstore`](https://github.com/nonebot/plugin-localstore) 版本需求为 `>=0.6.0`
+
 - 2024.08.09 v1.0.7
 
   - 使用 [`nonebot/plugin-localstore`](https://github.com/nonebot/plugin-localstore) 存储插件数据
