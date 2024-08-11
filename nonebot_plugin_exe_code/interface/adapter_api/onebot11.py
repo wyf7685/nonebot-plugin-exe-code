@@ -16,7 +16,7 @@ from ..help_doc import descript, message_alia
 from ..utils import Result, debug_log, export
 from ._send_ark import SendArk
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
 
     class _ApiCall(Protocol):
         async def __call__(self, **kwargs: Any) -> Any: ...
@@ -35,9 +35,9 @@ with contextlib.suppress(ImportError):
     message_alia(Message, MessageSegment)
 
     async def create_ark_card(api: "API", ark: "MessageArk") -> MessageSegment:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
-    with contextlib.suppress(ImportError, RuntimeError):
+    with contextlib.suppress(ImportError, RuntimeError):  # pragma: no cover
         from nonebot import get_plugin_config
         from nonebot.adapters.qq import Bot as QQBot
         from nonebot.adapters.qq import C2CMessageCreateEvent
@@ -139,7 +139,7 @@ with contextlib.suppress(ImportError):
             return result
 
         def __getattr__(self, name: str) -> "_ApiCall":
-            if name.startswith("__") and name.endswith("__"):
+            if name.startswith("__") and name.endswith("__"):  # pragma: no cover
                 raise AttributeError(
                     f"'{self.__class__.__name__}' object has no attribute '{name}'"
                 )
@@ -220,6 +220,6 @@ with contextlib.suppress(ImportError):
             context["MessageSegment"] = MessageSegment
 
         @override
-        async def _send_ark(self, ark: "MessageArk") -> Any:
+        async def _send_ark(self, ark: "MessageArk") -> Any:  # pragma: no cover
             card = Message(await create_ark_card(self, ark))
             return await self._native_send(card)

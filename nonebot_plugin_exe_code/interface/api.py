@@ -211,7 +211,7 @@ class API(Interface):
 
         try:
             json.dumps([value])
-        except ValueError as e:
+        except ValueError as e:  # pragma: no cover
             raise TypeError("设置常量的类型必须是可被json序列化的对象") from e
 
         set_const(self.qid, name, value)

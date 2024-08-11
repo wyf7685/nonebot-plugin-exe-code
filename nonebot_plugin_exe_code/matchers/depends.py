@@ -16,7 +16,7 @@ from ..context import Context
 def _AllowExeCode() -> Permission:
 
     def check_console(bot: Bot) -> bool:  # pyright: ignore[reportRedeclaration]
-        return True
+        return True  # pragma: no cover
 
     with contextlib.suppress(ImportError):
         from nonebot.adapters.console import Bot as ConsoleBot
@@ -27,7 +27,7 @@ def _AllowExeCode() -> Permission:
     async def check(bot: Bot, session: EventSession) -> bool:
         # ConsoleBot 仅有标准输入, 跳过检查
         if check_console(bot):
-            return True
+            return True  # pragma: no cover
 
         # 对于 superuser 和 配置允许的用户, 在任意对话均可触发
         if (session.id1 or "") in config.user:
@@ -82,7 +82,7 @@ def _EventImage():
             if isinstance(reply, Message):
                 msg = await UniMessage.generate(message=reply)
                 return await event_image(msg)
-        Matcher.skip()
+        Matcher.skip()  # pragma: no cover
 
     return Depends(event_image)
 
@@ -92,7 +92,7 @@ def _EventReply():
     async def event_reply(event: Event, bot: Bot) -> Reply:
         if reply := await reply_fetch(event, bot):
             return reply
-        Matcher.skip()
+        Matcher.skip()  # pragma: no cover
 
     return Depends(event_reply)
 
@@ -100,10 +100,10 @@ def _EventReply():
 def _EventReplyMessage():
 
     async def event_reply_message(event: Event, reply: EventReply) -> Message:
-        if not (msg := reply.msg):
+        if not (msg := reply.msg):  # pragma: no cover
             Matcher.skip()
 
-        if not isinstance(msg, Message):
+        if not isinstance(msg, Message):  # pragma: no cover
             msg = type(event.get_message())(msg)
 
         return msg

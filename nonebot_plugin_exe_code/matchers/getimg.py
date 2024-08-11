@@ -23,9 +23,9 @@ async def handle_getimg(
 
     try:
         img_bytes = await image_fetch(event, bot, {}, image)
-        if not isinstance(img_bytes, bytes):
+        if not isinstance(img_bytes, bytes):  # pragma: no cover
             raise ValueError(f"获取图片数据类型错误: {type(img_bytes)!r}")
-    except Exception as err:
+    except Exception as err:  # pragma: no cover
         await UniMessage(f"保存图片时出错: {err}").finish()
 
     ctx.set_gurl(image)

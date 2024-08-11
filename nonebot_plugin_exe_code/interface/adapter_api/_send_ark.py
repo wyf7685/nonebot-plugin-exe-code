@@ -14,10 +14,10 @@ def build_ark(
     template_id: int,
     data: dict[str, str | list[dict[str, str]]],
 ) -> "MessageArk":
-    raise NotImplementedError
+    raise NotImplementedError  # pragma: no cover
 
 
-with contextlib.suppress(ImportError):
+with contextlib.suppress(ImportError):  # pragma: no cover
     from nonebot.adapters.qq.models import (
         MessageArk,
         MessageArkKv,
@@ -46,7 +46,7 @@ with contextlib.suppress(ImportError):
     # fmt: on
 
 
-class SendArk(Interface):
+class SendArk(Interface):  # pragma: no cover
     """
     `SendArk` Mixin
 
