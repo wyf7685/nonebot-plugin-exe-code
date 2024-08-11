@@ -20,6 +20,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
+[![codecov](https://codecov.io/gh/wyf7685/nonebot-plugin-exe-code/graph/badge.svg?token=5T85DTD4FG)](https://codecov.io/gh/wyf7685/nonebot-plugin-exe-code)
 [![pre-commit](https://results.pre-commit.ci/badge/github/wyf7685/nonebot-plugin-exe-code/master.svg)](https://results.pre-commit.ci/latest/github/wyf7685/nonebot-plugin-exe-code/master)
 [![pyright](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pyright.yml/badge.svg?branch=master&event=push)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pyright.yml)
 [![publish](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml)
@@ -32,7 +33,9 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 ## 📖 介绍
 
-本插件旨在允许开发者在聊天中执行带有上下文的 Python 代码，从而对 NoneBot 框架进行运行时侵入式修改。由于这种设计，插件具有极高的灵活性，但也伴随着高风险。
+本插件旨在允许开发者在聊天中执行带有上下文的 Python 代码，从而对 NoneBot 框架进行运行时侵入式修改。
+
+由于这种设计，插件具有极高的灵活性，但也伴随着高风险。
 
 > [!warning]
 >
