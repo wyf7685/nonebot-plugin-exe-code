@@ -33,15 +33,13 @@ async def app():
     # 加载插件
     nonebot.require("nonebot_plugin_exe_code")
 
-    from nonebot_plugin_exe_code.interface.user_const_var import _const_var_path
+    from nonebot_plugin_exe_code.interface.user_const_var import DATA_DIR
 
-    root = _const_var_path("_").parent
-    _const_var_path("_").unlink()
-    exist = [i.name for i in root.iterdir()]
+    exist = [i.name for i in DATA_DIR.iterdir()]
 
     yield App()
 
-    for fp in root.iterdir():
+    for fp in DATA_DIR.iterdir():
         if fp.name not in exist:
             fp.unlink()
 
