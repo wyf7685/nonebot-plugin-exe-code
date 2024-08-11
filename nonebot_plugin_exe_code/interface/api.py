@@ -253,7 +253,7 @@ class API(Interface):
             " - API说明文档 - 目录 - \n" + "\n".join(content),
             *description,
         ]
-        return await self.send_fwd(msgs)
+        return await self.feedback(msgs, fwd=True)
 
     @export
     @descript(
