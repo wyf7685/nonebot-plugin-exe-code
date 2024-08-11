@@ -3,10 +3,13 @@ from nonebot.adapters.onebot.v11 import Adapter, Bot
 from nonebug import App
 
 from tests.conftest import exe_code_group, exe_code_user, superuser
-from tests.fake import fake_group_exe_code, fake_private_exe_code
+from tests.fake import (
+    fake_group_exe_code,
+    fake_private_exe_code,
+    fake_group_id,
+    fake_user_id,
+)
 
-fake_user_id = 123
-fake_group_id = 456
 fake_code = "a = 1"
 
 
@@ -28,12 +31,13 @@ async def test_superuser(app: App):
             {"user_id": superuser, "sex": "unkown", "card": "", "nickname": ""},
         )
 
-        event = fake_group_exe_code(fake_group_id, superuser, fake_code)
+        group_id = fake_group_id()
+        event = fake_group_exe_code(group_id, superuser, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_api(
             "get_group_member_info",
-            {"group_id": fake_group_id, "user_id": superuser},
+            {"group_id": group_id, "user_id": superuser},
             {"user_id": superuser, "sex": "unkown", "card": "", "nickname": ""},
         )
 
@@ -56,12 +60,13 @@ async def test_exe_code_user(app: App):
             {"user_id": exe_code_user, "sex": "unkown", "card": "", "nickname": ""},
         )
 
-        event = fake_group_exe_code(fake_group_id, exe_code_user, fake_code)
+        group_id = fake_group_id()
+        event = fake_group_exe_code(group_id, exe_code_user, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_api(
             "get_group_member_info",
-            {"group_id": fake_group_id, "user_id": exe_code_user},
+            {"group_id": group_id, "user_id": exe_code_user},
             {"user_id": exe_code_user, "sex": "unkown", "card": "", "nickname": ""},
         )
 
@@ -75,13 +80,14 @@ async def test_exe_code_group(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        event = fake_group_exe_code(exe_code_group, fake_user_id, fake_code)
+        user_id = fake_user_id()
+        event = fake_group_exe_code(exe_code_group, user_id, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_api(
             "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": fake_user_id},
-            {"user_id": fake_user_id, "sex": "unkown", "card": "", "nickname": ""},
+            {"group_id": exe_code_group, "user_id": user_id},
+            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
         )
 
 
@@ -94,10 +100,12 @@ async def test_not_allow(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        event = fake_private_exe_code(fake_user_id, fake_code)
+        user_id = fake_user_id()
+        event = fake_private_exe_code(user_id, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_not_pass_permission(matcher)
 
-        event = fake_group_exe_code(fake_group_id, fake_user_id, fake_code)
+        group_id = fake_group_id()
+        event = fake_group_exe_code(group_id, user_id, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_not_pass_permission(matcher)
