@@ -5,9 +5,9 @@ from nonebot import on_startswith
 from nonebot.adapters import Bot, Event
 from nonebot_plugin_alconna.uniseg import UniMessage, image_fetch
 
-from .depends import EXECODE_ENABLED, CodeContext, EventImage
+from .depends import AllowExeCode, CodeContext, EventImage
 
-matcher = on_startswith("getimg", rule=EXECODE_ENABLED)
+matcher = on_startswith("getimg", permission=AllowExeCode)
 
 
 @matcher.handle()

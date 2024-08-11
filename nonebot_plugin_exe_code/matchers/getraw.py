@@ -1,9 +1,9 @@
 from nonebot import on_startswith
 from nonebot_plugin_alconna.uniseg import UniMessage
 
-from .depends import EXECODE_ENABLED, CodeContext, EventReplyMessage
+from .depends import AllowExeCode, CodeContext, EventReplyMessage
 
-matcher = on_startswith("getraw", rule=EXECODE_ENABLED)
+matcher = on_startswith("getraw", permission=AllowExeCode)
 
 
 @matcher.handle()

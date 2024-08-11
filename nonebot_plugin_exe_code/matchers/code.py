@@ -8,9 +8,9 @@ from nonebot_plugin_session import EventSession
 from nonebot_plugin_userinfo import EventUserInfo, UserInfo
 
 from ..context import Context
-from .depends import EXECODE_ENABLED, ExtractCode
+from .depends import AllowExeCode, ExtractCode
 
-matcher = on_startswith("code", rule=EXECODE_ENABLED)
+matcher = on_startswith("code", permission=AllowExeCode)
 
 
 @matcher.handle()

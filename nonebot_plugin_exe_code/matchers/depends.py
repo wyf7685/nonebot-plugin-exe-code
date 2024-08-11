@@ -1,12 +1,11 @@
 import contextlib
 from typing import Annotated
 
-from nonebot import get_driver
 from nonebot.adapters import Bot, Event, Message
 from nonebot.matcher import Matcher
 from nonebot.params import Depends
-from nonebot.rule import Rule
-from nonebot_plugin_alconna.uniseg import MsgTarget, UniMessage, UniMsg, reply_fetch
+from nonebot.permission import SUPERUSER, Permission
+from nonebot_plugin_alconna.uniseg import UniMessage, UniMsg, reply_fetch
 from nonebot_plugin_alconna.uniseg.segment import At, Image, Reply, Text
 from nonebot_plugin_session import EventSession
 
@@ -14,8 +13,7 @@ from ..config import config
 from ..context import Context
 
 
-def _ExeCodeEnabled() -> Rule:
-    global_config = get_driver().config
+def _AllowExeCode() -> Permission:
 
     def check_console(bot: Bot) -> bool:  # pyright: ignore[reportRedeclaration]
         return True
@@ -26,22 +24,22 @@ def _ExeCodeEnabled() -> Rule:
         def check_console(bot: Bot) -> bool:
             return isinstance(bot, ConsoleBot)
 
-    async def check(bot: Bot, session: EventSession, target: MsgTarget) -> bool:
+    async def check(bot: Bot, session: EventSession) -> bool:
         # ConsoleBot 仅有标准输入, 跳过检查
         if check_console(bot):
             return True
 
         # 对于 superuser 和 配置允许的用户, 在任意对话均可触发
-        if (session.id1 or "") in (global_config.superusers | config.user):
+        if (session.id1 or "") in config.user:
             return True
 
         # 当触发对话为群组时, 仅配置允许的群组可触发
-        if not target.private and target.id in config.group:
+        if session.id2 is not None and session.id2 in config.group:
             return True
 
         return False
 
-    return Rule(check)
+    return SUPERUSER | check
 
 
 def _CodeContext():
@@ -113,7 +111,7 @@ def _EventReplyMessage():
     return Depends(event_reply_message)
 
 
-EXECODE_ENABLED: Rule = _ExeCodeEnabled()
+AllowExeCode: Permission = _AllowExeCode()
 CodeContext = Annotated[Context, _CodeContext()]
 ExtractCode = Annotated[str, _ExtractCode()]
 EventImage = Annotated[Image, _EventImage()]

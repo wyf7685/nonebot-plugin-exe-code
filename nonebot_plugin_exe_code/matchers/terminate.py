@@ -7,13 +7,8 @@ from nonebot_plugin_alconna import Alconna, Args, Match, on_alconna
 from nonebot_plugin_alconna.uniseg import At, UniMessage
 
 from ..context import Context
-from .depends import EXECODE_ENABLED
 
-matcher = on_alconna(
-    Alconna("terminate", Args["target?", At]),
-    rule=EXECODE_ENABLED,
-    permission=SUPERUSER,
-)
+matcher = on_alconna(Alconna("terminate", Args["target?", At]), permission=SUPERUSER)
 
 
 def _target(event: Event, target: Match[At]) -> str:
