@@ -114,7 +114,7 @@ class API(Interface):
     async def send_prv_fwd(self, qid: int | str, msgs: T_ForwardMsg) -> Receipt:
         return await send_forward_message(
             session=self.session,
-            target=Target.group(str(qid)),
+            target=Target.user(str(qid)),
             msgs=msgs,
         )
 
