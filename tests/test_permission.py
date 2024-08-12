@@ -105,6 +105,7 @@ async def test_not_allow(app: App):
         ctx.receive_event(bot, event)
         ctx.should_not_pass_permission(matcher)
 
+        user_id = fake_user_id()
         group_id = fake_group_id()
         event = fake_group_exe_code(group_id, user_id, fake_code)
         ctx.receive_event(bot, event)

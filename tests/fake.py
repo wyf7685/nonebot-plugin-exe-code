@@ -1,7 +1,10 @@
+import contextlib
 import itertools
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
+    from nonebot.adapters.onebot.v11 import Bot as V11Bot
+    from nonebot.adapters.onebot.v11 import Event as V11Event
     from nonebot.adapters.onebot.v11 import GroupMessageEvent as GroupMessageEventV11
     from nonebot.adapters.onebot.v11 import Message
     from nonebot.adapters.onebot.v11 import (
@@ -98,3 +101,37 @@ def fake_private_exe_code(user_id: int, code: str):
         message=MessageSegment.text("code ") + code,
     )
     return event
+
+
+def fake_event_session(
+    bot: "V11Bot",
+    user_id: int | None = None,
+    group_id: int | None = None,
+):
+    from nonebot.adapters.onebot.v11 import Message
+    from nonebot_plugin_session import extract_session
+
+    user_id = user_id or fake_user_id()
+    message = Message()
+    if group_id is not None:
+        event = fake_group_message_event_v11(
+            user_id=user_id, group_id=group_id, message=message
+        )
+    else:
+        event = fake_private_message_event_v11(user_id=user_id, message=message)
+    session = extract_session(bot, event)
+    return event, session
+
+
+@contextlib.contextmanager
+def ensure_context(bot: "V11Bot", event: "V11Event"):
+    from nonebot.internal.matcher import current_bot, current_event
+
+    b = current_bot.set(bot)
+    e = current_event.set(event)
+
+    try:
+        yield
+    finally:
+        current_bot.reset(b)
+        current_event.reset(e)

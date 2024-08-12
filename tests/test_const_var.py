@@ -50,6 +50,4 @@ async def test_const_var(app: App):
         ctx.should_call_send(event, Message("1"))
 
     context = Context.get_context(str(user_id)).ctx
-    assert (
-        context.get("test_var") is None
-    ), "Got unexpected context variable: `test_var`"
+    assert context.get("test_var") is None
