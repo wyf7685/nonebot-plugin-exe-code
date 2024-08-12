@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:e76425950fa65294a9c2a63234f534b4ae48088095256a74f8a15b612481bcef"
+content_hash = "sha256:95c8782681b68100ffd545e767ff964270e7e940429cff5c6512035bd3039087"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -43,7 +43,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.8.23"
+version = "1.8.24"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 groups = ["default"]
@@ -53,8 +53,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.8.23-py3-none-any.whl", hash = "sha256:d4d8a427715408399e46530ec6bdefff4de72ff5d51183fa50ce5ea56a4e2a2a"},
-    {file = "arclet_alconna-1.8.23.tar.gz", hash = "sha256:f811caf60dc4231b70a6885fe1af35aa95ae93bad46566e9086b623f449c9a09"},
+    {file = "arclet_alconna-1.8.24-py3-none-any.whl", hash = "sha256:ca6e22ea6e2aba954dfc9c2fe47c4eb86ce975b5e2ee94ec13e1f24be51c6280"},
+    {file = "arclet_alconna-1.8.24.tar.gz", hash = "sha256:aed11334f7b1c2057e7590868a60ac0bbbfaba8e3816ec9e4d1ad236d77dca25"},
 ]
 
 [[package]]
@@ -675,7 +675,7 @@ files = [
 
 [[package]]
 name = "nonebot-plugin-alconna"
-version = "0.51.1"
+version = "0.51.2"
 requires_python = ">=3.9"
 summary = "Alconna Adapter for Nonebot"
 groups = ["default"]
@@ -689,8 +689,8 @@ dependencies = [
     "tarina>=0.5.5",
 ]
 files = [
-    {file = "nonebot_plugin_alconna-0.51.1-py3-none-any.whl", hash = "sha256:450a27afa9dcaedb6c82f649d57d42c4ca81596bf6accdf2e163f2dc9befc2c4"},
-    {file = "nonebot_plugin_alconna-0.51.1.tar.gz", hash = "sha256:aaec8206adc9892e284d7ad12c8bb03b43586bbc145d439f0a40a055146ed176"},
+    {file = "nonebot_plugin_alconna-0.51.2-py3-none-any.whl", hash = "sha256:8e44846d5034623d3c490de3d97efe46edc4fa43c605ecbc6f480f6edfe6e701"},
+    {file = "nonebot_plugin_alconna-0.51.2.tar.gz", hash = "sha256:81bda540b2998fde54020275634059fddbef2f71d5bc1fe83fff1d6069b054de"},
 ]
 
 [[package]]
@@ -1518,11 +1518,11 @@ files = [
 
 [[package]]
 name = "zipp"
-version = "3.19.2"
+version = "3.20.0"
 requires_python = ">=3.8"
 summary = "Backport of pathlib-compatible object wrapper for zip files"
 groups = ["default", "dev"]
 files = [
-    {file = "zipp-3.19.2-py3-none-any.whl", hash = "sha256:f091755f667055f2d02b32c53771a7a6c8b47e1fdbc4b72a8b9072b3eef8015c"},
-    {file = "zipp-3.19.2.tar.gz", hash = "sha256:bf1dcf6450f873a13e952a29504887c89e6de7506209e5b1bcc3460135d4de19"},
+    {file = "zipp-3.20.0-py3-none-any.whl", hash = "sha256:58da6168be89f0be59beb194da1250516fdaa062ccebd30127ac65d30045e10d"},
+    {file = "zipp-3.20.0.tar.gz", hash = "sha256:0145e43d89664cfe1a2e533adc75adafed82fe2da404b4bbb6b026c0157bdb31"},
 ]
