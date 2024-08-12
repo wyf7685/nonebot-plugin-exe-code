@@ -7,7 +7,7 @@ from .help_doc import descript
 from .interface import Interface
 from .utils import debug_log
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .api import API
 
 
