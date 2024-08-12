@@ -1,14 +1,16 @@
 import contextlib
 import itertools
+from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
+    from nonebot.adapters.console import MessageEvent as ConsoleMessageEvent
     from nonebot.adapters.onebot.v11 import Bot as V11Bot
     from nonebot.adapters.onebot.v11 import Event as V11Event
-    from nonebot.adapters.onebot.v11 import GroupMessageEvent as GroupMessageEventV11
-    from nonebot.adapters.onebot.v11 import Message
+    from nonebot.adapters.onebot.v11 import GroupMessageEvent as V11GroupMessageEvent
+    from nonebot.adapters.onebot.v11 import Message as V11Message
     from nonebot.adapters.onebot.v11 import (
-        PrivateMessageEvent as PrivateMessageEventV11,
+        PrivateMessageEvent as V11PrivateMessageEvent,
     )
     from nonebot.adapters.qq import MessageCreateEvent as MessageCreateEvent
 
@@ -29,7 +31,7 @@ fake_img_bytes = (
 )
 
 
-def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
+def fake_group_message_event_v11(**field) -> "V11GroupMessageEvent":
     from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
     from nonebot.adapters.onebot.v11.event import Sender
     from pydantic import create_model
@@ -58,7 +60,7 @@ def fake_group_message_event_v11(**field) -> "GroupMessageEventV11":
     return FakeEvent(**field)
 
 
-def fake_private_message_event_v11(**field) -> "PrivateMessageEventV11":
+def fake_private_message_event_v11(**field) -> "V11PrivateMessageEvent":
     from nonebot.adapters.onebot.v11 import Message, PrivateMessageEvent
     from nonebot.adapters.onebot.v11.event import Sender
     from pydantic import create_model
@@ -82,7 +84,25 @@ def fake_private_message_event_v11(**field) -> "PrivateMessageEventV11":
     return FakeEvent(**field)
 
 
-def fake_group_exe_code(group_id: int, user_id: int, code: "str | Message"):
+def fake_console_message_event(**field) -> "ConsoleMessageEvent":
+    from nonebot.adapters.console import Message, MessageEvent, User
+    from pydantic import create_model
+
+    _Fake = create_model("_Fake", __base__=MessageEvent)
+
+    class FakeEvent(_Fake):
+        time: datetime = datetime.now()
+        self_id: str = "pytest"
+        post_type: Literal["message"] = "message"
+        user: User = User("nonebug")
+        message: Message = Message()
+
+    return FakeEvent(**field)
+
+
+def fake_group_exe_code(
+    group_id: int, user_id: int, code: "str | V11Message"
+) -> "V11GroupMessageEvent":
     from nonebot.adapters.onebot.v11 import MessageSegment
 
     event = fake_group_message_event_v11(
@@ -93,7 +113,7 @@ def fake_group_exe_code(group_id: int, user_id: int, code: "str | Message"):
     return event
 
 
-def fake_private_exe_code(user_id: int, code: str):
+def fake_private_exe_code(user_id: int, code: str) -> "V11PrivateMessageEvent":
     from nonebot.adapters.onebot.v11 import MessageSegment
 
     event = fake_private_message_event_v11(
