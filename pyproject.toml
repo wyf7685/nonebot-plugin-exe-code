@@ -47,6 +47,7 @@ dev = [
 [tool.pdm.scripts]
 test = "coverage run --source nonebot_plugin_exe_code -m pytest tests --disable-warnings"
 report = { composite = ["coverage xml", "coverage html"] }
+lint = { composite = ["isort .", "black .", "pyright .", "ruff check ."] }
 
 [tool.black]
 line-length = 88
