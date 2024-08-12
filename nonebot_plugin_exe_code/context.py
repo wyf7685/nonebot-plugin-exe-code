@@ -102,6 +102,7 @@ class Context:
 
     @classmethod
     async def execute(cls, bot: Bot, session: Session, code: str) -> None:
+        uin = cls._session2uin(session)
         self = cls.get_context(session)
         API = get_api_class(bot)
 
@@ -109,10 +110,11 @@ class Context:
         async with self._lock():
             API(bot, session).export_to(self.ctx)
             executor = self._solve_code(code)
+            logger.debug(f"为用户 <y>{uin}</y> 创建 executor: {executor}")
             self.task = get_event_loop().create_task(executor())
             result, self.task = await self.task, None
 
-            if buf := Buffer.get(self._session2uin(session)).read().rstrip("\n"):
+            if buf := Buffer.get(uin).read().rstrip("\n"):
                 await UniMessage.text(buf).send()
             if result is not None:
                 await UniMessage.text(repr(result)).send()
