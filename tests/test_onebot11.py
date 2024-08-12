@@ -9,134 +9,103 @@ from nonebot.adapters.onebot.v11 import (
 from nonebug import App
 
 from tests.conftest import exe_code_group
-from tests.fake import fake_group_exe_code, fake_user_id
+from tests.fake import ensure_context, fake_v11_event_session
 
-code_test_ob11_img_summary = """await api.img_summary("test")"""
+code_test_ob11_img_summary = """\
+await api.img_summary("test")
+"""
 
 
 @pytest.mark.asyncio()
 async def test_ob11_img_summary(app: App):
     from nonebot_plugin_exe_code.context import Context
-    from nonebot_plugin_exe_code.matchers.code import matcher
 
     url = "http://localhost:8080/image.png"
     expected = Message(MessageSegment.image(url))
     expected[0].data["summary"] = "test"
 
-    async with app.test_matcher(matcher) as ctx:
+    async with app.test_api() as ctx:
         adapter = ctx.create_adapter(base=Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        user_id = fake_user_id()
-        Context.get_context(str(user_id)).set_value("gurl", url)
-        event = fake_group_exe_code(
-            exe_code_group,
-            user_id,
-            code_test_ob11_img_summary,
-        )
-        ctx.receive_event(bot, event)
-        ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        with ensure_context(bot, event), pytest.raises(ValueError, match="无效 url"):
+            await Context.execute(bot, session, code_test_ob11_img_summary)
+        Context.get_context(session).set_value("gurl", url)
         ctx.should_call_send(event, expected)
+        with ensure_context(bot, event):
+            await Context.execute(bot, session, code_test_ob11_img_summary)
 
 
-code_test_ob11_recall = """await recall(1)"""
+code_test_ob11_recall = """\
+await recall(1)
+"""
 
 
 @pytest.mark.asyncio()
 async def test_ob11_recall(app: App):
-    from nonebot_plugin_exe_code.matchers.code import matcher
+    from nonebot_plugin_exe_code.context import Context
 
-    async with app.test_matcher(matcher) as ctx:
+    async with app.test_api() as ctx:
         adapter = ctx.create_adapter(base=Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        user_id = fake_user_id()
-        event = fake_group_exe_code(
-            exe_code_group,
-            user_id,
-            code_test_ob11_recall,
-        )
-        ctx.receive_event(bot, event)
-        ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("delete_msg", {"message_id": 1}, {})
+        with ensure_context(bot, event):
+            await Context.execute(bot, session, code_test_ob11_recall)
 
 
-code_test_ob11_get_msg = """print(await get_msg(1))"""
+code_test_ob11_get_msg = """\
+print(await get_msg(1))
+"""
 
 
 @pytest.mark.asyncio()
 async def test_ob11_get_msg(app: App):
-    from nonebot_plugin_exe_code.matchers.code import matcher
+    from nonebot_plugin_exe_code.context import Context
 
-    async with app.test_matcher(matcher) as ctx:
+    async with app.test_api() as ctx:
         adapter = ctx.create_adapter(base=Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        user_id = fake_user_id()
-        event = fake_group_exe_code(
-            exe_code_group,
-            user_id,
-            code_test_ob11_get_msg,
-        )
-        ctx.receive_event(bot, event)
-        ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api(
             "get_msg",
             {"message_id": 1},
             {"raw_message": "123"},
         )
         ctx.should_call_send(event, Message("123"))
+        with ensure_context(bot, event):
+            await Context.execute(bot, session, code_test_ob11_get_msg)
 
 
-code_test_ob11_get_fwd = """print((await get_fwd(1))[0])"""
+code_test_ob11_get_fwd = """\
+print((await get_fwd(1))[0])
+"""
 
 
 @pytest.mark.asyncio()
 async def test_ob11_get_fwd(app: App):
-    from nonebot_plugin_exe_code.matchers.code import matcher
+    from nonebot_plugin_exe_code.context import Context
 
-    async with app.test_matcher(matcher) as ctx:
+    async with app.test_api() as ctx:
         adapter = ctx.create_adapter(base=Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        user_id = fake_user_id()
-        event = fake_group_exe_code(
-            exe_code_group,
-            user_id,
-            code_test_ob11_get_fwd,
-        )
-        ctx.receive_event(bot, event)
-        ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api(
             "get_forward_msg",
             {"message_id": 1},
             {"messages": [{"raw_message": "123"}]},
         )
         ctx.should_call_send(event, Message("123"))
+        with ensure_context(bot, event):
+            await Context.execute(bot, session, code_test_ob11_get_fwd)
 
 
 code_test_ob11_exception_1 = """\
@@ -147,65 +116,38 @@ raise res.error
 
 @pytest.mark.asyncio()
 async def test_ob11_exception_1(app: App):
-    from nonebot_plugin_exe_code.matchers.code import matcher
+    from nonebot_plugin_exe_code.context import Context
 
-    async with app.test_matcher(matcher) as ctx:
+    async with app.test_api() as ctx:
         adapter = ctx.create_adapter(base=Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        user_id = fake_user_id()
-        event = fake_group_exe_code(
-            exe_code_group,
-            user_id,
-            code_test_ob11_exception_1,
-        )
-        ctx.receive_event(bot, event)
-        ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
-        ctx.should_call_api(
-            "not_an_action",
-            {"arg": 123},
-            exception=ActionFailed(),
-        )
-        ctx.should_call_send(event, Message("执行失败: ActionFailed()"))
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        ctx.should_call_api("not_an_action", {"arg": 123}, exception=ActionFailed())
+        with ensure_context(bot, event), pytest.raises(ActionFailed):
+            await Context.execute(bot, session, code_test_ob11_exception_1)
 
 
-code_test_ob11_exception_2 = """print(await api.not_an_action(arg=123))"""
+code_test_ob11_exception_2 = """\
+print(await api.not_an_action(arg=123))
+"""
 
 
 @pytest.mark.asyncio()
 async def test_ob11_exception_2(app: App):
-    from nonebot_plugin_exe_code.matchers.code import matcher
+    from nonebot_plugin_exe_code.context import Context
 
-    async with app.test_matcher(matcher) as ctx:
+    async with app.test_api() as ctx:
         adapter = ctx.create_adapter(base=Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        user_id = fake_user_id()
-        event = fake_group_exe_code(
-            exe_code_group,
-            user_id,
-            code_test_ob11_exception_2,
-        )
-        ctx.receive_event(bot, event)
-        ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
-        ctx.should_call_api(
-            "not_an_action",
-            {"arg": 123},
-            exception=Exception(),
-        )
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        ctx.should_call_api("not_an_action", {"arg": 123}, exception=Exception())
         ctx.should_call_send(event, Message("<Result error=Exception()>"))
+        with ensure_context(bot, event):
+            await Context.execute(bot, session, code_test_ob11_exception_2)
 
 
 code_test_ob11_exception_3 = """\
@@ -218,29 +160,37 @@ except Exception as err:
 
 @pytest.mark.asyncio()
 async def test_ob11_exception_3(app: App):
-    from nonebot_plugin_exe_code.matchers.code import matcher
+    from nonebot_plugin_exe_code.context import Context
 
-    async with app.test_matcher(matcher) as ctx:
+    async with app.test_api() as ctx:
         adapter = ctx.create_adapter(base=Adapter)
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        user_id = fake_user_id()
-        event = fake_group_exe_code(
-            exe_code_group,
-            user_id,
-            code_test_ob11_exception_3,
-        )
-        ctx.receive_event(bot, event)
-        ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
-        ctx.should_call_api(
-            "not_an_action",
-            {"arg": 123},
-            exception=Exception(),
-        )
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        ctx.should_call_api("not_an_action", {"arg": 123}, exception=Exception())
         ctx.should_call_send(event, Message("RuntimeError('TEST')"))
+        with ensure_context(bot, event):
+            await Context.execute(bot, session, code_test_ob11_exception_3)
+
+
+code_test_ob11_call_api = """\
+res = await api.test_action(arg="ping")
+print(res[0])
+"""
+
+
+@pytest.mark.asyncio()
+async def test_ob11_call_api(app: App):
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        adapter = ctx.create_adapter(base=Adapter)
+        bot = ctx.create_bot(base=Bot, adapter=adapter)
+        bot.adapter.__class__.get_name = Adapter.get_name
+
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        ctx.should_call_api("test_action", {"arg": "ping"}, result=["pong"])
+        ctx.should_call_send(event, Message("pong"))
+        with ensure_context(bot, event):
+            await Context.execute(bot, session, code_test_ob11_call_api)

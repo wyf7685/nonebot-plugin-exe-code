@@ -5,7 +5,7 @@ from nonebot.adapters.onebot.v11.event import Reply
 from nonebug import App
 
 from tests.conftest import exe_code_group, superuser
-from tests.fake import fake_group_message_event_v11, fake_img_bytes
+from tests.fake import fake_img_bytes, fake_v11_group_message_event
 
 
 @pytest.mark.asyncio()
@@ -20,7 +20,7 @@ async def test_getraw(app: App):
 
         reply_msg = MessageSegment.reply(123) + MessageSegment.at(456) + "789"
         msg = MessageSegment.reply(1) + "getraw"
-        event = fake_group_message_event_v11(message=msg, user_id=superuser)
+        event = fake_v11_group_message_event(message=msg, user_id=superuser)
         expected = Message(MessageSegment.text(str(reply_msg)))
 
         ctx.should_call_api(
@@ -63,7 +63,7 @@ async def test_getmid(app: App):
 
         reply_msg = MessageSegment.reply(123) + MessageSegment.at(456) + "789"
         msg = MessageSegment.reply(1) + "getmid"
-        event = fake_group_message_event_v11(message=msg, user_id=superuser)
+        event = fake_v11_group_message_event(message=msg, user_id=superuser)
         expected = Message(str(1))
 
         ctx.should_call_api(
@@ -122,7 +122,7 @@ async def test_getimg(app: App):
                 msg.reduce()
             else:
                 varname = "img"
-            event = fake_group_message_event_v11(message=msg, user_id=superuser)
+            event = fake_v11_group_message_event(message=msg, user_id=superuser)
 
             ctx.should_call_api(
                 "get_msg",
@@ -182,7 +182,7 @@ async def test_terminate(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        event = fake_group_message_event_v11(
+        event = fake_v11_group_message_event(
             group_id=exe_code_group,
             user_id=superuser,
             message=Message("terminate"),

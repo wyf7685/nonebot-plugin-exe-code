@@ -3,7 +3,7 @@ from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
 from nonebug import App
 
 from tests.conftest import exe_code_group
-from tests.fake import fake_group_exe_code, fake_user_id
+from tests.fake import fake_user_id, fake_v11_group_exe_code
 
 code_test_api_message = """\
 await feedback(1)
@@ -24,7 +24,7 @@ async def test_api_message(app: App):
         bot.adapter.__class__.get_name = Adapter.get_name
 
         user_id = fake_user_id()
-        event = fake_group_exe_code(
+        event = fake_v11_group_exe_code(
             exe_code_group,
             user_id,
             code_test_api_message,
@@ -71,7 +71,7 @@ async def test_extract_code(app: App):
         bot.adapter.__class__.get_name = Adapter.get_name
 
         user_id = fake_user_id()
-        event = fake_group_exe_code(exe_code_group, user_id, code_test_extract_code)
+        event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_extract_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_api(
@@ -81,7 +81,7 @@ async def test_extract_code(app: App):
         )
         ctx.should_call_send(event, Message("111\n[url]"))
 
-        event = fake_group_exe_code(exe_code_group, user_id, code_test_extract_code)
+        event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_extract_code)
         event.message = MessageSegment.at(111) + event.message
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
@@ -101,7 +101,7 @@ async def test_return(app: App):
         bot.adapter.__class__.get_name = Adapter.get_name
 
         user_id = fake_user_id()
-        event = fake_group_exe_code(exe_code_group, user_id, code_test_return)
+        event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_return)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_api(
@@ -125,7 +125,7 @@ async def test_exception(app: App):
         bot.adapter.__class__.get_name = Adapter.get_name
 
         user_id = fake_user_id()
-        event = fake_group_exe_code(
+        event = fake_v11_group_exe_code(
             exe_code_group,
             user_id,
             code_test_exception,

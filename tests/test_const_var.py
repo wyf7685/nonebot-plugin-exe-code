@@ -3,7 +3,7 @@ from nonebot.adapters.onebot.v11 import Adapter, Bot, Message
 from nonebug import App
 
 from tests.conftest import exe_code_group
-from tests.fake import fake_group_exe_code, fake_user_id
+from tests.fake import fake_user_id, fake_v11_group_exe_code
 
 code_test_const_var_1 = """\
 api.set_const("test_var", {"a":[1, "2"]})
@@ -31,7 +31,7 @@ async def test_const_var(app: App):
         bot.adapter.__class__.get_name = Adapter.get_name
 
         user_id = fake_user_id()
-        event = fake_group_exe_code(
+        event = fake_v11_group_exe_code(
             exe_code_group,
             user_id,
             code_test_const_var_1,
@@ -44,7 +44,7 @@ async def test_const_var(app: App):
             {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
         )
 
-        event = fake_group_exe_code(
+        event = fake_v11_group_exe_code(
             exe_code_group,
             user_id,
             code_test_const_var_2,
@@ -67,7 +67,7 @@ async def test_invalid_const_var(app: App):
         bot.adapter.__class__.get_name = Adapter.get_name
 
         user_id = fake_user_id()
-        event = fake_group_exe_code(
+        event = fake_v11_group_exe_code(
             exe_code_group,
             user_id,
             code_test_invalid_const_var,

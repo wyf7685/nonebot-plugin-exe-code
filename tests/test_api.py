@@ -1,9 +1,14 @@
 import pytest
-from nonebot.adapters.onebot.v11 import Adapter, Bot, Message
+from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
 from nonebug import App
 
-from tests.conftest import superuser
-from tests.fake import ensure_context, fake_event_session, fake_group_id, fake_user_id
+from tests.conftest import exe_code_group, superuser
+from tests.fake import (
+    ensure_context,
+    fake_group_id,
+    fake_user_id,
+    fake_v11_event_session,
+)
 
 
 @pytest.mark.asyncio()
@@ -18,7 +23,7 @@ async def test_help(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        event, session = fake_event_session(bot)
+        event, session = fake_v11_event_session(bot)
         help_desc: FuncDescription = getattr(
             API.set_const, INTERFACE_METHOD_DESCRIPTION
         )
@@ -38,7 +43,7 @@ async def test_superuser(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        event, session = fake_event_session(bot, superuser)
+        event, session = fake_v11_event_session(bot, superuser)
         user_id, group_id = fake_user_id(), fake_group_id()
 
         ctx.should_call_send(event, Message("123"))
@@ -66,7 +71,7 @@ async def test_send_limit(app: App):
         bot = ctx.create_bot(base=Bot, adapter=adapter)
         bot.adapter.__class__.get_name = Adapter.get_name
 
-        event, session = fake_event_session(bot)
+        event, session = fake_v11_event_session(bot)
 
         for i in range(6):
             ctx.should_call_send(event, Message(str(i)))
@@ -91,44 +96,102 @@ async def test_is_group(app: App):
 
         code = "print(api.is_group())"
 
-        event, session = fake_event_session(bot)
+        event, session = fake_v11_event_session(bot)
         ctx.should_call_send(event, Message("False"))
         with ensure_context(bot, event):
             await Context.execute(bot, session, code)
 
-        event, session = fake_event_session(bot, group_id=fake_group_id())
+        event, session = fake_v11_event_session(bot, group_id=fake_group_id())
         ctx.should_call_send(event, Message("True"))
         with ensure_context(bot, event):
             await Context.execute(bot, session, code)
 
 
-# XXX: alc uniseg 在处理 ob11 合并转发时有 bug, 等修复后继续写测试
+@pytest.mark.asyncio()
+async def test_feedback_forward(app: App):
+    from nonebot_plugin_exe_code.context import Context
 
-# @pytest.mark.asyncio()
-# async def test_send_private_forward(app: App):
-#     from nonebot_plugin_exe_code.context import Context
+    async with app.test_api() as ctx:
+        adapter = ctx.create_adapter(base=Adapter)
+        bot = ctx.create_bot(base=Bot, adapter=adapter)
+        bot.adapter.__class__.get_name = Adapter.get_name
 
-#     async with app.test_api() as ctx:
-#         adapter = ctx.create_adapter(base=Adapter)
-#         bot = ctx.create_bot(base=Bot, adapter=adapter)
-#         bot.adapter.__class__.get_name = Adapter.get_name
+        event, session = fake_v11_event_session(bot)
+        expected = [
+            MessageSegment.node_custom(0, "forward", Message("1")),
+            MessageSegment.node_custom(0, "forward", Message("2")),
+        ]
+        ctx.should_call_api(
+            "send_private_forward_msg",
+            {
+                "user_id": event.user_id,
+                "messages": expected,
+            },
+            {},
+        )
+        with ensure_context(bot, event):
+            await Context.execute(
+                bot,
+                session,
+                'await feedback(["1", "2"], fwd=True)',
+            )
 
-#         event, session = fake_event_session(bot)
-#         expected = [
-#             MessageSegment.node_custom(0, "forward", Message("1")),
-#             MessageSegment.node_custom(0, "forward", Message("2")),
-#         ]
-#         ctx.should_call_api(
-#             "send_private_forward_msg",
-#             {
-#                 "user_id": event.user_id,
-#                 "messages": expected,
-#             },
-#             {},
-#         )
-#         with ensure_context(bot, event):
-#             await Context.execute(
-#                 bot,
-#                 session,
-#                 'await feedback(["1", "2"], fwd=True)',
-#             )
+
+@pytest.mark.asyncio()
+async def test_send_private_forward(app: App):
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        adapter = ctx.create_adapter(base=Adapter)
+        bot = ctx.create_bot(base=Bot, adapter=adapter)
+        bot.adapter.__class__.get_name = Adapter.get_name
+
+        event, session = fake_v11_event_session(bot)
+        expected = [
+            MessageSegment.node_custom(0, "forward", Message("1")),
+            MessageSegment.node_custom(0, "forward", Message("2")),
+        ]
+        ctx.should_call_api(
+            "send_private_forward_msg",
+            {
+                "user_id": event.user_id,
+                "messages": expected,
+            },
+            {},
+        )
+        with ensure_context(bot, event):
+            await Context.execute(
+                bot,
+                session,
+                'await user(qid).send_fwd(["1", "2"])',
+            )
+
+
+@pytest.mark.asyncio()
+async def test_send_group_forward(app: App):
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        adapter = ctx.create_adapter(base=Adapter)
+        bot = ctx.create_bot(base=Bot, adapter=adapter)
+        bot.adapter.__class__.get_name = Adapter.get_name
+
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        expected = [
+            MessageSegment.node_custom(0, "forward", Message("1")),
+            MessageSegment.node_custom(0, "forward", Message("2")),
+        ]
+        ctx.should_call_api(
+            "send_group_forward_msg",
+            {
+                "group_id": exe_code_group,
+                "messages": expected,
+            },
+            {},
+        )
+        with ensure_context(bot, event):
+            await Context.execute(
+                bot,
+                session,
+                'await group(gid).send_fwd(["1", "2"])',
+            )
