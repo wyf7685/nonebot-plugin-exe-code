@@ -27,7 +27,7 @@ from .utils import (
     as_unimsg,
     debug_log,
     export,
-    export_manager,
+    export_superuser,
     is_export_method,
     is_message_t,
     is_super_user,
@@ -227,7 +227,7 @@ class API(Interface):
         self,
         prompt: T_Message = "",
         timeout: float = 30,
-    ) -> UniMessage:
+    ) -> UniMessage:  # pragma: no cover
         prompt = await (await as_unimsg(prompt)).export() if prompt else ""
         if result := await waiter_prompt(prompt, timeout=timeout):
             return await UniMessage.generate(message=result)
@@ -287,7 +287,7 @@ class API(Interface):
         context["gid"] = self.gid
 
         if is_super_user(self.bot, self.qid):
-            export_manager(context)
+            export_superuser(context)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(user_id={self.qid})"

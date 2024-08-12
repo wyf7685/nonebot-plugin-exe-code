@@ -154,14 +154,17 @@ async def as_unimsg(message: T_Message) -> UniMessage:
     return message
 
 
-def _send_message(limit: int):
-    class ReachLimit(Exception):
-        def __init__(self, msg: str, count: int) -> None:
-            self.msg, self.count = msg, count
+class ReachLimit(Exception):
+    limit: int = 6
 
+    def __init__(self, msg: str) -> None:
+        self.msg = msg
+
+
+def _send_message():
     call_cnt: dict[int, int] = {}
 
-    def clean_cnt(key: int):
+    def clean_cnt(key: int):  # pragma: no cover
         if key in call_cnt:
             del call_cnt[key]
 
@@ -174,9 +177,9 @@ def _send_message(limit: int):
         if key not in call_cnt:
             call_cnt[key] = 1
             asyncio.get_event_loop().call_later(60, clean_cnt, key)
-        elif call_cnt[key] >= limit or call_cnt[key] < 0:
+        elif call_cnt[key] >= ReachLimit.limit or call_cnt[key] < 0:
             call_cnt[key] = -1
-            raise ReachLimit("消息发送触发次数限制", limit)
+            raise ReachLimit("消息发送触发次数限制")
         else:
             call_cnt[key] += 1
 
@@ -186,7 +189,7 @@ def _send_message(limit: int):
     return send_message
 
 
-send_message = _send_message(limit=6)
+send_message = _send_message()
 
 
 async def send_forward_message(
@@ -209,7 +212,7 @@ async def send_forward_message(
     )
 
 
-def _export_manager():
+def _export_superuser():
     def f(s: set[str], x: str):
         return (s.remove if x in s else s.add)(x) or x in s
 
@@ -233,4 +236,4 @@ def _export_manager():
     return export_manager
 
 
-export_manager = _export_manager()
+export_superuser = _export_superuser()
