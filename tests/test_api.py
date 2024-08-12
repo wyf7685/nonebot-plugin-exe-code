@@ -1,7 +1,6 @@
 import pytest
-from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
+from nonebot.adapters.onebot.v11 import Adapter, Bot, Message
 from nonebug import App
-import dataclasses
 
 from tests.conftest import superuser
 from tests.fake import ensure_context, fake_event_session, fake_group_id, fake_user_id
