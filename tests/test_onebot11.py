@@ -153,20 +153,60 @@ async def test_ob11_exception_3(app: App):
             await Context.execute(bot, session, code_test_ob11_exception_3)
 
 
-code_test_ob11_call_api = """\
+code_test_ob11_call_api_1 = """\
 res = await api.test_action(arg="ping")
+print(res)
 print(res[0])
 """
 
 
 @pytest.mark.asyncio()
-async def test_ob11_call_api(app: App):
+async def test_ob11_call_api_1(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
         bot = fake_bot(ctx, Adapter, Bot)
         event, session = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("test_action", {"arg": "ping"}, result=["pong"])
-        ctx.should_call_send(event, Message("pong"))
+        ctx.should_call_send(
+            event,
+            Message(MessageSegment.text("<Result data=['pong']>\npong")),
+        )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_call_api)
+            await Context.execute(bot, session, code_test_ob11_call_api_1)
+
+
+code_test_ob11_call_api_2 = """\
+res = await api.test_action(arg="ping")
+print(res["key"])
+"""
+
+
+@pytest.mark.asyncio()
+async def test_ob11_call_api_2(app: App):
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_bot(ctx, Adapter, Bot)
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        ctx.should_call_api("test_action", {"arg": "ping"}, result=["pong"])
+        with ensure_context(bot, event), pytest.raises(KeyError):
+            await Context.execute(bot, session, code_test_ob11_call_api_2)
+
+
+code_test_ob11_call_api_3 = """\
+res = await api.test_action(arg="ping")
+print(res["key"])
+"""
+
+
+@pytest.mark.asyncio()
+async def test_ob11_call_api_3(app: App):
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_bot(ctx, Adapter, Bot)
+        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        ctx.should_call_api("test_action", {"arg": "ping"}, result=None)
+        with ensure_context(bot, event), pytest.raises(TypeError):
+            await Context.execute(bot, session, code_test_ob11_call_api_3)

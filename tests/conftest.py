@@ -2,10 +2,9 @@ import os
 
 import nonebot
 import pytest
-
 from nonebot.adapters.console import Adapter as ConsoleAdapter
-from nonebot.adapters.qq import Adapter as QQAdapter
 from nonebot.adapters.onebot.v11 import Adapter as Onebot11Adapter
+from nonebot.adapters.qq import Adapter as QQAdapter
 from nonebug import NONEBOT_INIT_KWARGS, App
 
 superuser = 7685

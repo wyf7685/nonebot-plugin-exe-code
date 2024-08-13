@@ -151,11 +151,6 @@ async def test_getimg(app: App):
     getimg.image_fetch = _image_fetch
 
 
-# XXX: nonebug 似乎不支持同时处理多个 event
-#      所以无法测试与 Context.task 相关的功能
-# ref: nonebug.mixin.process:MatcherContext.run
-#      nonebot_plugin_exe_code.context:Context
-
 # code_test_terminate = """\
 # await feedback("test 1")
 # await sleep(1)

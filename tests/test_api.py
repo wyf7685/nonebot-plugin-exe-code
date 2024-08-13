@@ -13,7 +13,7 @@ from tests.fake import (
 
 
 @pytest.mark.asyncio()
-async def test_help(app: App):
+async def test_help_method(app: App):
     from nonebot_plugin_exe_code.constant import INTERFACE_METHOD_DESCRIPTION
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.api import API
@@ -29,6 +29,37 @@ async def test_help(app: App):
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
             await Context.execute(bot, session, "await help(api.set_const)")
+
+
+@pytest.mark.asyncio()
+async def test_help(app: App):
+    from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.interface.adapter_api.onebot11 import API
+
+    content, description = API._get_all_description()
+    expected = [
+        MessageSegment.node_custom(0, "forward", Message(MessageSegment.text(msg)))
+        for msg in [
+            "   ===== API说明 =====   ",
+            " - API说明文档 - 目录 - \n" + "\n".join(content),
+            *description,
+        ]
+    ]
+
+    async with app.test_api() as ctx:
+        bot = fake_bot(ctx, Adapter, Bot)
+        event, session = fake_v11_event_session(bot)
+
+        ctx.should_call_api(
+            "send_private_forward_msg",
+            {
+                "user_id": event.user_id,
+                "messages": expected,
+            },
+            {},
+        )
+        with ensure_context(bot, event):
+            await Context.execute(bot, session, "await help()")
 
 
 @pytest.mark.asyncio()
