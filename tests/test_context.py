@@ -4,7 +4,7 @@ import pytest
 from nonebot.adapters.onebot.v11 import Adapter, Bot, Message
 from nonebug import App
 
-from tests.fake import ensure_context, fake_user_id, fake_v11_event_session
+from tests.fake import ensure_context, fake_bot, fake_user_id, fake_v11_event_session
 
 
 @pytest.mark.asyncio()
@@ -12,10 +12,7 @@ async def test_lock(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        adapter = ctx.create_adapter(base=Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter)
-        bot.adapter.__class__.get_name = Adapter.get_name
-
+        bot = fake_bot(ctx, Adapter, Bot)
         event, session = fake_v11_event_session(bot)
 
         async def _test(delay: float, code: str):
@@ -37,10 +34,7 @@ async def test_cancel(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        adapter = ctx.create_adapter(base=Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter)
-        bot.adapter.__class__.get_name = Adapter.get_name
-
+        bot = fake_bot(ctx, Adapter, Bot)
         event, session = fake_v11_event_session(bot)
         result = False
 

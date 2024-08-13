@@ -5,7 +5,7 @@ from nonebot.adapters.onebot.v11.event import Reply
 from nonebug import App
 
 from tests.conftest import exe_code_group, superuser
-from tests.fake import fake_img_bytes, fake_v11_group_message_event
+from tests.fake import fake_bot, fake_img_bytes, fake_v11_group_message_event
 
 
 @pytest.mark.asyncio()
@@ -14,10 +14,7 @@ async def test_getraw(app: App):
     from nonebot_plugin_exe_code.matchers.getraw import matcher
 
     async with app.test_matcher(matcher) as ctx:
-        adapter = ctx.create_adapter(base=Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter)
-        bot.adapter.__class__.get_name = Adapter.get_name
-
+        bot = fake_bot(ctx, Adapter, Bot)
         reply_msg = MessageSegment.reply(123) + MessageSegment.at(456) + "789"
         msg = MessageSegment.reply(1) + "getraw"
         event = fake_v11_group_message_event(message=msg, user_id=superuser)
@@ -57,10 +54,7 @@ async def test_getmid(app: App):
     from nonebot_plugin_exe_code.matchers.getmid import matcher
 
     async with app.test_matcher(matcher) as ctx:
-        adapter = ctx.create_adapter(base=Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter)
-        bot.adapter.__class__.get_name = Adapter.get_name
-
+        bot = fake_bot(ctx, Adapter, Bot)
         reply_msg = MessageSegment.reply(123) + MessageSegment.at(456) + "789"
         msg = MessageSegment.reply(1) + "getmid"
         event = fake_v11_group_message_event(message=msg, user_id=superuser)
@@ -111,10 +105,7 @@ async def test_getimg(app: App):
 
     async def _test(varname: str | None = None):
         async with app.test_matcher(matcher) as ctx:
-            adapter = ctx.create_adapter(base=Adapter)
-            bot = ctx.create_bot(base=Bot, adapter=adapter)
-            bot.adapter.__class__.get_name = Adapter.get_name
-
+            bot = fake_bot(ctx, Adapter, Bot)
             reply_msg = "some" + MessageSegment.image(file=fake_img_bytes) + "text"
             msg = MessageSegment.reply(1) + "getimg"
             if varname is not None:
@@ -178,10 +169,7 @@ async def test_terminate(app: App):
     from nonebot_plugin_exe_code.matchers.terminate import matcher as m_terminate
 
     async with app.test_matcher([m_code, m_terminate]) as ctx:
-        adapter = ctx.create_adapter(base=Adapter)
-        bot = ctx.create_bot(base=Bot, adapter=adapter)
-        bot.adapter.__class__.get_name = Adapter.get_name
-
+        bot = fake_bot(ctx, Adapter, Bot)
         event = fake_v11_group_message_event(
             group_id=exe_code_group,
             user_id=superuser,

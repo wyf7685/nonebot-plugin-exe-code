@@ -1,37 +1,51 @@
 import contextlib
 import itertools
+from collections.abc import Callable, Generator
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
+
+from nonebug.mixin.call_api import ApiContext
+from nonebug.mixin.process import MatcherContext
 
 if TYPE_CHECKING:
-    from nonebot.adapters import Bot, Event
-    from nonebot.adapters.console import MessageEvent as ConsoleMessageEvent
-    from nonebot.adapters.onebot.v11 import Bot as V11Bot
-    from nonebot.adapters.onebot.v11 import GroupMessageEvent as V11GroupMessageEvent
-    from nonebot.adapters.onebot.v11 import Message as V11Message
-    from nonebot.adapters.onebot.v11 import (
-        PrivateMessageEvent as V11PrivateMessageEvent,
-    )
-    from nonebot.adapters.qq import MessageCreateEvent as QQMessageCreateEvent
+    from nonebot.adapters import Adapter, Bot, Event, console, qq
+    from nonebot.adapters.onebot import v11
+    from nonebot_plugin_session import Session
 
 
-def _faker(gen: "itertools.count[int]"):
-    def faker():
+def _faker(start: int) -> Callable[[], int]:
+    gen = itertools.count(start)
+
+    def faker() -> int:
         return next(gen)
 
     return faker
 
 
-fake_user_id = _faker(itertools.count(100))
-fake_group_id = _faker(itertools.count(200))
+fake_user_id = _faker(1000)
+fake_group_id = _faker(2000)
 fake_img_bytes = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
     b"\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc```"
     b"\x00\x00\x00\x04\x00\x01\xf6\x178U\x00\x00\x00\x00IEND\xaeB`\x82"
 )
 
+B = TypeVar("B", bound="Bot")
 
-def fake_v11_group_message_event(**field) -> "V11GroupMessageEvent":
+
+def fake_bot(
+    ctx: ApiContext | MatcherContext,
+    adapter_base: type["Adapter"],
+    bot_base: type[B],
+    **kwargs,
+) -> B:
+    adapter = ctx.create_adapter(base=adapter_base)
+    adapter.__class__.get_name = lambda *_: adapter_base.get_name()
+    bot = ctx.create_bot(base=bot_base, adapter=adapter, **kwargs)
+    return bot
+
+
+def fake_v11_group_message_event(**field) -> "v11.GroupMessageEvent":
     from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
     from nonebot.adapters.onebot.v11.event import Sender
     from pydantic import create_model
@@ -60,7 +74,7 @@ def fake_v11_group_message_event(**field) -> "V11GroupMessageEvent":
     return FakeEvent(**field)
 
 
-def fake_v11_private_message_event(**field) -> "V11PrivateMessageEvent":
+def fake_v11_private_message_event(**field) -> "v11.PrivateMessageEvent":
     from nonebot.adapters.onebot.v11 import Message, PrivateMessageEvent
     from nonebot.adapters.onebot.v11.event import Sender
     from pydantic import create_model
@@ -84,7 +98,7 @@ def fake_v11_private_message_event(**field) -> "V11PrivateMessageEvent":
     return FakeEvent(**field)
 
 
-def fake_console_message_event(**field) -> "ConsoleMessageEvent":
+def fake_console_message_event(**field) -> "console.MessageEvent":
     from nonebot.adapters.console import Message, MessageEvent, User
     from pydantic import create_model
 
@@ -100,7 +114,7 @@ def fake_console_message_event(**field) -> "ConsoleMessageEvent":
     return FakeEvent(**field)
 
 
-def fake_qq_message_create_event(**field) -> "QQMessageCreateEvent":
+def fake_qq_message_create_event(**field) -> "qq.MessageCreateEvent":
     from nonebot.adapters.qq import MessageCreateEvent
     from nonebot.adapters.qq.models.common import (
         MessageArk,
@@ -136,8 +150,8 @@ def fake_qq_message_create_event(**field) -> "QQMessageCreateEvent":
 
 
 def fake_v11_group_exe_code(
-    group_id: int, user_id: int, code: "str | V11Message"
-) -> "V11GroupMessageEvent":
+    group_id: int, user_id: int, code: "str | v11.Message"
+) -> "v11.GroupMessageEvent":
     from nonebot.adapters.onebot.v11 import MessageSegment
 
     event = fake_v11_group_message_event(
@@ -149,8 +163,8 @@ def fake_v11_group_exe_code(
 
 
 def fake_v11_private_exe_code(
-    user_id: int, code: "str | V11Message"
-) -> "V11PrivateMessageEvent":
+    user_id: int, code: "str | v11.Message"
+) -> "v11.PrivateMessageEvent":
     from nonebot.adapters.onebot.v11 import MessageSegment
 
     event = fake_v11_private_message_event(
@@ -162,7 +176,7 @@ def fake_v11_private_exe_code(
 
 def fake_qq_guild_exe_code(
     user_id: str, channel_id: str, guild_id: str, code: str
-) -> "QQMessageCreateEvent":
+) -> "qq.MessageCreateEvent":
     from nonebot.adapters.qq.models.guild import User
 
     event = fake_qq_message_create_event(
@@ -175,10 +189,10 @@ def fake_qq_guild_exe_code(
 
 
 def fake_v11_event_session(
-    bot: "V11Bot",
+    bot: "v11.Bot",
     user_id: int | None = None,
     group_id: int | None = None,
-):
+) -> tuple["v11.GroupMessageEvent | v11.PrivateMessageEvent", "Session"]:
     from nonebot.adapters.onebot.v11 import Message
     from nonebot_plugin_session import extract_session
 
@@ -195,7 +209,7 @@ def fake_v11_event_session(
 
 
 @contextlib.contextmanager
-def ensure_context(bot: "Bot", event: "Event"):
+def ensure_context(bot: "Bot", event: "Event") -> Generator[None, Any, None]:
     # ref: `nonebot.internal.matcher.matcher:Matcher.ensure_context`
     from nonebot.internal.matcher import current_bot, current_event
 
