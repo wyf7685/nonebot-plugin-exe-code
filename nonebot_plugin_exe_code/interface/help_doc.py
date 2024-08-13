@@ -1,5 +1,5 @@
 import inspect
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, ParamSpec, TypeVar
 
@@ -98,10 +98,10 @@ def descript(
                 assert name in parameters, f"{text} 未添加描述"
 
         ret = sig.return_annotation
-        if origin := getattr(ret, "__origin__", None):
-            args: tuple[type, ...] = getattr(ret, "__args__")
-            if origin is Awaitable:
-                ret = args[0]
+        # if origin := getattr(ret, "__origin__", None):
+        #     args: tuple[type, ...] = getattr(ret, "__args__")
+        #     if origin is Awaitable:
+        #         ret = args[0]
 
         text = f"方法 {call.__name__!r} 的返回值"
         assert ret is not EMPTY, f"{text} 未添加类型注释"
