@@ -224,7 +224,7 @@ class API(Interface):
         self,
         prompt: T_Message = "",
         timeout: float = 30,
-    ) -> UniMessage:  # pragma: no cover
+    ) -> UniMessage:
         prompt = await (await as_unimsg(prompt)).export() if prompt else ""
         if result := await waiter_prompt(prompt, timeout=timeout):
             return await UniMessage.generate(message=result)

@@ -18,7 +18,7 @@ with contextlib.suppress(ImportError):
     @register_api(Adapter)
     class API(SendArk, BaseAPI):
         @override
-        async def _send_ark(self, ark: MessageArk) -> Any:  # pragma: no cover
+        async def _send_ark(self, ark: MessageArk) -> Any:
             return await self._native_send(MessageSegment.ark(ark))
 
         @descript(
@@ -26,7 +26,7 @@ with contextlib.suppress(ImportError):
             parameters=dict(ark="通过build_ark构建的ark结构体"),
         )
         @debug_log
-        async def send_ark(self, ark: MessageArk) -> None:  # pragma: no cover
+        async def send_ark(self, ark: MessageArk) -> None:
             await self._send_ark(ark)
 
         @override

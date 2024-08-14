@@ -14,7 +14,7 @@ def build_ark(
     template_id: int,
     data: dict[str, str | list[dict[str, str]]],
 ) -> "MessageArk":
-    raise NotImplementedError  # pragma: no cover
+    raise NotImplementedError
 
 
 with contextlib.suppress(ImportError):
@@ -58,7 +58,7 @@ class SendArk(Interface):
     __inst_name__: ClassVar[str] = "api"
 
     async def _send_ark(self, ark: "MessageArk") -> Any:
-        raise NotImplementedError  # pragma: no cover
+        raise NotImplementedError
 
     @descript(
         description="构建 ark 结构体",

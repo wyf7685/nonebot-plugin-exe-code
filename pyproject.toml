@@ -100,6 +100,18 @@ disableBytesTypePromotions = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
+# https://github.com/he0119/nonebot-plugin-wordcloud/blob/5fa48dc5/pyproject.toml#L104-L117
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@overload",
+    "except ImportError:",
+]
+omit = ["*/compat.py", "*/migrations/*"]
+
 [tool.nonebot]
 adapters = [
   # { name = "Console", module_name = "nonebot.adapters.console" },

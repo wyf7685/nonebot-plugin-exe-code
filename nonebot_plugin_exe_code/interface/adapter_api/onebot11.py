@@ -16,7 +16,7 @@ from ..help_doc import descript, message_alia
 from ..utils import Result, debug_log, export
 from ._send_ark import SendArk
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
 
     class _ApiCall(Protocol):
         async def __call__(self, **kwargs: Any) -> Any: ...
@@ -35,9 +35,9 @@ with contextlib.suppress(ImportError):
     message_alia(Message, MessageSegment)
 
     async def create_ark_card(api: "API", ark: "MessageArk") -> MessageSegment:
-        raise NotImplementedError  # pragma: no cover
+        raise NotImplementedError
 
-    with contextlib.suppress(ImportError, RuntimeError):  # pragma: no cover
+    with contextlib.suppress(ImportError, RuntimeError):
         from nonebot import get_plugin_config
         from nonebot.adapters.qq import Bot as QQBot
         from nonebot.adapters.qq import C2CMessageCreateEvent
@@ -53,7 +53,7 @@ with contextlib.suppress(ImportError):
             exe_code: ExeCodeConfig = ExeCodeConfig()
 
         _conf = get_plugin_config(Config).exe_code
-        if not _conf.qbot_id:
+        if not _conf.qbot_id:  # pragma: no cover
             logger.warning("官方机器人QQ账号未配置，ark卡片将不可用")
             raise RuntimeError
 
@@ -65,11 +65,15 @@ with contextlib.suppress(ImportError):
             future: asyncio.Future[str] = loop.create_future()
 
             key = f"$ARK-{uuid.uuid4()}$"
+            logger.debug(f"生成 ark key: {key}")
 
             async def handle_qq(bot: QQBot, event: C2CMessageCreateEvent):
+                logger.debug("QQ Adapter 收到 ark key")
                 try:
                     await bot.send(event, QQMS.ark(ark))
+                    logger.debug("QQ Adapter 已发送 ark 消息成功")
                 except Exception as err:
+                    logger.debug(f"QQ Adapter 发送 ark 消息失败: {err!r}")
                     if not future.done():
                         future.set_exception(err)
 
@@ -77,9 +81,12 @@ with contextlib.suppress(ImportError):
                 return event.user_id == _conf.qbot_id and len(event.message) == 1
 
             async def handle_ob(event: PrivateMessageEvent):
-                card_json = event.message.include("json")[0].data["data"]
+                seg = event.message.include("json")[0]
+                logger.debug("OneBot V11 Adapter 收到 ark 卡片")
+                card_json = seg.data["data"]
                 if not future.done():
                     future.set_result(card_json)
+                    logger.debug(f"OneBot V11 Adapter 设置 future 结果: {card_json}")
 
             expire = timedelta(seconds=_conf.qbot_timeout)
             matchers = {
@@ -87,7 +94,7 @@ with contextlib.suppress(ImportError):
                 on_message(rule, handlers=[handle_ob], temp=True, expire_time=expire),
             }
 
-            def cleanup() -> None:
+            def cleanup() -> None:  # pragma: no cover
                 for matcher in matchers:
                     with contextlib.suppress(ValueError):
                         matcher.destroy()
@@ -97,7 +104,9 @@ with contextlib.suppress(ImportError):
 
             await api.send_prv(_conf.qbot_id, key)
             loop.call_later(_conf.qbot_timeout, cleanup)
-            return MessageSegment.json(await future)
+            card_json = await future
+            logger.debug("API 调用结束, 获得 card_json")
+            return MessageSegment.json(card_json)
 
     @register_api(Adapter)
     class API(SendArk, BaseAPI):
@@ -139,7 +148,7 @@ with contextlib.suppress(ImportError):
             return result
 
         def __getattr__(self, name: str) -> "_ApiCall":
-            if name.startswith("__") and name.endswith("__"):  # pragma: no cover
+            if name.startswith("__") and name.endswith("__"):
                 raise AttributeError(
                     f"'{self.__class__.__name__}' object has no attribute '{name}'"
                 )
@@ -220,6 +229,6 @@ with contextlib.suppress(ImportError):
             context["MessageSegment"] = MessageSegment
 
         @override
-        async def _send_ark(self, ark: "MessageArk") -> Any:  # pragma: no cover
+        async def _send_ark(self, ark: "MessageArk") -> Any:
             card = Message(await create_ark_card(self, ark))
             return await self._native_send(card)

@@ -15,8 +15,8 @@ from ..context import Context
 
 def _AllowExeCode() -> Permission:
 
-    def check_console(bot: Bot) -> bool:  # pyright: ignore[reportRedeclaration]
-        return True  # pragma: no cover
+    def check_console(bot: Bot) -> bool:  # pragma: no cover
+        return True
 
     with contextlib.suppress(ImportError):
         from nonebot.adapters.console import Bot as ConsoleBot
@@ -82,7 +82,7 @@ def _EventImage():
             if isinstance(reply, Message):
                 msg = await UniMessage.generate(message=reply)
                 return await event_image(msg)
-        Matcher.skip()  # pragma: no cover
+        Matcher.skip()
 
     return Depends(event_image)
 
@@ -92,7 +92,7 @@ def _EventReply():
     async def event_reply(event: Event, bot: Bot) -> Reply:
         if reply := await reply_fetch(event, bot):
             return reply
-        Matcher.skip()  # pragma: no cover
+        Matcher.skip()
 
     return Depends(event_reply)
 
@@ -100,10 +100,10 @@ def _EventReply():
 def _EventReplyMessage():
 
     async def event_reply_message(event: Event, reply: EventReply) -> Message:
-        if not (msg := reply.msg):  # pragma: no cover
+        if not (msg := reply.msg):
             Matcher.skip()
 
-        if not isinstance(msg, Message):  # pragma: no cover
+        if not isinstance(msg, Message):
             msg = type(event.get_message())(msg)
 
         return msg
