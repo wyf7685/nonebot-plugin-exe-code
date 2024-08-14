@@ -1,13 +1,13 @@
 import pytest
-from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
+from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebug import App
 
 from tests.conftest import exe_code_group, superuser
 from tests.fake import (
     ensure_context,
-    fake_bot,
     fake_group_id,
     fake_user_id,
+    fake_v11_bot,
     fake_v11_event_session,
 )
 
@@ -20,7 +20,7 @@ async def test_help_method(app: App):
     from nonebot_plugin_exe_code.interface.help_doc import FuncDescription
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot)
         help_desc: FuncDescription = getattr(
             API.set_const, INTERFACE_METHOD_DESCRIPTION
@@ -47,7 +47,7 @@ async def test_help(app: App):
     ]
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot)
 
         ctx.should_call_api(
@@ -68,7 +68,7 @@ async def test_superuser(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot, superuser)
         user_id, group_id = fake_user_id(), fake_group_id()
 
@@ -93,7 +93,7 @@ async def test_send_limit(app: App):
     from nonebot_plugin_exe_code.interface.utils import ReachLimit
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot)
 
         for i in range(6):
@@ -113,7 +113,7 @@ async def test_is_group(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         code = "print(api.is_group())"
 
         event, session = fake_v11_event_session(bot)
@@ -132,7 +132,7 @@ async def test_feedback_forward(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot)
         expected = [
             MessageSegment.node_custom(0, "forward", Message("1")),
@@ -159,7 +159,7 @@ async def test_send_private_forward(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot)
         expected = [
             MessageSegment.node_custom(0, "forward", Message("1")),
@@ -186,7 +186,7 @@ async def test_send_group_forward(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot, group_id=exe_code_group)
         expected = [
             MessageSegment.node_custom(0, "forward", Message("1")),

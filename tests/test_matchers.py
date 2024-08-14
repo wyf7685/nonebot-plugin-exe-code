@@ -1,7 +1,7 @@
 import asyncio
 
 import pytest
-from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
+from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebot.adapters.onebot.v11.event import Reply, Sender
 from nonebot.exception import FinishedException
 from nonebug import App
@@ -9,9 +9,9 @@ from nonebug import App
 from tests.conftest import exe_code_group, superuser
 from tests.fake import (
     ensure_context,
-    fake_bot,
     fake_img_bytes,
     fake_user_id,
+    fake_v11_bot,
     fake_v11_event_session,
     fake_v11_group_message_event,
 )
@@ -23,7 +23,7 @@ async def test_getraw(app: App):
     from nonebot_plugin_exe_code.matchers.getraw import matcher
 
     async with app.test_matcher(matcher) as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         reply_msg = MessageSegment.reply(123) + MessageSegment.at(456) + "789"
         event = fake_v11_group_message_event(
             message=Message(MessageSegment.text("getraw")),
@@ -65,7 +65,7 @@ async def test_getmid(app: App):
     from nonebot_plugin_exe_code.matchers.getmid import matcher
 
     async with app.test_matcher(matcher) as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         reply_msg = MessageSegment.reply(123) + MessageSegment.at(456) + "789"
         event = fake_v11_group_message_event(
             message=Message(MessageSegment.text("getmid")),
@@ -111,38 +111,38 @@ async def test_getimg(app: App):
 
     _image_fetch = getimg.image_fetch
 
-    async def image_fetch(*_):
+    async def image_fetch(*_) -> bytes:
         return fake_img_bytes
 
     getimg.image_fetch = image_fetch
 
     async def _test(varname: str | None = None):
-        async with app.test_matcher(matcher) as ctx:
-            bot = fake_bot(ctx, Adapter, Bot)
-            reply_msg = "some" + MessageSegment.image(file=fake_img_bytes) + "text"
-            msg = MessageSegment.reply(1) + "getimg"
-            if varname is not None:
-                msg += f" {varname}"
-                msg.reduce()
-            else:
-                varname = "img"
-            event = fake_v11_group_message_event(
-                message=msg,
-                user_id=superuser,
-                reply=Reply(
-                    time=1000000,
-                    message_type="test",
-                    message_id=1,
-                    real_id=1,
-                    sender=Sender(
-                        card="",
-                        nickname="test",
-                        role="member",
-                    ),
-                    message=reply_msg,
+        reply_msg = "some" + MessageSegment.image(file=fake_img_bytes) + "text"
+        msg = MessageSegment.reply(1) + "getimg"
+        if varname is not None:
+            msg += f" {varname}"
+            msg.reduce()
+        else:
+            varname = "img"
+        event = fake_v11_group_message_event(
+            message=msg,
+            user_id=superuser,
+            reply=Reply(
+                time=1000000,
+                message_type="test",
+                message_id=1,
+                real_id=1,
+                sender=Sender(
+                    card="",
+                    nickname="test",
+                    role="member",
                 ),
-            )
+                message=reply_msg,
+            ),
+        )
 
+        async with app.test_matcher(matcher) as ctx:
+            bot = fake_v11_bot(ctx)
             ctx.receive_event(bot, event)
             ctx.should_pass_permission(matcher)
             if varname.isidentifier():
@@ -167,6 +167,90 @@ async def test_getimg(app: App):
     getimg.image_fetch = _image_fetch
 
 
+@pytest.mark.asyncio()
+async def test_getimg_exception_1(app: App):
+    from nonebot_plugin_exe_code.matchers import getimg
+    from nonebot_plugin_exe_code.matchers.getimg import matcher
+
+    _image_fetch = getimg.image_fetch
+
+    async def image_fetch(*_) -> bytes:
+        raise RuntimeError("test")
+
+    getimg.image_fetch = image_fetch
+
+    reply_msg = "some" + MessageSegment.image(file=fake_img_bytes) + "text"
+    msg = MessageSegment.reply(1) + "getimg"
+    event = fake_v11_group_message_event(
+        message=msg,
+        user_id=superuser,
+        reply=Reply(
+            time=1000000,
+            message_type="test",
+            message_id=1,
+            real_id=1,
+            sender=Sender(
+                card="",
+                nickname="test",
+                role="member",
+            ),
+            message=reply_msg,
+        ),
+    )
+    expected = Message("保存图片时出错: test")
+
+    async with app.test_matcher(matcher) as ctx:
+        bot = fake_v11_bot(ctx)
+        ctx.receive_event(bot, event)
+        ctx.should_pass_permission(matcher)
+        ctx.should_call_send(event, expected)
+        ctx.should_finished(matcher)
+
+    getimg.image_fetch = _image_fetch
+
+
+@pytest.mark.asyncio()
+async def test_getimg_exception_2(app: App):
+    from nonebot_plugin_exe_code.matchers import getimg
+    from nonebot_plugin_exe_code.matchers.getimg import matcher
+
+    _image_fetch = getimg.image_fetch
+
+    async def image_fetch(*_) -> None:
+        return None
+
+    getimg.image_fetch = image_fetch
+
+    reply_msg = "some" + MessageSegment.image(file=fake_img_bytes) + "text"
+    msg = MessageSegment.reply(1) + "getimg"
+    event = fake_v11_group_message_event(
+        message=msg,
+        user_id=superuser,
+        reply=Reply(
+            time=1000000,
+            message_type="test",
+            message_id=1,
+            real_id=1,
+            sender=Sender(
+                card="",
+                nickname="test",
+                role="member",
+            ),
+            message=reply_msg,
+        ),
+    )
+    expected = Message("获取图片数据类型错误: <class 'NoneType'>")
+
+    async with app.test_matcher(matcher) as ctx:
+        bot = fake_v11_bot(ctx)
+        ctx.receive_event(bot, event)
+        ctx.should_pass_permission(matcher)
+        ctx.should_call_send(event, expected)
+        ctx.should_finished(matcher)
+
+    getimg.image_fetch = _image_fetch
+
+
 code_test_terminate = """\
 await feedback("test 1")
 await sleep(1)
@@ -180,7 +264,7 @@ async def test_terminate(app: App):
     from nonebot_plugin_exe_code.matchers.terminate import handle_terminate, matcher
 
     async with app.test_matcher(matcher) as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event = fake_v11_group_message_event(
             group_id=exe_code_group,
             user_id=superuser,
@@ -191,7 +275,7 @@ async def test_terminate(app: App):
         ctx.should_finished(matcher)
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
         event, session = fake_v11_event_session(bot, user_id)
         ctx.should_call_send(event, Message("test 1"))

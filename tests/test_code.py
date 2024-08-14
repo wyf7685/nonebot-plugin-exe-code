@@ -1,9 +1,9 @@
 import pytest
-from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
+from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebug import App
 
 from tests.conftest import exe_code_group
-from tests.fake import fake_bot, fake_user_id, fake_v11_group_exe_code
+from tests.fake import fake_user_id, fake_v11_bot, fake_v11_group_exe_code
 
 code_test_api_message = """\
 await feedback(1)
@@ -19,7 +19,7 @@ async def test_api_message(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
         event = fake_v11_group_exe_code(
             exe_code_group,
@@ -64,7 +64,7 @@ async def test_extract_code(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
         event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_extract_code)
         ctx.receive_event(bot, event)
@@ -91,7 +91,7 @@ async def test_return(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
         event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_return)
         ctx.receive_event(bot, event)
@@ -113,7 +113,7 @@ async def test_exception(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
         event = fake_v11_group_exe_code(
             exe_code_group,

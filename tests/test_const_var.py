@@ -1,8 +1,13 @@
 import pytest
-from nonebot.adapters.onebot.v11 import Adapter, Bot, Message
+from nonebot.adapters.onebot.v11 import Message
 from nonebug import App
 
-from tests.fake import ensure_context, fake_bot, fake_user_id, fake_v11_event_session
+from tests.fake import (
+    ensure_context,
+    fake_user_id,
+    fake_v11_bot,
+    fake_v11_event_session,
+)
 
 code_test_const_var_1 = """\
 api.set_const("test_var", {"a":[1, "2"]})
@@ -20,7 +25,7 @@ async def test_const_var(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
 
         event, session = fake_v11_event_session(bot, user_id)
@@ -45,7 +50,7 @@ async def test_invalid_const_var_name(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot)
         with (
             ensure_context(bot, event),
@@ -64,7 +69,7 @@ async def test_invalid_const_var_value(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        bot = fake_bot(ctx, Adapter, Bot)
+        bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot)
         with (
             ensure_context(bot, event),

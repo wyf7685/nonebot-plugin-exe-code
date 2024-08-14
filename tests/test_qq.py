@@ -1,6 +1,5 @@
 import pytest
-from nonebot.adapters.qq import Adapter, Bot, Message, MessageSegment
-from nonebot.adapters.qq.config import BotInfo
+from nonebot.adapters.qq import Message, MessageSegment
 from nonebot.adapters.qq.models import (
     MessageArk,
     MessageArkKv,
@@ -8,30 +7,15 @@ from nonebot.adapters.qq.models import (
     MessageArkObjKv,
 )
 from nonebug import App
-from nonebug.mixin.call_api import ApiContext
-from nonebug.mixin.process import MatcherContext
 
 from tests.conftest import exe_code_group
 from tests.fake import (
     ensure_context,
-    fake_bot,
+    fake_qq_bot,
     fake_qq_event_session,
     fake_qq_guild_exe_code,
     fake_user_id,
 )
-
-
-def fake_qq_bot(ctx: ApiContext | MatcherContext):
-    return fake_bot(
-        ctx,
-        Adapter,
-        Bot,
-        bot_info=BotInfo(
-            id="app_id",
-            token="app_token",
-            secret="app_secret",
-        ),
-    )
 
 
 @pytest.mark.asyncio()
@@ -64,6 +48,7 @@ ark = api.build_ark(
         ]
     }
 )
+await api.send_ark(ark)
 """
 expected_build_ark = MessageArk(
     template_id=7685,
@@ -86,12 +71,13 @@ expected_build_ark = MessageArk(
 
 
 @pytest.mark.asyncio()
-async def test_build_ark(app: App):
+async def test_build_send_ark(app: App):
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
         bot = fake_qq_bot(ctx)
         event, session = fake_qq_event_session(bot)
+        ctx.should_call_send(event, MessageSegment.ark(expected_build_ark))
         with ensure_context(bot, event):
             await Context.execute(bot, session, code_test_build_ark)
 

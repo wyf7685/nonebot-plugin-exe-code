@@ -47,6 +47,35 @@ def fake_bot(
     )
 
 
+def fake_v11_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "v11.Bot":
+    from nonebot.adapters.onebot.v11 import Adapter, Bot
+
+    return fake_bot(ctx, Adapter, Bot, **kwargs)
+
+
+def fake_console_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "console.Bot":
+    from nonebot.adapters.console import Adapter, Bot
+
+    return fake_bot(ctx, Adapter, Bot, **kwargs)
+
+
+def fake_qq_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "qq.Bot":
+    from nonebot.adapters.qq import Adapter, Bot
+    from nonebot.adapters.qq.config import BotInfo
+
+    return fake_bot(
+        ctx,
+        Adapter,
+        Bot,
+        bot_info=BotInfo(
+            id="app_id",
+            token="app_token",
+            secret="app_secret",
+        ),
+        **kwargs,
+    )
+
+
 def fake_v11_group_message_event(**field) -> "v11.GroupMessageEvent":
     from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
     from nonebot.adapters.onebot.v11.event import Sender
@@ -151,17 +180,35 @@ def fake_qq_message_create_event(**field) -> "qq.MessageCreateEvent":
     return FakeEvent(**field)
 
 
+def fake_qq_c2c_message_create_event(**field) -> "qq.C2CMessageCreateEvent":
+    from nonebot.adapters.qq import C2CMessageCreateEvent
+    from nonebot.adapters.qq.models.qq import Attachment, FriendAuthor
+    from pydantic import create_model
+
+    _Fake = create_model("_Fake", __base__=C2CMessageCreateEvent)
+
+    class FakeEvent(_Fake):
+        id: str = "id"
+        content: str = "test"
+        timestamp: str = "1000000"
+        attachments: list[Attachment] | None = None
+        _reply_seq: int = -1
+        author: FriendAuthor = FriendAuthor(id="id", user_openid="user_openid")
+        to_me: bool = True
+
+    return FakeEvent(**field)
+
+
 def fake_v11_group_exe_code(
     group_id: int, user_id: int, code: "str | v11.Message"
 ) -> "v11.GroupMessageEvent":
     from nonebot.adapters.onebot.v11 import MessageSegment
 
-    event = fake_v11_group_message_event(
+    return fake_v11_group_message_event(
         group_id=group_id,
         user_id=user_id,
         message=MessageSegment.text("code ") + code,
     )
-    return event
 
 
 def fake_v11_private_exe_code(
@@ -169,11 +216,10 @@ def fake_v11_private_exe_code(
 ) -> "v11.PrivateMessageEvent":
     from nonebot.adapters.onebot.v11 import MessageSegment
 
-    event = fake_v11_private_message_event(
+    return fake_v11_private_message_event(
         user_id=user_id,
         message=MessageSegment.text("code ") + code,
     )
-    return event
 
 
 def fake_qq_guild_exe_code(
@@ -181,13 +227,21 @@ def fake_qq_guild_exe_code(
 ) -> "qq.MessageCreateEvent":
     from nonebot.adapters.qq.models.guild import User
 
-    event = fake_qq_message_create_event(
+    return fake_qq_message_create_event(
         channel_id=channel_id,
         guild_id=guild_id,
         user=User(id=user_id),
         content=f"code {code}",
     )
-    return event
+
+
+def fake_qq_c2c_exe_code(user_id: str, code: str):
+    from nonebot.adapters.qq.models.qq import FriendAuthor
+
+    return fake_qq_c2c_message_create_event(
+        content=f"code {code}",
+        author=FriendAuthor(id=user_id, user_openid=user_id),
+    )
 
 
 def fake_v11_event_session(
@@ -218,19 +272,27 @@ def fake_v11_event_session(
 def fake_qq_event_session(
     bot: "qq.Bot",
     user_id: str | None = None,
-    channel_id: str = "test-channel",
-    guild_id: str = "test-guild",
-) -> tuple["qq.MessageCreateEvent", "Session"]:
+    channel_id: str | None = None,
+    guild_id: str | None = None,
+) -> tuple["qq.MessageCreateEvent | qq.C2CMessageCreateEvent", "Session"]:
     from nonebot.adapters.qq.models.guild import User
+    from nonebot.adapters.qq.models.qq import FriendAuthor
     from nonebot_plugin_session import extract_session
 
     user_id = user_id or str(fake_user_id())
-    event = fake_qq_message_create_event(
-        channel_id=channel_id,
-        guild_id=guild_id,
-        user=User(id=user_id),
-        content="",
-    )
+    if channel_id is not None and guild_id is not None:
+        event = fake_qq_message_create_event(
+            channel_id=channel_id,
+            guild_id=guild_id,
+            user=User(id=user_id),
+            content="",
+        )
+    else:
+        event = fake_qq_c2c_message_create_event(
+            content="",
+            author=FriendAuthor(id=user_id, user_openid=user_id),
+        )
+
     session = extract_session(bot, event)
     return event, session
 
