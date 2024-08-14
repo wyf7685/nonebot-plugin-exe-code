@@ -1,5 +1,4 @@
 import asyncio
-import json
 from typing import Any, ClassVar
 from typing_extensions import override
 
@@ -210,11 +209,9 @@ class API(Interface):
             return
 
         try:
-            json.dumps([value])
-        except ValueError as e:  # pragma: no cover
-            raise TypeError("设置常量的类型必须是可被json序列化的对象") from e
-
-        set_const(self.qid, name, value)
+            set_const(self.qid, name, value)
+        except TypeError as e:
+            raise TypeError("设置常量的值必须可被json序列化") from e
 
     @export
     @debug_log
