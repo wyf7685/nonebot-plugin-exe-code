@@ -146,6 +146,7 @@ async def test_ob11_exception_3(app: App):
         with ensure_context(bot, event):
             await Context.execute(bot, session, code_test_ob11_exception_3)
 
+
 code_test_ob11_exception_4 = """\
 print(api.__not_an_attr__)
 """
