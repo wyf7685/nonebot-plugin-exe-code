@@ -13,4 +13,4 @@ async def handle_getraw(
 ):
     ctx.set_gem(message)
     ctx.set_gurl(await UniMessage.generate(message=message))
-    await UniMessage.text(str(message)).send()
+    await UniMessage.text(str(message)).finish()

@@ -14,4 +14,4 @@ async def handle_getmid(
 ):
     ctx.set_gem(reply_msg)
     ctx.set_gurl(await UniMessage.generate(message=reply_msg))
-    await UniMessage.text(reply.id).send()
+    await UniMessage.text(reply.id).finish()

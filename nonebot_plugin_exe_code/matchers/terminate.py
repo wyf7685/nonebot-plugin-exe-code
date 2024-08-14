@@ -19,3 +19,4 @@ def _target(event: Event, target: Match[At]) -> str:
 async def handle_terminate(target: Annotated[str, Depends(_target)]):
     if Context.get_context(target).cancel():
         await UniMessage("中止").at(target).text("的执行任务").send()
+    await matcher.finish()
