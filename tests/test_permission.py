@@ -15,7 +15,7 @@ fake_code = "a = 1"
 
 
 @pytest.mark.asyncio()
-async def test_superuser(app: App):
+async def test_superuser_private(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -30,6 +30,13 @@ async def test_superuser(app: App):
         )
         ctx.should_finished(matcher)
 
+
+@pytest.mark.asyncio()
+async def test_superuser_group(app: App):
+    from nonebot_plugin_exe_code.matchers.code import matcher
+
+    async with app.test_matcher(matcher) as ctx:
+        bot = fake_bot(ctx, Adapter, Bot)
         group_id = fake_group_id()
         event = fake_v11_group_exe_code(group_id, superuser, fake_code)
         ctx.receive_event(bot, event)
@@ -43,7 +50,7 @@ async def test_superuser(app: App):
 
 
 @pytest.mark.asyncio()
-async def test_exe_code_user(app: App):
+async def test_exe_code_user_private(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -58,6 +65,13 @@ async def test_exe_code_user(app: App):
         )
         ctx.should_finished(matcher)
 
+
+@pytest.mark.asyncio()
+async def test_exe_code_user_group(app: App):
+    from nonebot_plugin_exe_code.matchers.code import matcher
+
+    async with app.test_matcher(matcher) as ctx:
+        bot = fake_bot(ctx, Adapter, Bot)
         group_id = fake_group_id()
         event = fake_v11_group_exe_code(group_id, exe_code_user, fake_code)
         ctx.receive_event(bot, event)
@@ -89,7 +103,7 @@ async def test_exe_code_group(app: App):
 
 
 @pytest.mark.asyncio()
-async def test_not_allow(app: App):
+async def test_not_allow_private(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -99,6 +113,13 @@ async def test_not_allow(app: App):
         ctx.receive_event(bot, event)
         ctx.should_not_pass_permission(matcher)
 
+
+@pytest.mark.asyncio()
+async def test_not_allow_group(app: App):
+    from nonebot_plugin_exe_code.matchers.code import matcher
+
+    async with app.test_matcher(matcher) as ctx:
+        bot = fake_bot(ctx, Adapter, Bot)
         user_id = fake_user_id()
         group_id = fake_group_id()
         event = fake_v11_group_exe_code(group_id, user_id, fake_code)
