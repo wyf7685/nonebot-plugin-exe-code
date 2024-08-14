@@ -17,7 +17,7 @@ def build_ark(
     raise NotImplementedError  # pragma: no cover
 
 
-with contextlib.suppress(ImportError):  # pragma: no cover
+with contextlib.suppress(ImportError):
     from nonebot.adapters.qq.models import (
         MessageArk,
         MessageArkKv,
@@ -46,7 +46,7 @@ with contextlib.suppress(ImportError):  # pragma: no cover
     # fmt: on
 
 
-class SendArk(Interface):  # pragma: no cover
+class SendArk(Interface):
     """
     `SendArk` Mixin
 
@@ -58,7 +58,7 @@ class SendArk(Interface):  # pragma: no cover
     __inst_name__: ClassVar[str] = "api"
 
     async def _send_ark(self, ark: "MessageArk") -> Any:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @descript(
         description="构建 ark 结构体",
@@ -69,8 +69,8 @@ class SendArk(Interface):  # pragma: no cover
         result="ark结构体",
     )
     @debug_log
-    @staticmethod
     def build_ark(
+        self,
         template_id: int,
         data: dict[str, str | list[dict[str, str]]],
     ) -> "MessageArk":
@@ -161,8 +161,8 @@ class SendArk(Interface):  # pragma: no cover
         ark = build_ark(
             template_id=37,
             data={
-                "#METATITLE": title,
-                "#METASUBTITLE": subtitle,
+                "#METATITLE#": title,
+                "#METASUBTITLE#": subtitle,
                 "#PROMPT#": prompt,
                 "#METACOVER#": img,
                 "#METAURL#": link,

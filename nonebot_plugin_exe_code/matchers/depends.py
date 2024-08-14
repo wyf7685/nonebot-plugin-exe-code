@@ -27,7 +27,7 @@ def _AllowExeCode() -> Permission:
     async def check(bot: Bot, session: EventSession) -> bool:
         # ConsoleBot 仅有标准输入, 跳过检查
         if check_console(bot):
-            return True  # pragma: no cover
+            return True
 
         # 对于 superuser 和 配置允许的用户, 在任意对话均可触发
         if (session.id1 or "") in config.user:
