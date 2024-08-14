@@ -28,6 +28,7 @@ async def test_superuser(app: App):
             {"user_id": superuser},
             {"user_id": superuser, "sex": "unkown", "card": "", "nickname": ""},
         )
+        ctx.should_finished(matcher)
 
         group_id = fake_group_id()
         event = fake_v11_group_exe_code(group_id, superuser, fake_code)
@@ -38,6 +39,7 @@ async def test_superuser(app: App):
             {"group_id": group_id, "user_id": superuser},
             {"user_id": superuser, "sex": "unkown", "card": "", "nickname": ""},
         )
+        ctx.should_finished(matcher)
 
 
 @pytest.mark.asyncio()
@@ -54,6 +56,7 @@ async def test_exe_code_user(app: App):
             {"user_id": exe_code_user},
             {"user_id": exe_code_user, "sex": "unkown", "card": "", "nickname": ""},
         )
+        ctx.should_finished(matcher)
 
         group_id = fake_group_id()
         event = fake_v11_group_exe_code(group_id, exe_code_user, fake_code)
@@ -64,6 +67,7 @@ async def test_exe_code_user(app: App):
             {"group_id": group_id, "user_id": exe_code_user},
             {"user_id": exe_code_user, "sex": "unkown", "card": "", "nickname": ""},
         )
+        ctx.should_finished(matcher)
 
 
 @pytest.mark.asyncio()
@@ -81,6 +85,7 @@ async def test_exe_code_group(app: App):
             {"group_id": exe_code_group, "user_id": user_id},
             {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
         )
+        ctx.should_finished(matcher)
 
 
 @pytest.mark.asyncio()

@@ -15,9 +15,9 @@ exe_code_group = 1919810
 def pytest_configure(config: pytest.Config):
     config.stash[NONEBOT_INIT_KWARGS] = {
         "driver": "~fastapi+~httpx+~websockets",
-        "log_level": "TRACE",
+        "log_level": "DEBUG",
         "host": "0.0.0.0",
-        "port": "8090",
+        "port": "8080",
         "superusers": [str(superuser)],
         "exe_code": {
             "user": [str(exe_code_user)],

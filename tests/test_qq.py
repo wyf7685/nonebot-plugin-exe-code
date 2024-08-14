@@ -50,6 +50,7 @@ async def test_qq(app: App):
         ctx.receive_event(bot, event)
         ctx.should_pass_permission()
         ctx.should_call_send(event, Message("123"))
+        ctx.should_finished(matcher)
 
 
 code_test_build_ark = """\

@@ -15,3 +15,4 @@ async def test_console(app: App):
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, Message("123"))
+        ctx.should_finished(matcher)

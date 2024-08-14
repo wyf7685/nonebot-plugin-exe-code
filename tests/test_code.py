@@ -51,6 +51,7 @@ async def test_api_message(app: App):
             },
         )
         ctx.should_call_send(event, Message("4"))
+        ctx.should_finished(matcher)
 
 
 code_test_extract_code = (
@@ -74,12 +75,12 @@ async def test_extract_code(app: App):
             {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
         )
         ctx.should_call_send(event, Message("111\n[url]"))
+        ctx.should_finished(matcher)
 
         event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_extract_code)
         event.message = MessageSegment.at(111) + event.message
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        # ctx.should_call_send(event, Message("111\n[url]"))
 
 
 code_test_return = """return '1234'"""
@@ -101,6 +102,7 @@ async def test_return(app: App):
             {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
         )
         ctx.should_call_send(event, Message("'1234'"))
+        ctx.should_finished(matcher)
 
 
 code_test_exception = """a = 1 / 0"""
@@ -128,3 +130,4 @@ async def test_exception(app: App):
         ctx.should_call_send(
             event, Message("执行失败: ZeroDivisionError('division by zero')")
         )
+        ctx.should_finished(matcher)

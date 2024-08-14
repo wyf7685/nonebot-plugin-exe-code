@@ -1,6 +1,7 @@
 import asyncio
 
 import pytest
+from nonebot.exception import FinishedException
 from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
 from nonebot.adapters.onebot.v11.event import Reply, Sender
 from nonebug import App
@@ -45,6 +46,7 @@ async def test_getraw(app: App):
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, expected)
+        ctx.should_finished(matcher)
 
     context = Context.get_context(str(superuser)).ctx
     gem = context.get("gem")
@@ -86,6 +88,7 @@ async def test_getmid(app: App):
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, expected)
+        ctx.should_finished(matcher)
 
     context = Context.get_context(str(superuser)).ctx
     gem = context.get("gem")
@@ -147,6 +150,7 @@ async def test_getimg(app: App):
             else:
                 expected = Message(f"{varname} 不是一个合法的 Python 标识符")
             ctx.should_call_send(event, expected)
+            ctx.should_finished(matcher)
 
         if varname.isidentifier():
             img = Context.get_context(event).ctx.get(varname)
@@ -184,6 +188,7 @@ async def test_terminate(app: App):
         )
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
+        ctx.should_finished(matcher)
 
     async with app.test_api() as ctx:
         bot = fake_bot(ctx, Adapter, Bot)
@@ -199,7 +204,8 @@ async def test_terminate(app: App):
 
         async def _test2():
             await asyncio.sleep(0.05)
-            await handle_terminate(target=str(user_id))
+            with pytest.raises(FinishedException):
+                await handle_terminate(target=str(user_id))
 
         with ensure_context(bot, event):
             await asyncio.gather(_test1(), _test2())
