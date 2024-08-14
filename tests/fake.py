@@ -202,10 +202,35 @@ def fake_v11_event_session(
     message = Message()
     if group_id is not None:
         event = fake_v11_group_message_event(
-            user_id=user_id, group_id=group_id, message=message
+            user_id=user_id,
+            group_id=group_id,
+            message=message,
         )
     else:
-        event = fake_v11_private_message_event(user_id=user_id, message=message)
+        event = fake_v11_private_message_event(
+            user_id=user_id,
+            message=message,
+        )
+    session = extract_session(bot, event)
+    return event, session
+
+
+def fake_qq_event_session(
+    bot: "qq.Bot",
+    user_id: str | None = None,
+    channel_id: str = "test-channel",
+    guild_id: str = "test-guild",
+) -> tuple["qq.MessageCreateEvent", "Session"]:
+    from nonebot.adapters.qq.models.guild import User
+    from nonebot_plugin_session import extract_session
+
+    user_id = user_id or str(fake_user_id())
+    event = fake_qq_message_create_event(
+        channel_id=channel_id,
+        guild_id=guild_id,
+        user=User(id=user_id),
+        content="",
+    )
     session = extract_session(bot, event)
     return event, session
 
