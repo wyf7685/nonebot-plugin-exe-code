@@ -82,8 +82,7 @@ class Context:
                 fut = await self.waitlist.get()
                 fut.set_result(None)
             self.locked = False
-            if self.task is not None:
-                self.task = None
+            self.task = None
 
     def _solve_code(self, raw_code: str) -> T_Executor:
         assert self.locked, "`Context._solve_code` must be called with lock"
