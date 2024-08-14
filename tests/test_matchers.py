@@ -1,9 +1,9 @@
 import asyncio
 
 import pytest
-from nonebot.exception import FinishedException
 from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
 from nonebot.adapters.onebot.v11.event import Reply, Sender
+from nonebot.exception import FinishedException
 from nonebug import App
 
 from tests.conftest import exe_code_group, superuser
