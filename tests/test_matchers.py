@@ -1,11 +1,19 @@
+import asyncio
+
 import pytest
 from nonebot.adapters.onebot.v11 import Adapter, Bot, Message, MessageSegment
-from nonebot.adapters.onebot.v11.bot import _check_reply
-from nonebot.adapters.onebot.v11.event import Reply
+from nonebot.adapters.onebot.v11.event import Reply, Sender
 from nonebug import App
 
 from tests.conftest import exe_code_group, superuser
-from tests.fake import fake_bot, fake_img_bytes, fake_v11_group_message_event
+from tests.fake import (
+    ensure_context,
+    fake_bot,
+    fake_img_bytes,
+    fake_user_id,
+    fake_v11_event_session,
+    fake_v11_group_message_event,
+)
 
 
 @pytest.mark.asyncio()
@@ -16,23 +24,24 @@ async def test_getraw(app: App):
     async with app.test_matcher(matcher) as ctx:
         bot = fake_bot(ctx, Adapter, Bot)
         reply_msg = MessageSegment.reply(123) + MessageSegment.at(456) + "789"
-        msg = MessageSegment.reply(1) + "getraw"
-        event = fake_v11_group_message_event(message=msg, user_id=superuser)
-        expected = Message(MessageSegment.text(str(reply_msg)))
-
-        ctx.should_call_api(
-            "get_msg",
-            {"message_id": 1},
-            Reply(
+        event = fake_v11_group_message_event(
+            message=Message(MessageSegment.text("getraw")),
+            user_id=superuser,
+            reply=Reply(
                 time=1000000,
                 message_type="test",
                 message_id=1,
                 real_id=1,
-                sender=event.sender,
+                sender=Sender(
+                    card="",
+                    nickname="test",
+                    role="member",
+                ),
                 message=reply_msg,
             ),
         )
-        await _check_reply(bot, event)
+        expected = Message(MessageSegment.text(str(reply_msg)))
+
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, expected)
@@ -56,23 +65,24 @@ async def test_getmid(app: App):
     async with app.test_matcher(matcher) as ctx:
         bot = fake_bot(ctx, Adapter, Bot)
         reply_msg = MessageSegment.reply(123) + MessageSegment.at(456) + "789"
-        msg = MessageSegment.reply(1) + "getmid"
-        event = fake_v11_group_message_event(message=msg, user_id=superuser)
-        expected = Message(str(1))
-
-        ctx.should_call_api(
-            "get_msg",
-            {"message_id": 1},
-            Reply(
+        event = fake_v11_group_message_event(
+            message=Message(MessageSegment.text("getmid")),
+            user_id=superuser,
+            reply=Reply(
                 time=1000000,
                 message_type="test",
                 message_id=1,
                 real_id=1,
-                sender=event.sender,
+                sender=Sender(
+                    card="",
+                    nickname="test",
+                    role="member",
+                ),
                 message=reply_msg,
             ),
         )
-        await _check_reply(bot, event)
+        expected = Message("1")
+
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, expected)
@@ -113,21 +123,23 @@ async def test_getimg(app: App):
                 msg.reduce()
             else:
                 varname = "img"
-            event = fake_v11_group_message_event(message=msg, user_id=superuser)
-
-            ctx.should_call_api(
-                "get_msg",
-                {"message_id": 1},
-                Reply(
+            event = fake_v11_group_message_event(
+                message=msg,
+                user_id=superuser,
+                reply=Reply(
                     time=1000000,
                     message_type="test",
                     message_id=1,
                     real_id=1,
-                    sender=event.sender,
+                    sender=Sender(
+                        card="",
+                        nickname="test",
+                        role="member",
+                    ),
                     message=reply_msg,
                 ),
             )
-            await _check_reply(bot, event)
+
             ctx.receive_event(bot, event)
             ctx.should_pass_permission(matcher)
             if varname.isidentifier():
@@ -151,19 +163,19 @@ async def test_getimg(app: App):
     getimg.image_fetch = _image_fetch
 
 
-# code_test_terminate = """\
-# await feedback("test 1")
-# await sleep(1)
-# await feedback("test 2")
-# """
+code_test_terminate = """\
+await feedback("test 1")
+await sleep(1)
+await feedback("test 2")
+"""
 
 
 @pytest.mark.asyncio()
 async def test_terminate(app: App):
-    from nonebot_plugin_exe_code.matchers.code import matcher as m_code
-    from nonebot_plugin_exe_code.matchers.terminate import matcher as m_terminate
+    from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.matchers.terminate import handle_terminate, matcher
 
-    async with app.test_matcher([m_code, m_terminate]) as ctx:
+    async with app.test_matcher(matcher) as ctx:
         bot = fake_bot(ctx, Adapter, Bot)
         event = fake_v11_group_message_event(
             group_id=exe_code_group,
@@ -171,29 +183,23 @@ async def test_terminate(app: App):
             message=Message("terminate"),
         )
         ctx.receive_event(bot, event)
-        ctx.should_pass_permission(m_terminate)
+        ctx.should_pass_permission(matcher)
 
-        # user_id = fake_user_id()
-        # event = fake_group_exe_code(
-        #     exe_code_group,
-        #     user_id,
-        #     code_test_terminate,
-        # )
-        # ctx.receive_event(bot, event)
-        # ctx.should_pass_permission(m_code)
-        # ctx.should_call_api(
-        #     "get_group_member_info",
-        #     {"group_id": exe_code_group, "user_id": user_id},
-        #     {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        # )
-        # ctx.should_call_send(event, Message("test 1"))
+    async with app.test_api() as ctx:
+        bot = fake_bot(ctx, Adapter, Bot)
+        user_id = fake_user_id()
+        event, session = fake_v11_event_session(bot, user_id)
+        ctx.should_call_send(event, Message("test 1"))
+        expected = "中止" + MessageSegment.at(user_id) + "的执行任务"
+        ctx.should_call_send(event, expected)
 
-        # event = fake_group_message_event_v11(
-        #     group_id=exe_code_group,
-        #     user_id=superuser,
-        #     message="terminate" + MessageSegment.at(user_id),
-        # )
-        # ctx.receive_event(bot, event)
-        # ctx.should_pass_permission(m_terminate)
-        # expected = "中止" + MessageSegment.at(user_id) + "的执行任务"
-        # ctx.should_call_send(event, expected)
+        async def _test1():
+            with pytest.raises(asyncio.CancelledError):
+                await Context.execute(bot, session, code_test_terminate)
+
+        async def _test2():
+            await asyncio.sleep(0.05)
+            await handle_terminate(target=str(user_id))
+
+        with ensure_context(bot, event):
+            await asyncio.gather(_test1(), _test2())

@@ -4,6 +4,7 @@ from collections.abc import Callable, Generator
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
+import nonebot
 from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 
@@ -39,10 +40,11 @@ def fake_bot(
     bot_base: type[B],
     **kwargs,
 ) -> B:
-    adapter = ctx.create_adapter(base=adapter_base)
-    adapter.__class__.get_name = lambda *_: adapter_base.get_name()
-    bot = ctx.create_bot(base=bot_base, adapter=adapter, **kwargs)
-    return bot
+    return ctx.create_bot(
+        base=bot_base,
+        adapter=nonebot.get_adapter(adapter_base),
+        **kwargs,
+    )
 
 
 def fake_v11_group_message_event(**field) -> "v11.GroupMessageEvent":
