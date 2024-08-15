@@ -73,18 +73,21 @@ def _ExtractCode():
 
 
 def _EventImage():
-
-    async def event_image(msg: UniMsg) -> Image:
+    async def event_image(msg: UniMessage, _in_reply: bool = False) -> Image:
         if msg.has(Image):
             return msg[Image, 0]
-        elif msg.has(Reply):
+        elif msg.has(Reply) and not _in_reply:
             reply = msg[Reply, 0].msg
             if isinstance(reply, Message):
                 msg = await UniMessage.generate(message=reply)
-                return await event_image(msg)
+                return await event_image(msg, True)
+
         Matcher.skip()
 
-    return Depends(event_image)
+    async def dependency(msg: UniMsg) -> Image:
+        return await event_image(msg)
+
+    return Depends(dependency)
 
 
 def _EventReply():
