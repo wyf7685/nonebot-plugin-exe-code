@@ -4,6 +4,7 @@ import pytest
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebot.adapters.qq.models import MessageArk, MessageArkKv
 from nonebug import App
+from pytest_mock import MockerFixture
 
 from tests.conftest import exe_code_qbot_id
 from tests.fake import (
@@ -31,8 +32,7 @@ expected_ark_24 = MessageArk(
 
 
 @pytest.mark.asyncio()
-async def test_ob11_send_ark(app: App):
-    import os
+async def test_ob11_send_ark(app: App, mocker: MockerFixture):
     import uuid
 
     from nonebot.adapters.qq import MessageSegment as QQMS
@@ -40,8 +40,7 @@ async def test_ob11_send_ark(app: App):
 
     from nonebot_plugin_exe_code.context import Context
 
-    _urandom = os.urandom
-    os.urandom = lambda size: b"\0" * size
+    mocker.patch("os.urandom", return_value=b"0" * 16)
     key = f"$ARK-{uuid.uuid4()}$"
     card = "JSON_DATA"
 
@@ -81,12 +80,9 @@ async def test_ob11_send_ark(app: App):
 
         await asyncio.gather(_test1(), _test2(), _test3())
 
-    os.urandom = _urandom
-
 
 @pytest.mark.asyncio()
-async def test_ob11_send_ark_fail(app: App):
-    import os
+async def test_ob11_send_ark_fail(app: App, mocker: MockerFixture):
     import uuid
 
     from nonebot.adapters.qq import MessageSegment as QQMS
@@ -94,8 +90,7 @@ async def test_ob11_send_ark_fail(app: App):
 
     from nonebot_plugin_exe_code.context import Context
 
-    _urandom = os.urandom
-    os.urandom = lambda size: b"\0" * size
+    mocker.patch("os.urandom", return_value=b"0" * 16)
     key = f"$ARK-{uuid.uuid4()}$"
 
     async with app.test_api() as ctx:
@@ -132,5 +127,3 @@ async def test_ob11_send_ark_fail(app: App):
             await handle_event(botQQ, event_qq)
 
         await asyncio.gather(_test1(), _test2())
-
-    os.urandom = _urandom

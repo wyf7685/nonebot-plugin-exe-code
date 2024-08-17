@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebug import App
@@ -9,6 +11,7 @@ from tests.fake import (
     fake_user_id,
     fake_v11_bot,
     fake_v11_event_session,
+    fake_v11_group_message_event,
 )
 
 
@@ -206,3 +209,40 @@ async def test_send_group_forward(app: App):
                 session,
                 'await group(gid).send_fwd(["1", "2"])',
             )
+
+
+code_test_api_input = """\
+print(await api.input("test-prompt"))
+"""
+
+
+@pytest.mark.asyncio()
+async def test_api_input(app: App):
+    from nonebot.message import handle_event
+
+    from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.matchers.code import matcher
+
+    prompt = Message("test-prompt")
+    expected = Message("test-input")
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, session = fake_v11_event_session(bot, superuser, exe_code_group)
+        input_event = fake_v11_group_message_event(
+            user_id=superuser,
+            group_id=exe_code_group,
+            message=expected,
+        )
+        ctx.should_call_send(event, prompt)
+        ctx.should_call_send(event, expected)
+
+        async def _test1():
+            with ensure_context(bot, event, matcher()):
+                await Context.execute(bot, session, code_test_api_input)
+
+        async def _test2():
+            await asyncio.sleep(0.1)
+            await handle_event(bot, input_event)
+
+        await asyncio.gather(_test1(), _test2())

@@ -11,6 +11,7 @@ from nonebug.mixin.process import MatcherContext
 if TYPE_CHECKING:
     from nonebot.adapters import Adapter, Bot, Event, console, qq
     from nonebot.adapters.onebot import v11
+    from nonebot.matcher import Matcher
     from nonebot_plugin_session import Session
 
 
@@ -298,15 +299,22 @@ def fake_qq_event_session(
 
 
 @contextlib.contextmanager
-def ensure_context(bot: "Bot", event: "Event") -> Generator[None, Any, None]:
+def ensure_context(
+    bot: "Bot",
+    event: "Event",
+    matcher: "Matcher | None" = None,
+) -> Generator[None, Any, None]:
     # ref: `nonebot.internal.matcher.matcher:Matcher.ensure_context`
-    from nonebot.internal.matcher import current_bot, current_event
+    from nonebot.internal.matcher import current_bot, current_event, current_matcher
 
     b = current_bot.set(bot)
     e = current_event.set(event)
+    m = current_matcher.set(matcher) if matcher else None
 
     try:
         yield
     finally:
         current_bot.reset(b)
         current_event.reset(e)
+        if m:
+            current_matcher.reset(m)
