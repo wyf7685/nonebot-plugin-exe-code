@@ -9,8 +9,9 @@ from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 
 if TYPE_CHECKING:
-    from nonebot.adapters import Adapter, Bot, Event, console, qq
+    from nonebot.adapters import Adapter, Bot, Event, console, qq, telegram
     from nonebot.adapters.onebot import v11
+    from nonebot.adapters.telegram import event as tgevent
     from nonebot.matcher import Matcher
     from nonebot_plugin_session import Session
 
@@ -73,6 +74,19 @@ def fake_qq_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "qq.Bot":
             token="app_token",
             secret="app_secret",
         ),
+        **kwargs,
+    )
+
+
+def fake_telegram_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "telegram.Bot":
+    from nonebot.adapters.telegram import Adapter, Bot
+    from nonebot.adapters.telegram.config import BotConfig
+
+    return fake_bot(
+        ctx,
+        Adapter,
+        Bot,
+        config=BotConfig(token="token"),
         **kwargs,
     )
 
@@ -196,6 +210,72 @@ def fake_qq_c2c_message_create_event(**field) -> "qq.C2CMessageCreateEvent":
         _reply_seq: int = -1
         author: FriendAuthor = FriendAuthor(id="id", user_openid="user_openid")
         to_me: bool = True
+
+    return FakeEvent(**field)
+
+
+def fake_telegram_private_message_event(**field) -> "tgevent.PrivateMessageEvent":
+    from nonebot.adapters.telegram.event import MessageEvent, PrivateMessageEvent
+    from nonebot.adapters.telegram.message import Message
+    from nonebot.adapters.telegram.model import Chat, User
+    from pydantic import create_model
+
+    _Fake = create_model("_Fake", __base__=PrivateMessageEvent)
+    user_id = field.pop("user_id", None) or 10
+
+    class FakeEvent(_Fake):
+        message_id: int = 1
+        date: int = 1000000
+        chat: Chat = Chat(id=10000, type="private")
+        forward_from: User | None = None
+        forward_from_chat: Chat | None = None
+        forward_from_message_id: int | None = None
+        forward_signature: str | None = None
+        forward_sender_name: str | None = None
+        forward_date: int | None = None
+        via_bot: User | None = None
+        has_protected_content: Literal[True] | None = None
+        media_group_id: str | None = None
+        author_signature: str | None = None
+        reply_to_message: MessageEvent | None = None
+        message: Message = Message()
+        original_message: Message = Message()
+        _tome: bool = False
+        from_: User = User(id=user_id, is_bot=False, first_name="10")
+
+    return FakeEvent(**field)
+
+
+def fake_telegram_group_message_event(**field) -> "tgevent.GroupMessageEvent":
+    from nonebot.adapters.telegram.event import GroupMessageEvent, MessageEvent
+    from nonebot.adapters.telegram.message import Message
+    from nonebot.adapters.telegram.model import Chat, User
+    from pydantic import create_model
+
+    _Fake = create_model("_Fake", __base__=GroupMessageEvent)
+    user_id = field.pop("user_id", 10)
+    group_id = field.pop("group_id", 10000)
+
+    class FakeEvent(_Fake):
+        message_id: int = 1
+        date: int = 1000000
+        chat: Chat = Chat(id=group_id, type="group")
+        forward_from: User | None = None
+        forward_from_chat: Chat | None = None
+        forward_from_message_id: int | None = None
+        forward_signature: str | None = None
+        forward_sender_name: str | None = None
+        forward_date: int | None = None
+        via_bot: User | None = None
+        has_protected_content: Literal[True] | None = None
+        media_group_id: str | None = None
+        author_signature: str | None = None
+        reply_to_message: MessageEvent | None = None
+        message: Message = Message()
+        original_message: Message = Message()
+        _tome: bool = False
+        from_: User = User(id=user_id, is_bot=False, first_name="10")
+        sender_chat: Chat | None = None
 
     return FakeEvent(**field)
 
