@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:1495c2eee24c4d0ed4976d4ca3d27bc77dfbd2d63e15edc1ff62c693cc350412"
+content_hash = "sha256:97e2b8f718f3f719f2386b3cabe67f8b2c8dad01097979b2a128f592a0532685"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -774,7 +774,7 @@ files = [
 
 [[package]]
 name = "nonebot2"
-version = "2.3.2"
+version = "2.3.3"
 requires_python = "<4.0,>=3.9"
 summary = "An asynchronous python bot framework."
 groups = ["default", "dev"]
@@ -788,8 +788,8 @@ dependencies = [
     "yarl<2.0.0,>=1.7.2",
 ]
 files = [
-    {file = "nonebot2-2.3.2-py3-none-any.whl", hash = "sha256:c51aa3c1f23d8062ce6d13c8423dcb9a8bf0c44f21687916095f825da79a9a55"},
-    {file = "nonebot2-2.3.2.tar.gz", hash = "sha256:af52e27e03e7fe147f2b642151eec81f264d058efe53b974eb08b5d90177cd14"},
+    {file = "nonebot2-2.3.3-py3-none-any.whl", hash = "sha256:5bc8d073091347f29c4a1a2f927c24a8941e5d286c77139376259318b9bbfc68"},
+    {file = "nonebot2-2.3.3.tar.gz", hash = "sha256:4fa7707de5d708c27cc49493bc78a07fee2ba01f5516835a2ea5fbebb49b9dfa"},
 ]
 
 [[package]]

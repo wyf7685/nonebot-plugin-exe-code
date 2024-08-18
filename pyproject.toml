@@ -4,7 +4,7 @@ version = "1.0.8"
 description = "在聊天中执行带有上下文的 Python 代码"
 authors = [{ name = "wyf7685", email = "wyf7685@163.com" }]
 dependencies = [
-    "nonebot2>=2.3.2",
+    "nonebot2>=2.3.3",
     "nonebot-plugin-alconna>=0.51.2",
     "nonebot-plugin-localstore>=0.6.0",
     "nonebot-plugin-session>=0.3.1",
