@@ -37,12 +37,12 @@ async def app():
 
     from nonebot_plugin_exe_code.interface.user_const_var import DATA_DIR
 
-    exist = [i.name for i in DATA_DIR.iterdir()]
+    exist_file = {i.name for i in DATA_DIR.iterdir()}
 
     yield App()
 
     for fp in DATA_DIR.iterdir():
-        if fp.name not in exist:
+        if fp.name not in exist_file:
             fp.unlink()
 
 

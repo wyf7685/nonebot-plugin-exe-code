@@ -13,7 +13,7 @@ from .config import Config
 
 __version__ = "1.0.8"
 __plugin_meta__ = PluginMetadata(
-    name="exe_code",
+    name="nonebot-plugin-exe-code",
     description="在对话中执行 Python 代码",
     usage="code {Your code here...}",
     type="application",
