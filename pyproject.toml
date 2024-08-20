@@ -4,13 +4,13 @@ version = "1.0.8"
 description = "在聊天中执行带有上下文的 Python 代码"
 authors = [{ name = "wyf7685", email = "wyf7685@163.com" }]
 dependencies = [
-    "nonebot2>=2.3.3",
-    "nonebot-plugin-alconna>=0.51.2",
-    "nonebot-plugin-localstore>=0.6.0",
-    "nonebot-plugin-session>=0.3.1",
-    "nonebot-plugin-userinfo>=0.2.4",
-    "nonebot-plugin-waiter>=0.7.1",
-    "Pillow>=10.4.0",
+  "nonebot2>=2.3.3",
+  "nonebot-plugin-alconna>=0.51.2",
+  "nonebot-plugin-localstore>=0.6.0",
+  "nonebot-plugin-session>=0.3.1",
+  "nonebot-plugin-userinfo>=0.2.4",
+  "nonebot-plugin-waiter>=0.7.1",
+  "Pillow>=10.4.0",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
@@ -31,25 +31,25 @@ distribution = true
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "nonebot-adapter-console>=0.6.0",
-    "nonebot-adapter-onebot>=2.4.4",
-    "nonebot-adapter-qq>=1.4.4",
-    "nonebot-adapter-telegram>=0.1.0b17",
-    "fastapi>=0.112.0",
-    "httpx>=0.27.0",
-    "websockets>=12.0",
-    "uvicorn[standard]>=0.30.5",
-    "pytest>=8.3.2",
-    "pytest-asyncio>=0.23.8",
-    "pytest-mock>=3.14.0",
-    "nonebug>=0.3.7",
-    "coverage>=7.6.1",
+  "nonebot-adapter-console>=0.6.0",
+  "nonebot-adapter-onebot>=2.4.4",
+  "nonebot-adapter-qq>=1.4.4",
+  "nonebot-adapter-telegram>=0.1.0b17",
+  "fastapi>=0.112.0",
+  "httpx>=0.27.0",
+  "websockets>=12.0",
+  "uvicorn[standard]>=0.30.5",
+  "pytest>=8.3.2",
+  "pytest-asyncio>=0.23.8",
+  "pytest-mock>=3.14.0",
+  "nonebug>=0.3.7",
+  "coverage>=7.6.1",
 ]
 
 [tool.pdm.scripts]
+lint = { composite = ["isort .", "black .", "pyright .", "ruff check ."] }
 test = "coverage run --source nonebot_plugin_exe_code -m pytest tests --disable-warnings"
 report = { composite = ["coverage xml", "coverage html"] }
-lint = { composite = ["isort .", "black .", "pyright .", "ruff check ."] }
 
 [tool.black]
 line-length = 88
@@ -105,19 +105,11 @@ asyncio_mode = "auto"
 # https://github.com/he0119/nonebot-plugin-wordcloud/blob/5fa48dc5/pyproject.toml#L104-L117
 [tool.coverage.report]
 exclude_lines = [
-    "pragma: no cover",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    "@overload",
-    "except ImportError:",
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+  "@overload",
+  "except ImportError:",
 ]
 omit = ["*/compat.py", "*/migrations/*"]
-
-[tool.nonebot]
-adapters = [
-  # { name = "Console", module_name = "nonebot.adapters.console" },
-  { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
-  { name = "QQ", module_name = "nonebot.adapters.qq" },
-]
-plugins = ["nonebot_plugin_exe_code"]
