@@ -5,7 +5,6 @@ from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Segment, UniMessage
 from nonebot_plugin_localstore import get_data_dir
 
-
 DATA_DIR = get_data_dir("nonebot_plugin_exe_code")
 
 # description

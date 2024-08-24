@@ -215,6 +215,12 @@ await receipt.recall()  # 撤回消息
 <details>
     <summary>更新日志</summary>
 
+- 2024.08.24 v1.0.9
+
+  - 修复 `User.send_fwd` 的 `target` 错误
+  - 修复 `SendArk` 的 `ark_37` 参数错误
+  - 优化 `getimg` 提取图片逻辑, 限制回复提取递归次数
+
 - 2024.08.09 v1.0.8
 
   - 使用 `Permission` 判断执行权限 (原为 `Rule`)
