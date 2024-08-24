@@ -2,10 +2,7 @@ import os
 
 import nonebot
 import pytest
-from nonebot.adapters.console import Adapter as ConsoleAdapter
-from nonebot.adapters.onebot.v11 import Adapter as Onebot11Adapter
-from nonebot.adapters.qq import Adapter as QQAdapter
-from nonebot.adapters.telegram import Adapter as TelegramAdapter
+from nonebot.adapters import console, onebot, qq, telegram
 from nonebug import NONEBOT_INIT_KWARGS, App
 
 superuser = 7685
@@ -35,7 +32,7 @@ async def app():
     # 加载插件
     nonebot.require("nonebot_plugin_exe_code")
 
-    from nonebot_plugin_exe_code.interface.user_const_var import DATA_DIR
+    from nonebot_plugin_exe_code.constant import DATA_DIR
 
     exist_file = {i.name for i in DATA_DIR.iterdir()}
 
@@ -50,9 +47,9 @@ async def app():
 def load_bot():
     # 加载适配器
     driver = nonebot.get_driver()
-    driver.register_adapter(ConsoleAdapter)
-    driver.register_adapter(Onebot11Adapter)
-    driver.register_adapter(QQAdapter)
-    driver.register_adapter(TelegramAdapter)
+    driver.register_adapter(console.Adapter)
+    driver.register_adapter(onebot.v11.Adapter)
+    driver.register_adapter(qq.Adapter)
+    driver.register_adapter(telegram.Adapter)
 
     return None

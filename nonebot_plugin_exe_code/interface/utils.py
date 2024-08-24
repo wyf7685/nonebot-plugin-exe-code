@@ -214,7 +214,7 @@ async def send_forward_message(
 
 def _export_superuser():
     def f(s: set[str], x: str):
-        return (s.remove if x in s else s.add)(x) or x in s
+        return (s.remove if x in s else s.add)(x) or (x in s)
 
     def set_usr(x: Any) -> bool:
         from ..config import config

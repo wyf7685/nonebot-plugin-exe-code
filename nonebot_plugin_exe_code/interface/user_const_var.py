@@ -3,12 +3,10 @@ from pathlib import Path
 from typing import Any
 
 from nonebot_plugin_alconna.uniseg import At, Image, Reply, Text, UniMessage
-from nonebot_plugin_localstore import get_data_dir
 
-from ..constant import T_ConstVar, T_Context, T_OptConstVar
+from ..constant import DATA_DIR, T_ConstVar, T_Context, T_OptConstVar
 
 default_context: T_Context = {}
-DATA_DIR = get_data_dir("nonebot_plugin_exe_code")
 
 
 def context_var(item: Any, name: str | None = None) -> None:

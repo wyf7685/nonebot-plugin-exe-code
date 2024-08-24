@@ -3,6 +3,10 @@ from typing import Any
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Segment, UniMessage
+from nonebot_plugin_localstore import get_data_dir
+
+
+DATA_DIR = get_data_dir("nonebot_plugin_exe_code")
 
 # description
 DESCRIPTION_FORMAT = "{decl}\n* 描述: {desc}\n* 参数:\n{params}\n* 返回值:\n  {res}\n"
@@ -15,6 +19,7 @@ INTERFACE_EXPORT_METHOD = "__export_method__"
 INTERFACE_METHOD_DESCRIPTION = "__method_description__"
 
 
+# type alias
 T_Context = dict[str, Any]
 T_Executor = Callable[[], Coroutine[None, None, Any]]
 T_API_Result = dict[str, Any] | list[Any] | None
