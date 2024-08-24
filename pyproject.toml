@@ -48,7 +48,7 @@ dev = [
 
 [tool.pdm.scripts]
 lint = { composite = ["isort .", "black .", "pyright .", "ruff check ."] }
-test = "coverage run --source nonebot_plugin_exe_code -m pytest tests --disable-warnings"
+test = "coverage run --source nonebot_plugin_exe_code -m pytest tests"
 report = { composite = ["coverage xml", "coverage html"] }
 
 [tool.black]
@@ -101,6 +101,7 @@ disableBytesTypePromotions = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::RuntimeWarning"]
 
 # https://github.com/he0119/nonebot-plugin-wordcloud/blob/5fa48dc5/pyproject.toml#L104-L117
 [tool.coverage.report]
