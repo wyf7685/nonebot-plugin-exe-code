@@ -10,7 +10,7 @@ await api.img_summary("test")
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_img_summary(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -34,7 +34,7 @@ await recall(1)
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_recall(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -51,7 +51,7 @@ print(await get_msg(1))
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_get_msg(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -73,7 +73,7 @@ print((await get_fwd(1))[0])
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_get_fwd(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -96,7 +96,7 @@ raise res.error
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_exception_1(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -113,7 +113,7 @@ print(await api.not_an_action(arg=123))
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_exception_2(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -134,7 +134,7 @@ except Exception as err:
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_exception_3(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -152,7 +152,7 @@ print(api.__not_an_attr__)
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_exception_4(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -170,7 +170,7 @@ print(res[0])
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_call_api_1(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -192,7 +192,7 @@ print(res["key"])
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_call_api_2(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -210,7 +210,7 @@ print(res["key"])
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_call_api_3(app: App):
     from nonebot_plugin_exe_code.context import Context
 

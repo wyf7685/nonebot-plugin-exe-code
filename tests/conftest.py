@@ -27,7 +27,7 @@ def pytest_configure(config: pytest.Config):
     os.environ["PLUGIN_ALCONNA_TESTENV"] = "1"
 
 
-@pytest.fixture()
+@pytest.fixture
 async def app():
     # 加载插件
     nonebot.require("nonebot_plugin_exe_code")

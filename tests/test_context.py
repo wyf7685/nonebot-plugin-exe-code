@@ -12,7 +12,7 @@ from tests.fake import (
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_lock(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -34,7 +34,7 @@ async def test_lock(app: App):
             )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_cancel(app: App):
     from nonebot_plugin_exe_code.context import Context
 

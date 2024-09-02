@@ -33,7 +33,7 @@ code_test_extract_code = (
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_extract_code(app: App):
     from nonebot_plugin_exe_code.matchers.depends import _ExtractCode
 
@@ -62,7 +62,7 @@ async def test_extract_code(app: App):
             assert result == expected
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_extract_code_fail(app: App):
     from nonebot_plugin_exe_code.matchers.depends import _ExtractCode
 
@@ -83,7 +83,7 @@ async def test_extract_code_fail(app: App):
             await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_image_1(app: App):
     from nonebot_plugin_alconna.uniseg import Image
 
@@ -126,7 +126,7 @@ async def test_event_image_1(app: App):
             assert result == expected
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_image_2(app: App):
     from nonebot_plugin_alconna.uniseg import Image
 
@@ -152,7 +152,7 @@ async def test_event_image_2(app: App):
             assert result == expected
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_image_3(app: App):
     from nonebot_plugin_alconna.uniseg import Image
 
@@ -177,7 +177,7 @@ async def test_event_image_3(app: App):
             assert result == expected
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_image_fail(app: App):
     from nonebot_plugin_exe_code.matchers.depends import _EventImage
 
@@ -193,7 +193,7 @@ async def test_event_image_fail(app: App):
             await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_reply(app: App):
     from nonebot_plugin_alconna.uniseg import Reply as AlcReply
 
@@ -232,7 +232,7 @@ async def test_event_reply(app: App):
             assert result == expected
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_reply_fail(app: App):
     from nonebot_plugin_exe_code.matchers.depends import _EventReply
 
@@ -248,7 +248,7 @@ async def test_event_reply_fail(app: App):
             await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_reply_message_1(app: App):
     from nonebot_plugin_exe_code.matchers.depends import _EventReplyMessage
 
@@ -284,7 +284,7 @@ async def test_event_reply_message_1(app: App):
             assert result == reply_msg
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_reply_message_2(app: App):
     from nonebot_plugin_exe_code.matchers.depends import _EventReplyMessage
 
@@ -321,7 +321,7 @@ async def test_event_reply_message_2(app: App):
             assert result == reply_msg
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_reply_message_fail_1(app: App):
     from nonebot_plugin_exe_code.matchers.depends import _EventReplyMessage
 
@@ -342,7 +342,7 @@ async def test_event_reply_message_fail_1(app: App):
             await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_event_reply_message_fail_2(app: App):
     from nonebot_plugin_exe_code.matchers.depends import _EventReplyMessage
 

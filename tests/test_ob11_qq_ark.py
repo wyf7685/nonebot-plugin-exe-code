@@ -31,7 +31,7 @@ expected_ark_24 = MessageArk(
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_send_ark(app: App, mocker: MockerFixture):
     import uuid
 
@@ -81,7 +81,7 @@ async def test_ob11_send_ark(app: App, mocker: MockerFixture):
         await asyncio.gather(_test1(), _test2(), _test3())
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_ob11_send_ark_fail(app: App, mocker: MockerFixture):
     import uuid
 

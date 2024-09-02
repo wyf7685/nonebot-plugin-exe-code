@@ -15,7 +15,7 @@ from tests.fake import (
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_help_method(app: App):
     from nonebot_plugin_exe_code.constant import INTERFACE_METHOD_DESCRIPTION
     from nonebot_plugin_exe_code.context import Context
@@ -34,7 +34,7 @@ async def test_help_method(app: App):
             await Context.execute(bot, session, "await help(api.set_const)")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_help(app: App):
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.adapter_api.onebot11 import API
@@ -65,7 +65,7 @@ async def test_help(app: App):
             await Context.execute(bot, session, "await help()")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_superuser(app: App):
     from nonebot_plugin_exe_code.config import config
     from nonebot_plugin_exe_code.context import Context
@@ -90,7 +90,7 @@ async def test_superuser(app: App):
         assert str(group_id) in config.group
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_send_limit(app: App):
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.utils import ReachLimit
@@ -111,7 +111,7 @@ async def test_send_limit(app: App):
                 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_is_group(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -130,7 +130,7 @@ async def test_is_group(app: App):
             await Context.execute(bot, session, code)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_feedback_forward(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -157,7 +157,7 @@ async def test_feedback_forward(app: App):
             )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_send_private_forward(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -184,7 +184,7 @@ async def test_send_private_forward(app: App):
             )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_send_group_forward(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -216,7 +216,7 @@ print(await api.input("test-prompt"))
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_api_input(app: App):
     from nonebot.message import handle_event
 
