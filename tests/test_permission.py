@@ -13,7 +13,7 @@ from tests.fake import (
 fake_code = "a = 1"
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_superuser_private(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -30,7 +30,7 @@ async def test_superuser_private(app: App):
         ctx.should_finished(matcher)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_superuser_group(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -48,7 +48,7 @@ async def test_superuser_group(app: App):
         ctx.should_finished(matcher)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_exe_code_user_private(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -65,7 +65,7 @@ async def test_exe_code_user_private(app: App):
         ctx.should_finished(matcher)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_exe_code_user_group(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -83,7 +83,7 @@ async def test_exe_code_user_group(app: App):
         ctx.should_finished(matcher)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_exe_code_group(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -101,7 +101,7 @@ async def test_exe_code_group(app: App):
         ctx.should_finished(matcher)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_not_allow_private(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -113,7 +113,7 @@ async def test_not_allow_private(app: App):
         ctx.should_not_pass_permission(matcher)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_not_allow_group(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 

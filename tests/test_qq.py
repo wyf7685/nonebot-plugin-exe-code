@@ -18,7 +18,7 @@ from tests.fake import (
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_qq(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -70,7 +70,7 @@ expected_build_ark = MessageArk(
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_build_send_ark(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -108,7 +108,7 @@ expected_ark_23 = MessageArk(
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_qq_ark_23(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -135,7 +135,7 @@ expected_ark_24 = MessageArk(
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_qq_ark_24(app: App):
     from nonebot_plugin_exe_code.context import Context
 
@@ -162,7 +162,7 @@ expected_ark_37 = MessageArk(
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_qq_ark_37(app: App):
     from nonebot_plugin_exe_code.context import Context
 

@@ -17,7 +17,7 @@ from tests.fake import (
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_getraw(app: App):
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.getraw import matcher
@@ -59,7 +59,7 @@ async def test_getraw(app: App):
     assert gurl is None, "Got unexpected variable `gurl`"
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_getmid(app: App):
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.getmid import matcher
@@ -101,7 +101,7 @@ async def test_getmid(app: App):
     assert gurl is None, "Got unexpected variable `gurl`"
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_getimg(app: App):
     import PIL.Image
 
@@ -167,7 +167,7 @@ async def test_getimg(app: App):
     getimg.image_fetch = _image_fetch
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_getimg_exception_1(app: App):
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
@@ -209,7 +209,7 @@ async def test_getimg_exception_1(app: App):
     getimg.image_fetch = _image_fetch
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_getimg_exception_2(app: App):
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
@@ -258,7 +258,7 @@ await feedback("test 2")
 """
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_terminate(app: App):
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.terminate import handle_terminate, matcher

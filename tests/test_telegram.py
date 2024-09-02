@@ -11,7 +11,7 @@ from tests.fake import (
 )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_telegram_private(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -38,7 +38,7 @@ async def test_telegram_private(app: App):
         ctx.should_finished(matcher)
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_telegram_group(app: App):
     from nonebot_plugin_exe_code.matchers.code import matcher
 
