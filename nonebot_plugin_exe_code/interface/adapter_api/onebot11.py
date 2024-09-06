@@ -222,6 +222,51 @@ with contextlib.suppress(ImportError):
             seg.data["summary"] = summary
             await self._native_send(Message(seg))
 
+        @descript(
+            description="设置群名片",
+            parameters=dict(
+                card="新的群名片",
+                qid="被设置者QQ号, 默认为当前用户",
+                gid="所在群号, 默认为当前群聊, 私聊时必填",
+            ),
+        )
+        @debug_log
+        async def set_card(
+            self,
+            card: str,
+            qid: str | int | None = None,
+            gid: str | int | None = None,
+        ) -> None:
+            if gid is None and self.gid is None:
+                raise ValueError("未指定群号")
+            await self.call_api(
+                "set_group_card",
+                group_id=int(gid or self.gid or 0),
+                user_id=int(qid or self.qid),
+                card=str(card),
+            )
+
+        @descript(
+            description="设置群禁言",
+            parameters=dict(
+                duration="禁言时间, 单位秒, 填0为解除禁言",
+                qid="被禁言者QQ号",
+                gid="所在群号, 默认为当前群聊, 私聊时必填",
+            ),
+        )
+        @debug_log
+        async def set_ban(
+            self, duration: float, qid: str | int, gid: str | int | None = None
+        ) -> None:
+            if gid is None and self.gid is None:
+                raise ValueError("未指定群号")
+            await self.call_api(
+                "set_group_ban",
+                group_id=int(gid or self.gid or 0),
+                user_id=int(qid),
+                duration=float(duration),
+            )
+
         @override
         def export_to(self, context: T_Context) -> None:
             super().export_to(context)
