@@ -16,7 +16,7 @@ from ..context import Context
 def _AllowExeCode() -> Permission:
 
     def check_console(bot: Bot) -> bool:  # pragma: no cover
-        return True
+        return False
 
     with contextlib.suppress(ImportError):
         from nonebot.adapters.console import Bot as ConsoleBot
