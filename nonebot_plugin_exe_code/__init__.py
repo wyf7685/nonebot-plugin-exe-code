@@ -11,7 +11,7 @@ require("nonebot_plugin_waiter")
 from . import matchers
 from .config import Config
 
-__version__ = "1.0.9"
+__version__ = "1.1.0"
 __plugin_meta__ = PluginMetadata(
     name="nonebot-plugin-exe-code",
     description="在对话中执行 Python 代码",

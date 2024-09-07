@@ -214,6 +214,11 @@ await receipt.recall()  # 撤回消息
 
 <details>
     <summary>更新日志</summary>
+  
+- 2024.08.24 v1.1.0
+
+  - `OneBot V11` 适配器接口: 群名片, 群禁言, 资料卡点赞
+  - 修复鉴权错误
 
 - 2024.08.24 v1.0.9
 
