@@ -267,6 +267,17 @@ with contextlib.suppress(ImportError):
                 duration=float(duration),
             )
 
+        @descript(
+            description="资料卡点赞，需要机器人好友",
+            parameters=dict(
+                times="点赞次数，非vip机器人每天上限10次",
+                qid="点赞QQ号, 默认为当前用户",
+            ),
+        )
+        @debug_log
+        async def send_like(self, times: int, qid: str | int | None = None) -> None:
+            await self.call_api("send_like", user_id=int(qid or self.qid), times=times)
+
         @override
         def export_to(self, context: T_Context) -> None:
             super().export_to(context)
