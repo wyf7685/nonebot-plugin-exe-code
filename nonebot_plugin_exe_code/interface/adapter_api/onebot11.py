@@ -11,7 +11,7 @@ from nonebot.log import logger
 
 from ..api import API as BaseAPI
 from ..api import register_api
-from ..help_doc import descript, message_alia
+from ..help_doc import descript
 from ..utils import Result, debug_log, export
 from ._send_ark import SendArk
 
@@ -31,7 +31,6 @@ with contextlib.suppress(ImportError):
     )
 
     logger = logger.opt(colors=True)
-    message_alia(Message, MessageSegment)
 
     async def create_ark_card(api: "API", ark: "MessageArk") -> MessageSegment:
         raise NotImplementedError

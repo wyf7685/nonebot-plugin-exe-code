@@ -4,15 +4,13 @@ from typing_extensions import override
 
 from ..api import API as BaseAPI
 from ..api import register_api
-from ..help_doc import descript, message_alia
+from ..help_doc import descript
 from ..utils import debug_log
 from ._send_ark import SendArk
 
 with contextlib.suppress(ImportError):
-    from nonebot.adapters.qq import Adapter, Message, MessageSegment
+    from nonebot.adapters.qq import Adapter, MessageSegment
     from nonebot.adapters.qq.models import MessageArk
-
-    message_alia(Message, MessageSegment)
 
     @register_api(Adapter)
     class API(SendArk, BaseAPI):
