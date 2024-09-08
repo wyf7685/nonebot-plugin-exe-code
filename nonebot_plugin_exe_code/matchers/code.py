@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from nonebot import on_startswith
+from nonebot import on_message
 from nonebot.adapters import Bot, Event
 from nonebot.log import logger
 from nonebot_plugin_alconna.uniseg import UniMessage
@@ -8,9 +8,9 @@ from nonebot_plugin_session import EventSession
 from nonebot_plugin_userinfo import EventUserInfo, UserInfo
 
 from ..context import Context
-from .depends import AllowExeCode, ExtractCode
+from .depends import AllowExeCode, ExtractCode, startswith
 
-matcher = on_startswith("code", permission=AllowExeCode)
+matcher = on_message(startswith("code"), permission=AllowExeCode)
 
 
 @matcher.handle()

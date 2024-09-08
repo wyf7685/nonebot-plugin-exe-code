@@ -5,6 +5,7 @@ from nonebot.adapters import Bot, Event, Message
 from nonebot.matcher import Matcher
 from nonebot.params import Depends
 from nonebot.permission import SUPERUSER, Permission
+from nonebot.rule import Rule
 from nonebot_plugin_alconna.uniseg import UniMessage, UniMsg, reply_fetch
 from nonebot_plugin_alconna.uniseg.segment import At, Image, Reply, Text
 from nonebot_plugin_session import EventSession
@@ -14,7 +15,6 @@ from ..context import Context
 
 
 def _AllowExeCode() -> Permission:
-
     def check_console(bot: Bot) -> bool:  # pragma: no cover
         return False
 
@@ -43,7 +43,6 @@ def _AllowExeCode() -> Permission:
 
 
 def _CodeContext():
-
     async def code_context(session: EventSession) -> Context:
         return Context.get_context(session)
 
@@ -51,7 +50,6 @@ def _CodeContext():
 
 
 def _ExtractCode():
-
     async def extract_code(msg: UniMsg) -> str:
         code = ""
         for seg in msg:
@@ -61,6 +59,8 @@ def _ExtractCode():
                 code += f'"{seg.target}"'
             elif isinstance(seg, Image):
                 code += f'"{seg.url or "[url]"}"'
+
+        code = code.strip()
 
         # 特例：@xxx code print(123)
         #  --> "xxx" code print(123)
@@ -91,7 +91,6 @@ def _EventImage():
 
 
 def _EventReply():
-
     async def event_reply(event: Event, bot: Bot) -> Reply:
         if reply := await reply_fetch(event, bot):
             return reply
@@ -101,7 +100,6 @@ def _EventReply():
 
 
 def _EventReplyMessage():
-
     async def event_reply_message(event: Event, reply: EventReply) -> Message:
         if not (msg := reply.msg):
             Matcher.skip()
@@ -112,6 +110,18 @@ def _EventReplyMessage():
         return msg
 
     return Depends(event_reply_message)
+
+
+def startswith(text: str):
+    def starts_checker(event: Event):
+        try:
+            msg = event.get_message()
+        except NotImplementedError:
+            Matcher.skip()
+
+        return msg.extract_plain_text().strip().startswith(text)
+
+    return Rule(starts_checker)
 
 
 AllowExeCode: Permission = _AllowExeCode()

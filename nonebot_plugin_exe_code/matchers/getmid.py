@@ -1,9 +1,15 @@
-from nonebot import on_startswith
+from nonebot import on_message
 from nonebot_plugin_alconna.uniseg import UniMessage
 
-from .depends import AllowExeCode, CodeContext, EventReply, EventReplyMessage
+from .depends import (
+    AllowExeCode,
+    CodeContext,
+    EventReply,
+    EventReplyMessage,
+    startswith,
+)
 
-matcher = on_startswith("getmid", permission=AllowExeCode)
+matcher = on_message(startswith("getmid"), permission=AllowExeCode)
 
 
 @matcher.handle()

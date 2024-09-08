@@ -1,13 +1,13 @@
 from io import BytesIO
 
 import PIL.Image
-from nonebot import on_startswith
+from nonebot import on_message
 from nonebot.adapters import Bot, Event
 from nonebot_plugin_alconna.uniseg import UniMessage, image_fetch
 
-from .depends import AllowExeCode, CodeContext, EventImage
+from .depends import AllowExeCode, CodeContext, EventImage, startswith
 
-matcher = on_startswith("getimg", permission=AllowExeCode)
+matcher = on_message(startswith("getimg"), permission=AllowExeCode)
 
 
 @matcher.handle()
@@ -17,7 +17,9 @@ async def handle_getimg(
     ctx: CodeContext,
     image: EventImage,
 ):
-    varname = event.get_message().extract_plain_text().removeprefix("getimg").strip()
+    varname = (
+        event.get_message().extract_plain_text().strip().removeprefix("getimg").strip()
+    )
     if (varname := varname or "img") and not varname.isidentifier():
         await UniMessage(f"{varname} 不是一个合法的 Python 标识符").finish()
 

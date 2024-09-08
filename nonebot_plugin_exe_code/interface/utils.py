@@ -6,6 +6,7 @@ from typing_extensions import Self, TypeIs
 
 from nonebot import get_adapters, get_driver
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
+from nonebot.internal.matcher import current_bot
 from nonebot.log import logger
 from nonebot.utils import is_coroutine_callable
 from nonebot_plugin_alconna.uniseg import (
@@ -17,7 +18,7 @@ from nonebot_plugin_alconna.uniseg import (
     UniMessage,
 )
 from nonebot_plugin_session import Session
-from nonebot.internal.matcher import current_bot
+
 from ..constant import (
     INTERFACE_EXPORT_METHOD,
     INTERFACE_METHOD_DESCRIPTION,
@@ -25,7 +26,6 @@ from ..constant import (
     T_Context,
     T_Message,
 )
-
 
 WRAPPER_ASSIGNMENTS = (
     *functools.WRAPPER_ASSIGNMENTS,
