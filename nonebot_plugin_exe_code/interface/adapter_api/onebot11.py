@@ -253,7 +253,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
-        async def set_ban(
+        async def set_mute(
             self, duration: float, qid: str | int, gid: str | int | None = None
         ) -> None:
             if gid is None and self.gid is None:
