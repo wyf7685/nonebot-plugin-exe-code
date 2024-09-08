@@ -26,35 +26,23 @@ homepage = "https://github.com/wyf7685/nonebot-plugin-exe-code"
 repository = "https://github.com/wyf7685/nonebot-plugin-exe-code"
 documentation = "https://github.com/wyf7685/nonebot-plugin-exe-code"
 
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-
-[tool.pdm]
-distribution = true
-
-[tool.pdm.dev-dependencies]
-dev = [
-  "nonebot-adapter-console>=0.6.0",
-  "nonebot-adapter-onebot>=2.4.4",
-  "nonebot-adapter-qq>=1.4.4",
-  "nonebot-adapter-telegram>=0.1.0b17",
-  "fastapi>=0.112.0",
-  "httpx>=0.27.0",
-  "websockets>=12.0",
-  "uvicorn[standard]>=0.30.5",
-  "pytest>=8.3.2",
-  "pytest-asyncio>=0.23.8",
-  "pytest-mock>=3.14.0",
-  "nonebug>=0.3.7",
-  "coverage>=7.6.1",
+[tool.uv]
+dev-dependencies = [
+    "coverage>=7.6.1",
+    "fastapi>=0.114.0",
+    "httpx>=0.27.2",
+    "nonebot-adapter-console>=0.6.0",
+    "nonebot-adapter-onebot>=2.4.4",
+    "nonebot-adapter-qq>=1.5.1",
+    "nonebot-adapter-satori>=0.12.5",
+    "nonebot-adapter-telegram>=0.1.0b17",
+    "nonebug>=0.3.7",
+    "pytest>=8.3.2",
+    "pytest-asyncio>=0.24.0",
+    "pytest-mock>=3.14.0",
+    "uvicorn[standard]>=0.30.6",
+    "websockets>=13.0.1",
 ]
-
-[tool.pdm.scripts]
-lint = { composite = ["isort .", "black .", "pyright .", "ruff check ."] }
-test = "coverage run --source nonebot_plugin_exe_code -m pytest tests"
-report = { composite = ["coverage xml", "coverage html"] }
 
 [tool.black]
 line-length = 88
