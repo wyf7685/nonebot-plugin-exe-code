@@ -31,19 +31,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v2
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: true
+          enable-cache: true
 
       - name: Install dependencies
-        run: pdm install
+        run: |
+          uv python install ${{ matrix.python-version }}
+          uv sync --python ${{ matrix.python-version }}
 
       - name: Run Pytest
         run: |
-            pdm test
-            pdm report
+            uv run coverage run --source nonebot_plugin_exe_code -m pytest tests
+            uv run coverage xml
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
