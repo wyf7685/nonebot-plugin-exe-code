@@ -32,6 +32,7 @@ from .utils import (
     is_super_user,
     send_forward_message,
     send_message,
+    export_message,
 )
 
 logger = logger.opt(colors=True)
@@ -40,7 +41,6 @@ message_alia(Message, MessageSegment)
 
 
 def register_api(adapter: type[Adapter]):
-
     def decorator(api: type["API"]) -> type["API"]:
         api_registry[adapter] = api
         adapter_name = adapter.get_name()
@@ -282,6 +282,7 @@ class API(Interface):
         context.update(load_const(self.qid))
         context["qid"] = self.qid
         context["gid"] = self.gid
+        export_message(context)
 
         if is_super_user(self.bot, self.qid):
             export_superuser(context)

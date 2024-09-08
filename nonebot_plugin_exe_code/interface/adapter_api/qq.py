@@ -2,7 +2,6 @@ import contextlib
 from typing import Any
 from typing_extensions import override
 
-from ...constant import T_Context
 from ..api import API as BaseAPI
 from ..api import register_api
 from ..help_doc import descript, message_alia
@@ -28,9 +27,3 @@ with contextlib.suppress(ImportError):
         @debug_log
         async def send_ark(self, ark: MessageArk) -> None:
             await self._send_ark(ark)
-
-        @override
-        def export_to(self, context: T_Context) -> None:
-            super().export_to(context)
-            context["Message"] = Message
-            context["MessageSegment"] = MessageSegment

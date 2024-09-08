@@ -9,7 +9,6 @@ from typing_extensions import override
 from nonebot import on_fullmatch, on_message
 from nonebot.log import logger
 
-from ...constant import T_Context
 from ..api import API as BaseAPI
 from ..api import register_api
 from ..help_doc import descript, message_alia
@@ -277,12 +276,6 @@ with contextlib.suppress(ImportError):
         @debug_log
         async def send_like(self, times: int, qid: str | int | None = None) -> None:
             await self.call_api("send_like", user_id=int(qid or self.qid), times=times)
-
-        @override
-        def export_to(self, context: T_Context) -> None:
-            super().export_to(context)
-            context["Message"] = Message
-            context["MessageSegment"] = MessageSegment
 
         @override
         async def _send_ark(self, ark: "MessageArk") -> Any:
