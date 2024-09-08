@@ -25,8 +25,8 @@ def _faker(start: int) -> Callable[[], int]:
     return faker
 
 
-fake_user_id = _faker(1000)
-fake_group_id = _faker(2000)
+fake_user_id = _faker(100000)
+fake_group_id = _faker(200000)
 fake_img_bytes = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
     b"\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc```"

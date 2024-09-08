@@ -5,7 +5,7 @@ import pytest
 from nonebot.adapters import console, onebot, qq, telegram
 from nonebug import NONEBOT_INIT_KWARGS, App
 
-superuser = 7685
+superuser = 7685000
 exe_code_user = 114514
 exe_code_group = 1919810
 exe_code_qbot_id = 10007685
