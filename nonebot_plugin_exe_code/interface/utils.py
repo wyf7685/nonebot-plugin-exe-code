@@ -145,7 +145,9 @@ def is_message_t(message: Any) -> TypeIs[T_Message]:
     return isinstance(message, T_Message)
 
 
-async def as_unimsg(message: T_Message) -> UniMessage:
+async def as_unimsg(message: Any) -> UniMessage:
+    if not is_message_t(message):
+        message = str(message)
     if isinstance(message, MessageSegment):
         message = cast(type[Message], message.get_message_class())(message)
     if isinstance(message, str | Segment):
