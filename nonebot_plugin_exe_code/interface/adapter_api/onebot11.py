@@ -1,6 +1,9 @@
 import asyncio
+from base64 import b64encode
 import contextlib
 import functools
+from io import BytesIO
+from pathlib import Path
 import uuid
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Protocol
@@ -19,6 +22,16 @@ if TYPE_CHECKING:
 
     class _ApiCall(Protocol):
         async def __call__(self, **kwargs: Any) -> Any: ...
+
+
+def file2str(file: str | bytes | BytesIO | Path) -> str:
+    if isinstance(file, BytesIO):
+        file = file.getvalue()
+    if isinstance(file, Path):
+        file = file.resolve().read_bytes()
+    if isinstance(file, bytes):
+        file = f"base64://{b64encode(file).decode()}"
+    return file
 
 
 with contextlib.suppress(ImportError):
@@ -275,6 +288,82 @@ with contextlib.suppress(ImportError):
         @debug_log
         async def send_like(self, times: int, qid: str | int | None = None) -> None:
             await self.call_api("send_like", user_id=int(qid or self.qid), times=times)
+
+        @descript(
+            description="发送群文件",
+            parameters=dict(
+                file="需要发送的文件，可以是url/base64/bytes/Path",
+                name="上传的文件名",
+                gid="目标群号，默认为当前群聊，私聊时必填",
+            ),
+        )
+        @debug_log
+        async def send_group_file(
+            self,
+            file: str | bytes | BytesIO | Path,
+            name: str,
+            gid: str | int | None = None,
+        ) -> None:
+            file = file2str(file)
+            gid = gid or self.gid
+            if gid is None:
+                raise ValueError("未指定群号")
+            if not str(gid).isdigit():
+                raise ValueError(f"群号错误: {gid} 不是数字")
+
+            # https://docs.go-cqhttp.org/api/#%E4%B8%8A%E4%BC%A0%E7%BE%A4%E6%96%87%E4%BB%B6
+            await self.call_api(
+                "upload_group_file",
+                group_id=int(gid),
+                file=file,
+                name=name,
+            )
+
+        @descript(
+            description="发送私聊文件",
+            parameters=dict(
+                file="需要发送的文件，可以是url/base64/bytes/Path",
+                name="上传的文件名",
+                qid="目标QQ号，默认为当前用户",
+            ),
+        )
+        @debug_log
+        async def send_private_file(
+            self,
+            file: str | bytes | BytesIO | Path,
+            name: str,
+            qid: str | int | None = None,
+        ) -> None:
+            file = file2str(file)
+            qid = qid or self.qid
+            if not str(qid).isdigit():
+                raise ValueError(f"QQ号错误: {qid} 不是数字")
+
+            # https://docs.go-cqhttp.org/api/#%E4%B8%8A%E4%BC%A0%E7%A7%81%E8%81%8A%E6%96%87%E4%BB%B6
+            await self.call_api(
+                "upload_private_file",
+                user_id=int(qid),
+                file=file,
+                name=name,
+            )
+
+        @descript(
+            description="向当前会话发送文件",
+            parameters=dict(
+                file="需要发送的文件，可以是url/base64/bytes/Path",
+                name="上传的文件名",
+            ),
+        )
+        @debug_log
+        async def send_file(
+            self,
+            file: str | bytes | BytesIO | Path,
+            name: str,
+        ) -> None:
+            if self.is_group():
+                await self.send_group_file(file, name, self.gid)
+            else:
+                await self.send_private_file(file, name, self.qid)
 
         @override
         async def _send_ark(self, ark: "MessageArk") -> Any:
