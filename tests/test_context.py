@@ -6,11 +6,7 @@ import pytest
 from nonebot.adapters.onebot.v11 import Message
 from nonebug import App
 
-from tests.fake import (
-    ensure_context,
-    fake_v11_bot,
-    fake_v11_event_session,
-)
+from tests.fake import ensure_context, fake_v11_bot, fake_v11_event_session
 
 
 @pytest.mark.asyncio
