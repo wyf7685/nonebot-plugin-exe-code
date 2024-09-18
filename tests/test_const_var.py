@@ -1,3 +1,5 @@
+# ruff: noqa: S101
+
 import pytest
 from nonebot.adapters.onebot.v11 import Message
 from nonebug import App
@@ -21,7 +23,7 @@ reset()
 
 
 @pytest.mark.asyncio
-async def test_const_var(app: App):
+async def test_const_var(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -46,7 +48,7 @@ api.set_const('@@@', 123)
 
 
 @pytest.mark.asyncio
-async def test_invalid_const_var_name(app: App):
+async def test_invalid_const_var_name(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -65,7 +67,7 @@ api.set_const('test_var', object())
 
 
 @pytest.mark.asyncio
-async def test_invalid_const_var_value(app: App):
+async def test_invalid_const_var_value(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:

@@ -1,4 +1,5 @@
 import os
+from collections.abc import AsyncGenerator
 
 import nonebot
 import pytest
@@ -11,11 +12,11 @@ exe_code_group = 1919810
 exe_code_qbot_id = 10007685
 
 
-def pytest_configure(config: pytest.Config):
+def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
         "driver": "~fastapi+~httpx+~websockets",
         "log_level": "DEBUG",
-        "host": "0.0.0.0",
+        "host": "127.0.0.1",
         "port": "8080",
         "superusers": [str(superuser)],
         "exe_code": {
@@ -28,7 +29,7 @@ def pytest_configure(config: pytest.Config):
 
 
 @pytest.fixture
-async def app():
+async def app() -> AsyncGenerator[App, None]:
     # 加载插件
     nonebot.require("nonebot_plugin_exe_code")
 
@@ -44,12 +45,10 @@ async def app():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def load_bot():
+def _load_bot() -> None:
     # 加载适配器
     driver = nonebot.get_driver()
     driver.register_adapter(console.Adapter)
     driver.register_adapter(onebot.v11.Adapter)
     driver.register_adapter(qq.Adapter)
     driver.register_adapter(telegram.Adapter)
-
-    return None

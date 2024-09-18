@@ -6,7 +6,7 @@ from tests.fake import fake_console_bot, fake_console_message_event
 
 
 @pytest.mark.asyncio
-async def test_console(app: App):
+async def test_console(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:

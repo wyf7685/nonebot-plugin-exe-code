@@ -14,7 +14,7 @@ fake_code = "a = 1"
 
 
 @pytest.mark.asyncio
-async def test_superuser_private(app: App):
+async def test_superuser_private(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -31,7 +31,7 @@ async def test_superuser_private(app: App):
 
 
 @pytest.mark.asyncio
-async def test_superuser_group(app: App):
+async def test_superuser_group(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -49,7 +49,7 @@ async def test_superuser_group(app: App):
 
 
 @pytest.mark.asyncio
-async def test_exe_code_user_private(app: App):
+async def test_exe_code_user_private(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -66,7 +66,7 @@ async def test_exe_code_user_private(app: App):
 
 
 @pytest.mark.asyncio
-async def test_exe_code_user_group(app: App):
+async def test_exe_code_user_group(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -84,7 +84,7 @@ async def test_exe_code_user_group(app: App):
 
 
 @pytest.mark.asyncio
-async def test_exe_code_group(app: App):
+async def test_exe_code_group(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -102,7 +102,7 @@ async def test_exe_code_group(app: App):
 
 
 @pytest.mark.asyncio
-async def test_not_allow_private(app: App):
+async def test_not_allow_private(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -114,7 +114,7 @@ async def test_not_allow_private(app: App):
 
 
 @pytest.mark.asyncio
-async def test_not_allow_group(app: App):
+async def test_not_allow_group(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:

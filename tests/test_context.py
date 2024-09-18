@@ -1,3 +1,5 @@
+# ruff: noqa: S101
+
 import asyncio
 
 import pytest
@@ -13,14 +15,14 @@ from tests.fake import (
 
 
 @pytest.mark.asyncio
-async def test_lock(app: App):
+async def test_lock(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot)
 
-        async def _test(delay: float, code: str):
+        async def _test(delay: float, code: str) -> None:
             await asyncio.sleep(delay)
             await Context.execute(bot, session, code)
 
@@ -35,7 +37,7 @@ async def test_lock(app: App):
 
 
 @pytest.mark.asyncio
-async def test_cancel(app: App):
+async def test_cancel(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -43,11 +45,11 @@ async def test_cancel(app: App):
         event, session = fake_v11_event_session(bot)
         result = False
 
-        async def _test1():
+        async def _test1() -> None:
             with pytest.raises(asyncio.CancelledError):
                 await Context.execute(bot, session, "await sleep(1); print(1)")
 
-        async def _test2():
+        async def _test2() -> None:
             nonlocal result
             await asyncio.sleep(0.01)
             result = Context.get_context(session).cancel()
@@ -57,7 +59,7 @@ async def test_cancel(app: App):
         assert result
 
 
-def test_context_variable():
+def test_context_variable() -> None:
     from nonebot_plugin_alconna.uniseg import Image, UniMessage
 
     from nonebot_plugin_exe_code.context import Context

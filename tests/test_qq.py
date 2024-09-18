@@ -1,3 +1,5 @@
+# ruff: noqa: S101
+
 import pytest
 from nonebot.adapters.qq import Message, MessageSegment
 from nonebot.adapters.qq.models import (
@@ -19,7 +21,7 @@ from tests.fake import (
 
 
 @pytest.mark.asyncio
-async def test_qq(app: App):
+async def test_qq(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -71,7 +73,7 @@ expected_build_ark = MessageArk(
 
 
 @pytest.mark.asyncio
-async def test_build_send_ark(app: App):
+async def test_build_send_ark(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -109,7 +111,7 @@ expected_ark_23 = MessageArk(
 
 
 @pytest.mark.asyncio
-async def test_qq_ark_23(app: App):
+async def test_qq_ark_23(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -136,7 +138,7 @@ expected_ark_24 = MessageArk(
 
 
 @pytest.mark.asyncio
-async def test_qq_ark_24(app: App):
+async def test_qq_ark_24(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -163,7 +165,7 @@ expected_ark_37 = MessageArk(
 
 
 @pytest.mark.asyncio
-async def test_qq_ark_37(app: App):
+async def test_qq_ark_37(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:

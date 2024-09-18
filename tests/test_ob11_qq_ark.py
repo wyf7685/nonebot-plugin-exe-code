@@ -1,3 +1,5 @@
+# ruff: noqa: N806, N814
+
 import asyncio
 
 import pytest
@@ -32,7 +34,7 @@ expected_ark_24 = MessageArk(
 
 
 @pytest.mark.asyncio
-async def test_ob11_send_ark(app: App, mocker: MockerFixture):
+async def test_ob11_send_ark(app: App, mocker: MockerFixture) -> None:
     import uuid
 
     from nonebot.adapters.qq import MessageSegment as QQMS
@@ -66,15 +68,15 @@ async def test_ob11_send_ark(app: App, mocker: MockerFixture):
         ctx.should_call_send(event_qq, QQMS.ark(expected_ark_24), bot=botQQ)
         ctx.should_call_send(event_code, Message(MessageSegment.json(card)))
 
-        async def _test1():
+        async def _test1() -> None:
             with ensure_context(botV11, event_code):
                 await Context.execute(botV11, session, code_test_ob11_send_ark)
 
-        async def _test2():
+        async def _test2() -> None:
             await asyncio.sleep(0.01)
             await handle_event(botQQ, event_qq)
 
-        async def _test3():
+        async def _test3() -> None:
             await asyncio.sleep(0.02)
             await handle_event(botV11, event_v11)
 
@@ -82,7 +84,7 @@ async def test_ob11_send_ark(app: App, mocker: MockerFixture):
 
 
 @pytest.mark.asyncio
-async def test_ob11_send_ark_fail(app: App, mocker: MockerFixture):
+async def test_ob11_send_ark_fail(app: App, mocker: MockerFixture) -> None:
     import uuid
 
     from nonebot.adapters.qq import MessageSegment as QQMS
@@ -115,14 +117,14 @@ async def test_ob11_send_ark_fail(app: App, mocker: MockerFixture):
             exception=RuntimeError("test"),
         )
 
-        async def _test1():
+        async def _test1() -> None:
             with (
                 ensure_context(botV11, event_code),
                 pytest.raises(RuntimeError, match="test"),
             ):
                 await Context.execute(botV11, session, code_test_ob11_send_ark)
 
-        async def _test2():
+        async def _test2() -> None:
             await asyncio.sleep(0.01)
             await handle_event(botQQ, event_qq)
 

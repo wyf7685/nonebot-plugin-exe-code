@@ -1,16 +1,16 @@
 import asyncio
-from base64 import b64encode
 import contextlib
 import functools
+import uuid
+from base64 import b64encode
+from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
-import uuid
-from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Protocol
-from typing_extensions import override
 
 from nonebot import on_fullmatch, on_message
 from nonebot.log import logger
+from typing_extensions import override
 
 from ..api import API as BaseAPI
 from ..api import register_api
@@ -52,7 +52,7 @@ with contextlib.suppress(ImportError):
         from nonebot import get_plugin_config
         from nonebot.adapters.qq import Bot as QQBot
         from nonebot.adapters.qq import C2CMessageCreateEvent
-        from nonebot.adapters.qq import MessageSegment as QQMS
+        from nonebot.adapters.qq import MessageSegment as QQMS  # noqa: N814
         from nonebot.adapters.qq.models import MessageArk
         from pydantic import BaseModel
 
@@ -78,7 +78,7 @@ with contextlib.suppress(ImportError):
             key = f"$ARK-{uuid.uuid4()}$"
             logger.debug(f"生成 ark key: {key}")
 
-            async def handle_qq(bot: QQBot, event: C2CMessageCreateEvent):
+            async def handle_qq(bot: QQBot, event: C2CMessageCreateEvent) -> None:
                 logger.debug("QQ Adapter 收到 ark key")
                 try:
                     await bot.send(event, QQMS.ark(ark))
@@ -88,10 +88,10 @@ with contextlib.suppress(ImportError):
                     if not future.done():
                         future.set_exception(err)
 
-            def rule(event: PrivateMessageEvent):
+            def rule(event: PrivateMessageEvent) -> bool:
                 return event.user_id == _conf.qbot_id and len(event.message) == 1
 
-            async def handle_ob(event: PrivateMessageEvent):
+            async def handle_ob(event: PrivateMessageEvent) -> None:
                 seg = event.message.include("json")[0]
                 logger.debug("OneBot V11 Adapter 收到 ark 卡片")
                 card_json = seg.data["data"]

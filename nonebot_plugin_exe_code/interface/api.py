@@ -1,6 +1,6 @@
 import asyncio
-from typing import Any, ClassVar
-from typing_extensions import override
+from collections.abc import Callable
+from typing import Any, ClassVar, TypeVar
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot.internal.matcher import current_event
@@ -8,6 +8,7 @@ from nonebot.log import logger
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage
 from nonebot_plugin_session import Session
 from nonebot_plugin_waiter import prompt as waiter_prompt
+from typing_extensions import override
 
 from ..constant import (
     INTERFACE_METHOD_DESCRIPTION,
@@ -38,10 +39,11 @@ from .utils import (
 logger = logger.opt(colors=True)
 api_registry: dict[type[Adapter], type["API"]] = {}
 message_alia(Message, MessageSegment)
+_A = TypeVar("_A", bound=type["API"])
 
 
-def register_api(adapter: type[Adapter]):
-    def decorator(api: type["API"]) -> type["API"]:
+def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
+    def decorator(api: _A) -> _A:
         api_registry[adapter] = api
         adapter_name = adapter.get_name()
         for desc in api.__method_description__.values():
@@ -154,10 +156,9 @@ class API(Interface):
         ),
     )
     @debug_log
-    async def feedback(self, msg: Any, fwd: bool = False) -> Receipt:
-        if isinstance(msg, list):
-            if fwd and all(is_message_t(i) for i in msg):
-                return await self.send_fwd(msg)
+    async def feedback(self, msg: Any, *, fwd: bool = False) -> Receipt:
+        if isinstance(msg, list) and fwd and all(is_message_t(i) for i in msg):
+            return await self.send_fwd(msg)
 
         if not is_message_t(msg):
             msg = str(msg)
@@ -215,7 +216,7 @@ class API(Interface):
 
     @export
     @debug_log
-    def print(self, *args: Any, sep: str = " ", end: str = "\n", **_):
+    def print(self, *args: Any, sep: str = " ", end: str = "\n", **_: Any) -> None:
         Buffer.get(self.qid).write(str(sep).join(map(str, args)) + str(end))
 
     @export

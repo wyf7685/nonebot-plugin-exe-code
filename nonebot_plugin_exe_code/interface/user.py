@@ -37,5 +37,5 @@ class User(Interface):
     async def send_fwd(self, msgs: T_ForwardMsg) -> Receipt:
         return await self.api.send_prv_fwd(self.uid, msgs)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}(user_id={self.uid})"

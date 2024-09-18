@@ -1,3 +1,5 @@
+# ruff: noqa: ANN401, N806, S106
+
 import contextlib
 import itertools
 from collections.abc import Callable, Generator
@@ -40,7 +42,7 @@ def fake_bot(
     ctx: ApiContext | MatcherContext,
     adapter_base: type["Adapter"],
     bot_base: type[B],
-    **kwargs,
+    **kwargs: Any,
 ) -> B:
     return ctx.create_bot(
         base=bot_base,
@@ -49,19 +51,19 @@ def fake_bot(
     )
 
 
-def fake_v11_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "v11.Bot":
+def fake_v11_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> "v11.Bot":
     from nonebot.adapters.onebot.v11 import Adapter, Bot
 
     return fake_bot(ctx, Adapter, Bot, **kwargs)
 
 
-def fake_console_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "console.Bot":
+def fake_console_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> "console.Bot":
     from nonebot.adapters.console import Adapter, Bot
 
     return fake_bot(ctx, Adapter, Bot, **kwargs)
 
 
-def fake_qq_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "qq.Bot":
+def fake_qq_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> "qq.Bot":
     from nonebot.adapters.qq import Adapter, Bot
     from nonebot.adapters.qq.config import BotInfo
 
@@ -78,7 +80,9 @@ def fake_qq_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "qq.Bot":
     )
 
 
-def fake_telegram_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "telegram.Bot":
+def fake_telegram_bot(
+    ctx: ApiContext | MatcherContext, **kwargs: Any
+) -> "telegram.Bot":
     from nonebot.adapters.telegram import Adapter, Bot
     from nonebot.adapters.telegram.config import BotConfig
 
@@ -91,7 +95,7 @@ def fake_telegram_bot(ctx: ApiContext | MatcherContext, **kwargs) -> "telegram.B
     )
 
 
-def fake_v11_group_message_event(**field) -> "v11.GroupMessageEvent":
+def fake_v11_group_message_event(**field: Any) -> "v11.GroupMessageEvent":
     from nonebot.adapters.onebot.v11 import GroupMessageEvent, Message
     from nonebot.adapters.onebot.v11.event import Sender
     from pydantic import create_model
@@ -120,7 +124,7 @@ def fake_v11_group_message_event(**field) -> "v11.GroupMessageEvent":
     return FakeEvent(**field)
 
 
-def fake_v11_private_message_event(**field) -> "v11.PrivateMessageEvent":
+def fake_v11_private_message_event(**field: Any) -> "v11.PrivateMessageEvent":
     from nonebot.adapters.onebot.v11 import Message, PrivateMessageEvent
     from nonebot.adapters.onebot.v11.event import Sender
     from pydantic import create_model
@@ -144,14 +148,14 @@ def fake_v11_private_message_event(**field) -> "v11.PrivateMessageEvent":
     return FakeEvent(**field)
 
 
-def fake_console_message_event(**field) -> "console.MessageEvent":
+def fake_console_message_event(**field: Any) -> "console.MessageEvent":
     from nonebot.adapters.console import Message, MessageEvent, User
     from pydantic import create_model
 
     _Fake = create_model("_Fake", __base__=MessageEvent)
 
     class FakeEvent(_Fake):
-        time: datetime = datetime.now()
+        time: datetime = datetime.now()  # noqa: DTZ005
         self_id: str = "pytest"
         post_type: Literal["message"] = "message"
         user: User = User("nonebug")
@@ -160,7 +164,7 @@ def fake_console_message_event(**field) -> "console.MessageEvent":
     return FakeEvent(**field)
 
 
-def fake_qq_message_create_event(**field) -> "qq.MessageCreateEvent":
+def fake_qq_message_create_event(**field: Any) -> "qq.MessageCreateEvent":
     from nonebot.adapters.qq import MessageCreateEvent
     from nonebot.adapters.qq.models.common import (
         MessageArk,
@@ -195,7 +199,7 @@ def fake_qq_message_create_event(**field) -> "qq.MessageCreateEvent":
     return FakeEvent(**field)
 
 
-def fake_qq_c2c_message_create_event(**field) -> "qq.C2CMessageCreateEvent":
+def fake_qq_c2c_message_create_event(**field: Any) -> "qq.C2CMessageCreateEvent":
     from nonebot.adapters.qq import C2CMessageCreateEvent
     from nonebot.adapters.qq.models.qq import Attachment, FriendAuthor
     from pydantic import create_model
@@ -214,7 +218,7 @@ def fake_qq_c2c_message_create_event(**field) -> "qq.C2CMessageCreateEvent":
     return FakeEvent(**field)
 
 
-def fake_telegram_private_message_event(**field) -> "tgevent.PrivateMessageEvent":
+def fake_telegram_private_message_event(**field: Any) -> "tgevent.PrivateMessageEvent":
     from nonebot.adapters.telegram.event import MessageEvent, PrivateMessageEvent
     from nonebot.adapters.telegram.message import Message
     from nonebot.adapters.telegram.model import Chat, User
@@ -246,7 +250,7 @@ def fake_telegram_private_message_event(**field) -> "tgevent.PrivateMessageEvent
     return FakeEvent(**field)
 
 
-def fake_telegram_group_message_event(**field) -> "tgevent.GroupMessageEvent":
+def fake_telegram_group_message_event(**field: Any) -> "tgevent.GroupMessageEvent":
     from nonebot.adapters.telegram.event import GroupMessageEvent, MessageEvent
     from nonebot.adapters.telegram.message import Message
     from nonebot.adapters.telegram.model import Chat, User
@@ -316,7 +320,7 @@ def fake_qq_guild_exe_code(
     )
 
 
-def fake_qq_c2c_exe_code(user_id: str, code: str):
+def fake_qq_c2c_exe_code(user_id: str, code: str) -> "qq.C2CMessageCreateEvent":
     from nonebot.adapters.qq.models.qq import FriendAuthor
 
     return fake_qq_c2c_message_create_event(

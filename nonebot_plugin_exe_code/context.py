@@ -1,13 +1,14 @@
 import contextlib
 from asyncio import Future, Queue, Task, get_event_loop
+from collections.abc import AsyncGenerator
 from copy import deepcopy
 from typing import Any, ClassVar, cast
-from typing_extensions import Self
 
 from nonebot.adapters import Bot, Event, Message
 from nonebot.log import logger
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
 from nonebot_plugin_session import Session
+from typing_extensions import Self
 
 from .constant import T_Context, T_Executor
 from .interface import Buffer, default_context, get_api_class
@@ -51,10 +52,9 @@ class Context:
     def _session2uin(session: Session | Event | str) -> str:
         if isinstance(session, Session):
             return session.id1 or "None"
-        elif isinstance(session, Event):
+        if isinstance(session, Event):
             return session.get_user_id()
-        else:
-            return str(session)
+        return str(session)
 
     @classmethod
     def get_context(cls, session: Session | Event | str) -> Self:
@@ -66,7 +66,7 @@ class Context:
         return cls._contexts[uin]
 
     @contextlib.asynccontextmanager
-    async def _lock(self):
+    async def _lock(self) -> AsyncGenerator[None, None]:
         fut: Future[None]
 
         if self.locked:
@@ -96,18 +96,18 @@ class Context:
         code = compile(solved, f"<executor_{self.uin}>", "exec")
 
         # 包装为异步函数
-        exec(code, self.ctx, self.ctx)
+        exec(code, self.ctx, self.ctx)  # noqa: S102
         return self.ctx.pop("__executor__")
 
     @classmethod
     async def execute(cls, bot: Bot, session: Session, code: str) -> None:
         uin = cls._session2uin(session)
         self = cls.get_context(session)
-        API = get_api_class(bot)
+        api_class = get_api_class(bot)
 
         # 执行代码时加锁，避免出现多段代码分别读写变量
         async with self._lock():
-            API(bot, session).export_to(self.ctx)
+            api_class(bot, session).export_to(self.ctx)
             executor = self._solve_code(code)
             logger.debug(f"为用户 <y>{uin}</y> 创建 executor: {executor}")
             self.task = get_event_loop().create_task(executor())

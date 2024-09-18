@@ -1,3 +1,5 @@
+# ruff: noqa: S101
+
 import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -31,15 +33,15 @@ type_alias: dict[Any, str] = {
 }
 
 
-def message_alia(M: type[Message], MS: type[MessageSegment]) -> None:
-    type_alias[M] = "Message"
-    type_alias[MS] = "MessageSegment"
+def message_alia(m: type[Message], ms: type[MessageSegment]) -> None:
+    type_alias[m] = "Message"
+    type_alias[ms] = "MessageSegment"
 
 
 def _type_string(t: type | str) -> str:
     if isinstance(t, str):
         return t
-    elif t in type_alias:
+    if t in type_alias:
         return type_alias[t]
     return inspect.formatannotation(t)
 
@@ -63,7 +65,7 @@ class FuncDescription:
     result: str | None
     ignore: set[str]
 
-    def format(self, func: Callable[..., Any]):
+    def format(self, func: Callable[..., Any]) -> str:
         return DESCRIPTION_FORMAT.format(
             decl=func_declaration(func, self.ignore),
             desc=self.description,

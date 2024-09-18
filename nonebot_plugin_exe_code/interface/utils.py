@@ -2,7 +2,6 @@ import asyncio
 import functools
 from collections.abc import Callable, Coroutine, Iterable
 from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast, overload
-from typing_extensions import Self, TypeIs
 
 from nonebot import get_adapters, get_driver
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
@@ -18,6 +17,7 @@ from nonebot_plugin_alconna.uniseg import (
     UniMessage,
 )
 from nonebot_plugin_session import Session
+from typing_extensions import Self, TypeIs
 
 from ..constant import (
     INTERFACE_EXPORT_METHOD,
@@ -106,8 +106,7 @@ class Buffer:
         return cls._user_buf[uin]
 
     def write(self, text: str) -> None:
-        assert isinstance(text, str)
-        self._buffer += text
+        self._buffer += str(text)
 
     def read(self) -> str:
         value, self._buffer = self._buffer, ""
@@ -118,7 +117,7 @@ class Result:
     error: Exception | None = None
     _data: T_API_Result
 
-    def __init__(self, data: T_API_Result):
+    def __init__(self, data: T_API_Result) -> None:
         self._data = data
         if isinstance(data, dict):
             self.error = data.get("error")
@@ -128,12 +127,11 @@ class Result:
     def __getitem__(self, key: str | int) -> Any:
         if isinstance(self._data, dict) and isinstance(key, str):
             return self._data[key]
-        elif isinstance(self._data, list) and isinstance(key, int):
+        if isinstance(self._data, list) and isinstance(key, int):
             return self._data[key]
-        elif self._data is not None:
+        if self._data is not None:
             raise KeyError(f"{key!r} 不能作为索引")
-        else:
-            raise TypeError("返回值 None 不支持索引操作")
+        raise TypeError("返回值 None 不支持索引操作")
 
     def __repr__(self) -> str:
         if self.error is not None:
@@ -158,17 +156,17 @@ async def as_unimsg(message: Any) -> UniMessage:
     return message
 
 
-class ReachLimit(Exception):
+class ReachLimit(Exception):  # noqa: N818
     limit: int = 6
 
     def __init__(self, msg: str) -> None:
         self.msg = msg
 
 
-def _send_message():
+def _send_message():  # noqa: ANN202
     call_cnt: dict[int, int] = {}
 
-    def clean_cnt(key: int):  # pragma: no cover
+    def clean_cnt(key: int) -> None:  # pragma: no cover
         if key in call_cnt:
             del call_cnt[key]
 
@@ -216,8 +214,8 @@ async def send_forward_message(
     )
 
 
-def _export_superuser():
-    def f(s: set[str], x: str):
+def _export_superuser() -> Callable[[T_Context], None]:
+    def f(s: set[str], x: str) -> bool:
         return (s.remove if x in s else s.add)(x) or (x in s)
 
     def set_usr(x: Any) -> bool:
@@ -243,19 +241,19 @@ def _export_superuser():
 export_superuser = _export_superuser()
 
 
-def _export_message():
-    def get_msg_cls(adapter: Adapter):
+def _export_message() -> Callable[[T_Context], None]:
+    def get_msg_cls(adapter: Adapter) -> tuple[type[Message], type[MessageSegment]]:
         msg = UniMessage.text("text").export_sync(adapter=adapter.get_name())
         return type(msg), msg.get_segment_class()
 
     @get_driver().on_startup
-    async def _():
+    async def _() -> None:
         from .help_doc import message_alia
 
         for a in get_adapters().values():
             message_alia(*get_msg_cls(a))
 
-    def export_message(context: T_Context):
+    def export_message(context: T_Context) -> None:
         context["Message"], context["MessageSegment"] = get_msg_cls(
             current_bot.get().adapter
         )

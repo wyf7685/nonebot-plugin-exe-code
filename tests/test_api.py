@@ -1,4 +1,7 @@
+# ruff: noqa: S101
+
 import asyncio
+from typing import TYPE_CHECKING
 
 import pytest
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
@@ -14,13 +17,15 @@ from tests.fake import (
     fake_v11_group_message_event,
 )
 
+if TYPE_CHECKING:
+    from nonebot_plugin_exe_code.interface.help_doc import FuncDescription
+
 
 @pytest.mark.asyncio
-async def test_help_method(app: App):
+async def test_help_method(app: App) -> None:
     from nonebot_plugin_exe_code.constant import INTERFACE_METHOD_DESCRIPTION
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.api import API
-    from nonebot_plugin_exe_code.interface.help_doc import FuncDescription
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -35,11 +40,11 @@ async def test_help_method(app: App):
 
 
 @pytest.mark.asyncio
-async def test_help(app: App):
+async def test_help(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.adapter_api.onebot11 import API
 
-    content, description = API._get_all_description()
+    content, description = API._get_all_description()  # noqa: SLF001
     expected = [
         MessageSegment.node_custom(0, "forward", Message(MessageSegment.text(msg)))
         for msg in [
@@ -66,7 +71,7 @@ async def test_help(app: App):
 
 
 @pytest.mark.asyncio
-async def test_superuser(app: App):
+async def test_superuser(app: App) -> None:
     from nonebot_plugin_exe_code.config import config
     from nonebot_plugin_exe_code.context import Context
 
@@ -91,7 +96,7 @@ async def test_superuser(app: App):
 
 
 @pytest.mark.asyncio
-async def test_send_limit(app: App):
+async def test_send_limit(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.utils import ReachLimit
 
@@ -102,17 +107,16 @@ async def test_send_limit(app: App):
         for i in range(6):
             ctx.should_call_send(event, Message(str(i)))
 
-        with ensure_context(bot, event):
-            with pytest.raises(ReachLimit):
-                await Context.execute(
-                    bot,
-                    session,
-                    "for i in range(7): await feedback(i)",
-                )
+        with ensure_context(bot, event), pytest.raises(ReachLimit):
+            await Context.execute(
+                bot,
+                session,
+                "for i in range(7): await feedback(i)",
+            )
 
 
 @pytest.mark.asyncio
-async def test_is_group(app: App):
+async def test_is_group(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -131,7 +135,7 @@ async def test_is_group(app: App):
 
 
 @pytest.mark.asyncio
-async def test_feedback_forward(app: App):
+async def test_feedback_forward(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -158,7 +162,7 @@ async def test_feedback_forward(app: App):
 
 
 @pytest.mark.asyncio
-async def test_send_private_forward(app: App):
+async def test_send_private_forward(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -185,7 +189,7 @@ async def test_send_private_forward(app: App):
 
 
 @pytest.mark.asyncio
-async def test_send_group_forward(app: App):
+async def test_send_group_forward(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -217,7 +221,7 @@ print(await api.input("test-prompt"))
 
 
 @pytest.mark.asyncio
-async def test_api_input(app: App):
+async def test_api_input(app: App) -> None:
     from nonebot.message import handle_event
 
     from nonebot_plugin_exe_code.context import Context
@@ -237,11 +241,11 @@ async def test_api_input(app: App):
         ctx.should_call_send(event, prompt)
         ctx.should_call_send(event, expected)
 
-        async def _test1():
+        async def _test1() -> None:
             with ensure_context(bot, event, matcher()):
                 await Context.execute(bot, session, code_test_api_input)
 
-        async def _test2():
+        async def _test2() -> None:
             await asyncio.sleep(0.1)
             await handle_event(bot, input_event)
 

@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 from nonebot import on_message
 from nonebot_plugin_alconna.uniseg import UniMessage
 
@@ -17,7 +19,7 @@ async def handle_getmid(
     ctx: CodeContext,
     reply: EventReply,
     reply_msg: EventReplyMessage,
-):
+) -> NoReturn:
     ctx.set_gem(reply_msg)
     ctx.set_gurl(await UniMessage.generate(message=reply_msg))
     await UniMessage.text(reply.id).finish()

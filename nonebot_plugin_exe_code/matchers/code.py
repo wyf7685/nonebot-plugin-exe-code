@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, NoReturn
 
 from nonebot import on_message
 from nonebot.adapters import Bot, Event
@@ -20,7 +20,7 @@ async def handle_code(
     session: EventSession,
     code: ExtractCode,
     uinfo: Annotated[UserInfo | None, EventUserInfo()],
-):
+) -> NoReturn:
     try:
         await Context.execute(bot, session, code)
     except BaseException as err:

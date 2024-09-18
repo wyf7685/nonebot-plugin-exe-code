@@ -11,7 +11,7 @@ await api.img_summary("test")
 
 
 @pytest.mark.asyncio
-async def test_ob11_img_summary(app: App):
+async def test_ob11_img_summary(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     url = "http://localhost:8080/image.png"
@@ -35,7 +35,7 @@ await recall(1)
 
 
 @pytest.mark.asyncio
-async def test_ob11_recall(app: App):
+async def test_ob11_recall(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -52,7 +52,7 @@ print(await get_msg(1))
 
 
 @pytest.mark.asyncio
-async def test_ob11_get_msg(app: App):
+async def test_ob11_get_msg(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -74,7 +74,7 @@ print((await get_fwd(1))[0])
 
 
 @pytest.mark.asyncio
-async def test_ob11_get_fwd(app: App):
+async def test_ob11_get_fwd(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -97,7 +97,7 @@ raise res.error
 
 
 @pytest.mark.asyncio
-async def test_ob11_exception_1(app: App):
+async def test_ob11_exception_1(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -114,7 +114,7 @@ print(await api.not_an_action(arg=123))
 
 
 @pytest.mark.asyncio
-async def test_ob11_exception_2(app: App):
+async def test_ob11_exception_2(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -135,7 +135,7 @@ except Exception as err:
 
 
 @pytest.mark.asyncio
-async def test_ob11_exception_3(app: App):
+async def test_ob11_exception_3(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -153,7 +153,7 @@ print(api.__not_an_attr__)
 
 
 @pytest.mark.asyncio
-async def test_ob11_exception_4(app: App):
+async def test_ob11_exception_4(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -171,7 +171,7 @@ print(res[0])
 
 
 @pytest.mark.asyncio
-async def test_ob11_call_api_1(app: App):
+async def test_ob11_call_api_1(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -193,7 +193,7 @@ print(res["key"])
 
 
 @pytest.mark.asyncio
-async def test_ob11_call_api_2(app: App):
+async def test_ob11_call_api_2(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
@@ -211,7 +211,7 @@ print(res["key"])
 
 
 @pytest.mark.asyncio
-async def test_ob11_call_api_3(app: App):
+async def test_ob11_call_api_3(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:

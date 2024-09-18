@@ -17,11 +17,13 @@ class InterfaceMeta(type):
     __export_method__: list[str]
     __method_description__: dict[str, FuncDescription]
 
-    def __new__(cls, name: str, bases: tuple[type, ...], attrs: dict[str, Any]):
+    def __new__(  # noqa: ANN204
+        cls, name: str, bases: tuple[type, ...], attrs: dict[str, Any]
+    ):
         # default instance name
         attrs.setdefault(INTERFACE_INST_NAME, name.lower())
 
-        Interface = super().__new__(cls, name, bases, attrs)
+        Interface = super().__new__(cls, name, bases, attrs)  # noqa: N806
         attr = Interface.__dict__  # shortcut
 
         # export
@@ -38,15 +40,15 @@ class InterfaceMeta(type):
 
         return Interface
 
-    def get_export_method(self) -> Generator[str, None, None]:
-        for cls in reversed(self.mro()):
-            if isinstance(cls, InterfaceMeta) and hasattr(cls, "__export_method__"):
-                yield from cls.__export_method__
+    def get_export_method(cls) -> Generator[str, None, None]:
+        for c in reversed(cls.mro()):
+            if isinstance(c, InterfaceMeta) and hasattr(c, "__export_method__"):
+                yield from c.__export_method__
 
-    def _get_method_description(self) -> Generator[_Desc, None, None]:
-        inst_name: str = getattr(self, "__inst_name__")
-        for func_name, desc in self.__method_description__.items():
-            func = cast(Callable[..., Any], getattr(self, func_name))
+    def _get_method_description(cls) -> Generator[_Desc, None, None]:
+        inst_name: str = cls.__inst_name__  # pyright:ignore[reportAttributeAccessIssue]
+        for func_name, desc in cls.__method_description__.items():
+            func = cast(Callable[..., Any], getattr(cls, func_name))
             is_export = is_export_method(func)
             yield _Desc(inst_name, func_name, is_export, desc.format(func))
 
@@ -56,7 +58,7 @@ class Interface(metaclass=InterfaceMeta):
     __export_method__: ClassVar[list[str]]
     __method_description__: ClassVar[dict[str, str]]
 
-    def export_to(self, context: T_Context):
+    def export_to(self, context: T_Context) -> None:
         for name in type(self).get_export_method():
             context[name] = getattr(self, name)
         context[self.__inst_name__] = self
@@ -66,7 +68,7 @@ class Interface(metaclass=InterfaceMeta):
         methods: list[_Desc] = []
         for c in cls.mro():
             if issubclass(c, Interface):
-                methods.extend(c._get_method_description())
+                methods.extend(c._get_method_description())  # noqa: SLF001
         methods.sort(key=lambda x: (1 - x.is_export, x.inst_name, x.func_name))
 
         content: list[str] = []

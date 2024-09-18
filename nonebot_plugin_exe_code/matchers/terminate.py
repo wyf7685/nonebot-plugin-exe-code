@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, NoReturn
 
 from nonebot.adapters import Event
 from nonebot.params import Depends
@@ -16,7 +16,7 @@ def _target(event: Event, target: Match[At]) -> str:
 
 
 @matcher.handle()
-async def handle_terminate(target: Annotated[str, Depends(_target)]):
+async def handle_terminate(target: Annotated[str, Depends(_target)]) -> NoReturn:
     if Context.get_context(target).cancel():
         await UniMessage("中止").at(target).text("的执行任务").send()
     await matcher.finish()

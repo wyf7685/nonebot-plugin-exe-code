@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 from nonebot import on_message
 from nonebot_plugin_alconna.uniseg import UniMessage
 
@@ -10,7 +12,7 @@ matcher = on_message(startswith("getraw"), permission=AllowExeCode)
 async def handle_getraw(
     ctx: CodeContext,
     message: EventReplyMessage,
-):
+) -> NoReturn:
     ctx.set_gem(message)
     ctx.set_gurl(await UniMessage.generate(message=message))
     await UniMessage.text(str(message)).finish()

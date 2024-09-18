@@ -28,7 +28,7 @@ def _const_var_path(uin: str) -> Path:
     return fp
 
 
-def set_const(uin: str, name: str, value: T_OptConstVar = None):
+def set_const(uin: str, name: str, value: T_OptConstVar = None) -> None:
     if not name.isidentifier():
         raise ValueError(f"{name!r} 不是合法的 Python 标识符")
 

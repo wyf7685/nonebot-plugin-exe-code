@@ -1,3 +1,5 @@
+# ruff: noqa: S101
+
 import base64
 from contextlib import AsyncExitStack
 from typing import Any
@@ -34,12 +36,12 @@ code_test_extract_code = (
 
 
 @pytest.mark.asyncio
-async def test_extract_code(app: App):
-    from nonebot_plugin_exe_code.matchers.depends import _ExtractCode
+async def test_extract_code(app: App) -> None:
+    from nonebot_plugin_exe_code.matchers.depends import _extract_code
 
     user_id = fake_user_id()
     img_url = "http://localhost/image.png"
-    dependent = parse_handler_dependent(_ExtractCode())
+    dependent = parse_handler_dependent(_extract_code())
     msg = Message(
         [
             MessageSegment.text("code print("),
@@ -63,10 +65,10 @@ async def test_extract_code(app: App):
 
 
 @pytest.mark.asyncio
-async def test_extract_code_fail(app: App):
-    from nonebot_plugin_exe_code.matchers.depends import _ExtractCode
+async def test_extract_code_fail(app: App) -> None:
+    from nonebot_plugin_exe_code.matchers.depends import _extract_code
 
-    dependent = parse_handler_dependent(_ExtractCode())
+    dependent = parse_handler_dependent(_extract_code())
     msg = Message(
         [
             MessageSegment.at(fake_user_id()),
@@ -84,12 +86,12 @@ async def test_extract_code_fail(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_image_1(app: App):
+async def test_event_image_1(app: App) -> None:
     from nonebot_plugin_alconna.uniseg import Image
 
-    from nonebot_plugin_exe_code.matchers.depends import _EventImage
+    from nonebot_plugin_exe_code.matchers.depends import _event_image
 
-    dependent = parse_handler_dependent(_EventImage())
+    dependent = parse_handler_dependent(_event_image())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event = fake_v11_group_message_event(
@@ -127,12 +129,12 @@ async def test_event_image_1(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_image_2(app: App):
+async def test_event_image_2(app: App) -> None:
     from nonebot_plugin_alconna.uniseg import Image
 
-    from nonebot_plugin_exe_code.matchers.depends import _EventImage
+    from nonebot_plugin_exe_code.matchers.depends import _event_image
 
-    dependent = parse_handler_dependent(_EventImage())
+    dependent = parse_handler_dependent(_event_image())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event = fake_v11_group_message_event(
@@ -153,12 +155,12 @@ async def test_event_image_2(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_image_3(app: App):
+async def test_event_image_3(app: App) -> None:
     from nonebot_plugin_alconna.uniseg import Image
 
-    from nonebot_plugin_exe_code.matchers.depends import _EventImage
+    from nonebot_plugin_exe_code.matchers.depends import _event_image
 
-    dependent = parse_handler_dependent(_EventImage())
+    dependent = parse_handler_dependent(_event_image())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event = fake_v11_group_message_event(
@@ -178,10 +180,10 @@ async def test_event_image_3(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_image_fail(app: App):
-    from nonebot_plugin_exe_code.matchers.depends import _EventImage
+async def test_event_image_fail(app: App) -> None:
+    from nonebot_plugin_exe_code.matchers.depends import _event_image
 
-    dependent = parse_handler_dependent(_EventImage())
+    dependent = parse_handler_dependent(_event_image())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event = fake_v11_group_message_event(
@@ -194,12 +196,12 @@ async def test_event_image_fail(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_reply(app: App):
+async def test_event_reply(app: App) -> None:
     from nonebot_plugin_alconna.uniseg import Reply as AlcReply
 
-    from nonebot_plugin_exe_code.matchers.depends import _EventReply
+    from nonebot_plugin_exe_code.matchers.depends import _event_reply
 
-    dependent = parse_handler_dependent(_EventReply())
+    dependent = parse_handler_dependent(_event_reply())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         reply_msg = Message([MessageSegment.text("Other text")])
@@ -233,10 +235,10 @@ async def test_event_reply(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_reply_fail(app: App):
-    from nonebot_plugin_exe_code.matchers.depends import _EventReply
+async def test_event_reply_fail(app: App) -> None:
+    from nonebot_plugin_exe_code.matchers.depends import _event_reply
 
-    dependent = parse_handler_dependent(_EventReply())
+    dependent = parse_handler_dependent(_event_reply())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event = fake_v11_group_message_event(
@@ -249,10 +251,10 @@ async def test_event_reply_fail(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_reply_message_1(app: App):
-    from nonebot_plugin_exe_code.matchers.depends import _EventReplyMessage
+async def test_event_reply_message_1(app: App) -> None:
+    from nonebot_plugin_exe_code.matchers.depends import _event_reply_message
 
-    dependent = parse_handler_dependent(_EventReplyMessage())
+    dependent = parse_handler_dependent(_event_reply_message())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         reply_msg = Message([MessageSegment.text("Other text")])
@@ -285,14 +287,22 @@ async def test_event_reply_message_1(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_reply_message_2(app: App):
-    from nonebot_plugin_exe_code.matchers.depends import _EventReplyMessage
+async def test_event_reply_message_2(app: App) -> None:
+    from nonebot_plugin_exe_code.matchers.depends import _event_reply_message
 
-    dependent = parse_handler_dependent(_EventReplyMessage())
+    dependent = parse_handler_dependent(_event_reply_message())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         reply_msg = Message([MessageSegment.text("Other text")])
-        reply_obj = Reply(
+        event = fake_v11_group_message_event(
+            message=Message(
+                [
+                    MessageSegment.reply(1),
+                    MessageSegment.text("Some text"),
+                ]
+            ),
+        )
+        event.reply = Reply(
             time=1000000,
             message_type="test",
             message_id=1,
@@ -302,18 +312,8 @@ async def test_event_reply_message_2(app: App):
                 nickname="test",
                 role="member",
             ),
-            message=reply_msg,
+            message=reply_msg.extract_plain_text(),  # pyright: ignore[reportArgumentType]
         )
-        event = fake_v11_group_message_event(
-            message=Message(
-                [
-                    MessageSegment.reply(1),
-                    MessageSegment.text("Some text"),
-                ]
-            ),
-            reply=reply_obj.model_dump(),
-        )
-        event.reply.message = reply_msg.extract_plain_text()  # type: ignore
         state = {}
         stack = AsyncExitStack()
         with ensure_context(bot, event):
@@ -322,10 +322,10 @@ async def test_event_reply_message_2(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_reply_message_fail_1(app: App):
-    from nonebot_plugin_exe_code.matchers.depends import _EventReplyMessage
+async def test_event_reply_message_fail_1(app: App) -> None:
+    from nonebot_plugin_exe_code.matchers.depends import _event_reply_message
 
-    dependent = parse_handler_dependent(_EventReplyMessage())
+    dependent = parse_handler_dependent(_event_reply_message())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event = fake_v11_group_message_event(
@@ -343,10 +343,10 @@ async def test_event_reply_message_fail_1(app: App):
 
 
 @pytest.mark.asyncio
-async def test_event_reply_message_fail_2(app: App):
-    from nonebot_plugin_exe_code.matchers.depends import _EventReplyMessage
+async def test_event_reply_message_fail_2(app: App) -> None:
+    from nonebot_plugin_exe_code.matchers.depends import _event_reply_message
 
-    dependent = parse_handler_dependent(_EventReplyMessage())
+    dependent = parse_handler_dependent(_event_reply_message())
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         reply_obj = Reply(

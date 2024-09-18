@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import NoReturn
 
 import PIL.Image
 from nonebot import on_message
@@ -16,7 +17,7 @@ async def handle_getimg(
     event: Event,
     ctx: CodeContext,
     image: EventImage,
-):
+) -> NoReturn:
     varname = (
         event.get_message().extract_plain_text().strip().removeprefix("getimg").strip()
     )

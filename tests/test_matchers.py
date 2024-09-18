@@ -1,3 +1,5 @@
+# ruff: noqa: S101
+
 import asyncio
 
 import pytest
@@ -18,7 +20,7 @@ from tests.fake import (
 
 
 @pytest.mark.asyncio
-async def test_getraw(app: App):
+async def test_getraw(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.getraw import matcher
 
@@ -60,7 +62,7 @@ async def test_getraw(app: App):
 
 
 @pytest.mark.asyncio
-async def test_getmid(app: App):
+async def test_getmid(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.getmid import matcher
 
@@ -102,7 +104,7 @@ async def test_getmid(app: App):
 
 
 @pytest.mark.asyncio
-async def test_getimg(app: App):
+async def test_getimg(app: App) -> None:
     import PIL.Image
 
     from nonebot_plugin_exe_code.context import Context
@@ -111,12 +113,12 @@ async def test_getimg(app: App):
 
     _image_fetch = getimg.image_fetch
 
-    async def image_fetch(*_) -> bytes:
+    async def image_fetch(*_: object) -> bytes:
         return fake_img_bytes
 
     getimg.image_fetch = image_fetch
 
-    async def _test(varname: str | None = None):
+    async def _test(varname: str | None = None) -> None:
         reply_msg = "some" + MessageSegment.image(file=fake_img_bytes) + "text"
         msg = MessageSegment.reply(1) + "getimg"
         if varname is not None:
@@ -168,13 +170,13 @@ async def test_getimg(app: App):
 
 
 @pytest.mark.asyncio
-async def test_getimg_exception_1(app: App):
+async def test_getimg_exception_1(app: App) -> None:
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
 
     _image_fetch = getimg.image_fetch
 
-    async def image_fetch(*_) -> bytes:
+    async def image_fetch(*_: object) -> bytes:
         raise RuntimeError("test")
 
     getimg.image_fetch = image_fetch
@@ -210,13 +212,13 @@ async def test_getimg_exception_1(app: App):
 
 
 @pytest.mark.asyncio
-async def test_getimg_exception_2(app: App):
+async def test_getimg_exception_2(app: App) -> None:
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
 
     _image_fetch = getimg.image_fetch
 
-    async def image_fetch(*_) -> None:
+    async def image_fetch(*_: object) -> None:
         return None
 
     getimg.image_fetch = image_fetch
@@ -259,7 +261,7 @@ await feedback("test 2")
 
 
 @pytest.mark.asyncio
-async def test_terminate(app: App):
+async def test_terminate(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.terminate import handle_terminate, matcher
 
@@ -282,11 +284,11 @@ async def test_terminate(app: App):
         expected = "中止" + MessageSegment.at(user_id) + "的执行任务"
         ctx.should_call_send(event, expected)
 
-        async def _test1():
+        async def _test1() -> None:
             with pytest.raises(asyncio.CancelledError):
                 await Context.execute(bot, session, code_test_terminate)
 
-        async def _test2():
+        async def _test2() -> None:
             await asyncio.sleep(0.05)
             with pytest.raises(FinishedException):
                 await handle_terminate(target=str(user_id))

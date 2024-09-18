@@ -1,5 +1,7 @@
+# ruff: noqa: ANN401
+
 import contextlib
-from typing import Annotated
+from typing import Annotated, Any
 
 from nonebot.adapters import Bot, Event, Message
 from nonebot.matcher import Matcher
@@ -14,8 +16,8 @@ from ..config import config
 from ..context import Context
 
 
-def _AllowExeCode() -> Permission:
-    def check_console(bot: Bot) -> bool:  # pragma: no cover
+def _allow_exe_code() -> Permission:
+    def check_console(bot: Bot) -> bool:  # pragma: no cover  # noqa: ARG001
         return False
 
     with contextlib.suppress(ImportError):
@@ -34,22 +36,19 @@ def _AllowExeCode() -> Permission:
             return True
 
         # 当触发对话为群组时, 仅配置允许的群组可触发
-        if session.id2 is not None and session.id2 in config.group:
-            return True
-
-        return False
+        return session.id2 is not None and session.id2 in config.group
 
     return SUPERUSER | check
 
 
-def _CodeContext():
+def _code_context() -> Any:
     async def code_context(session: EventSession) -> Context:
         return Context.get_context(session)
 
     return Depends(code_context)
 
 
-def _ExtractCode():
+def _extract_code() -> Any:
     async def extract_code(msg: UniMsg) -> str:
         code = ""
         for seg in msg:
@@ -72,17 +71,17 @@ def _ExtractCode():
     return Depends(extract_code)
 
 
-def _EventImage():
-    async def event_image(msg: UniMessage, _in_reply: bool = False) -> Image:
+def _event_image() -> Any:
+    async def event_image(msg: UniMessage, *, _in_reply: bool = False) -> Image:
         if msg.has(Image):
             return msg[Image, 0]
-        elif msg.has(Reply) and not _in_reply:
+        if msg.has(Reply) and not _in_reply:
             reply = msg[Reply, 0].msg
             if isinstance(reply, Message):
                 msg = await UniMessage.generate(message=reply)
-                return await event_image(msg, True)
+                return await event_image(msg, _in_reply=True)
 
-        Matcher.skip()
+        Matcher.skip()  # noqa: RET503  # wtf?
 
     async def dependency(msg: UniMsg) -> Image:
         return await event_image(msg)
@@ -90,16 +89,16 @@ def _EventImage():
     return Depends(dependency)
 
 
-def _EventReply():
+def _event_reply() -> Any:
     async def event_reply(event: Event, bot: Bot) -> Reply:
         if reply := await reply_fetch(event, bot):
             return reply
-        Matcher.skip()
+        Matcher.skip()  # noqa: RET503  # wtf?
 
     return Depends(event_reply)
 
 
-def _EventReplyMessage():
+def _event_reply_message() -> Any:
     async def event_reply_message(event: Event, reply: EventReply) -> Message:
         if not (msg := reply.msg):
             Matcher.skip()
@@ -112,8 +111,8 @@ def _EventReplyMessage():
     return Depends(event_reply_message)
 
 
-def startswith(text: str):
-    def starts_checker(event: Event):
+def startswith(text: str) -> Rule:
+    def starts_checker(event: Event) -> bool:
         try:
             msg = event.get_message()
         except NotImplementedError:
@@ -124,9 +123,9 @@ def startswith(text: str):
     return Rule(starts_checker)
 
 
-AllowExeCode: Permission = _AllowExeCode()
-CodeContext = Annotated[Context, _CodeContext()]
-ExtractCode = Annotated[str, _ExtractCode()]
-EventImage = Annotated[Image, _EventImage()]
-EventReply = Annotated[Reply, _EventReply()]
-EventReplyMessage = Annotated[Message, _EventReplyMessage()]
+AllowExeCode: Permission = _allow_exe_code()
+CodeContext = Annotated[Context, _code_context()]
+ExtractCode = Annotated[str, _extract_code()]
+EventImage = Annotated[Image, _event_image()]
+EventReply = Annotated[Reply, _event_reply()]
+EventReplyMessage = Annotated[Message, _event_reply_message()]
