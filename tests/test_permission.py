@@ -22,11 +22,6 @@ async def test_superuser_private(app: App) -> None:
         event = fake_v11_private_exe_code(superuser, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_stranger_info",
-            {"user_id": superuser},
-            {"user_id": superuser, "sex": "unkown", "card": "", "nickname": ""},
-        )
         ctx.should_finished(matcher)
 
 
@@ -40,11 +35,6 @@ async def test_superuser_group(app: App) -> None:
         event = fake_v11_group_exe_code(group_id, superuser, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": group_id, "user_id": superuser},
-            {"user_id": superuser, "sex": "unkown", "card": "", "nickname": ""},
-        )
         ctx.should_finished(matcher)
 
 
@@ -57,11 +47,6 @@ async def test_exe_code_user_private(app: App) -> None:
         event = fake_v11_private_exe_code(exe_code_user, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_stranger_info",
-            {"user_id": exe_code_user},
-            {"user_id": exe_code_user, "sex": "unkown", "card": "", "nickname": ""},
-        )
         ctx.should_finished(matcher)
 
 
@@ -75,11 +60,6 @@ async def test_exe_code_user_group(app: App) -> None:
         event = fake_v11_group_exe_code(group_id, exe_code_user, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": group_id, "user_id": exe_code_user},
-            {"user_id": exe_code_user, "sex": "unkown", "card": "", "nickname": ""},
-        )
         ctx.should_finished(matcher)
 
 
@@ -93,11 +73,6 @@ async def test_exe_code_group(app: App) -> None:
         event = fake_v11_group_exe_code(exe_code_group, user_id, fake_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
         ctx.should_finished(matcher)
 
 

@@ -28,11 +28,6 @@ async def test_api_message(app: App) -> None:
         )
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
         ctx.should_call_send(event, Message("1"))
         ctx.should_call_api(
             "send_msg",
@@ -69,11 +64,6 @@ async def test_extract_code(app: App) -> None:
         event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_extract_code)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
         ctx.should_call_send(event, Message("111\n[url]"))
         ctx.should_finished(matcher)
 
@@ -96,11 +86,6 @@ async def test_return(app: App) -> None:
         event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_return)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
         ctx.should_call_send(event, Message("'1234'"))
         ctx.should_finished(matcher)
 
@@ -122,11 +107,6 @@ async def test_exception(app: App) -> None:
         )
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_group_member_info",
-            {"group_id": exe_code_group, "user_id": user_id},
-            {"user_id": user_id, "sex": "unkown", "card": "", "nickname": ""},
-        )
         ctx.should_call_send(
             event, Message("执行失败: ZeroDivisionError('division by zero')")
         )

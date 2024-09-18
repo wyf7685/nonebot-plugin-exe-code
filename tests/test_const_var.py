@@ -39,7 +39,7 @@ async def test_const_var(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(bot, session, code_test_const_var_2)
 
-    assert Context.get_context(str(user_id)).ctx.get("test_var") is None
+    assert Context.get_context(session).ctx.get("test_var") is None
 
 
 code_test_invalid_const_var_name = """\

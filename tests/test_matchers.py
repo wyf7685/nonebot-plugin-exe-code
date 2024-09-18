@@ -50,7 +50,8 @@ async def test_getraw(app: App) -> None:
         ctx.should_call_send(event, expected)
         ctx.should_finished(matcher)
 
-    context = Context.get_context(str(superuser)).ctx
+    event, session = fake_v11_event_session(bot, superuser)
+    context = Context.get_context(session).ctx
     gem = context.get("gem")
     assert gem is not None, "Context variable `gem` not set"
     assert (
@@ -92,7 +93,8 @@ async def test_getmid(app: App) -> None:
         ctx.should_call_send(event, expected)
         ctx.should_finished(matcher)
 
-    context = Context.get_context(str(superuser)).ctx
+    event, session = fake_v11_event_session(bot, superuser)
+    context = Context.get_context(session).ctx
     gem = context.get("gem")
     assert gem is not None, "Context variable `gem` not set"
     assert (
@@ -155,7 +157,8 @@ async def test_getimg(app: App) -> None:
             ctx.should_finished(matcher)
 
         if varname.isidentifier():
-            img = Context.get_context(event).ctx.get(varname)
+            event, session = fake_v11_event_session(bot, event.user_id)
+            img = Context.get_context(session).ctx.get(varname)
             assert img is not None, f"Context variable `{varname}` not set for getimg"
             assert isinstance(img, PIL.Image.Image), (
                 f"Context variable `{varname}` error: "

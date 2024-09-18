@@ -24,16 +24,6 @@ async def test_telegram_private(app: App) -> None:
         expected = Message(f"{superuser} None")
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_chat",
-            {"chat_id": superuser},
-            {"id": superuser, "type": "private"},
-        )
-        ctx.should_call_api(
-            "get_user_profile_photos",
-            {"user_id": superuser, "limit": 1, "offset": None},
-            {"total_count": 0, "photos": []},
-        )
         ctx.should_call_send(event, expected, reply_markup=None)
         ctx.should_finished(matcher)
 
@@ -53,22 +43,5 @@ async def test_telegram_group(app: App) -> None:
         expected = Message(f"{user_id} {exe_code_group}")
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_api(
-            "get_chat_member",
-            {"chat_id": exe_code_group, "user_id": user_id},
-            {
-                "status": "member",
-                "user": {
-                    "id": user_id,
-                    "is_bot": False,
-                    "first_name": "name",
-                },
-            },
-        )
-        ctx.should_call_api(
-            "get_user_profile_photos",
-            {"user_id": user_id, "limit": 1, "offset": None},
-            {"total_count": 0, "photos": []},
-        )
         ctx.should_call_send(event, expected, reply_markup=None)
         ctx.should_finished(matcher)

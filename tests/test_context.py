@@ -8,7 +8,6 @@ from nonebug import App
 
 from tests.fake import (
     ensure_context,
-    fake_user_id,
     fake_v11_bot,
     fake_v11_event_session,
 )
@@ -59,12 +58,15 @@ async def test_cancel(app: App) -> None:
         assert result
 
 
-def test_context_variable() -> None:
+async def test_context_variable(app: App) -> None:
     from nonebot_plugin_alconna.uniseg import Image, UniMessage
 
     from nonebot_plugin_exe_code.context import Context
 
-    context = Context.get_context(str(fake_user_id()))
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        _, session = fake_v11_event_session(bot)
+        context = Context.get_context(session)
 
     key, val = "aaa", 111
     context.set_value(key, val)
