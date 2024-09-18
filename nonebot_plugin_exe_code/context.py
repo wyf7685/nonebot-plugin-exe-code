@@ -7,6 +7,7 @@ from typing import Any, ClassVar, cast
 import nonebot
 from nonebot.adapters import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
+from nonebot.utils import escape_tag
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
 from nonebot_plugin_session import Session, SessionIdType
 from typing_extensions import Self
@@ -119,19 +120,25 @@ class Context:
         uin = cls._session2uin(session)
         self = cls.get_context(session)
         api_class = get_api_class(bot)
+        colored_uin = f"<y>{escape_tag(uin)}</y>"
 
         # 执行代码时加锁，避免出现多段代码分别读写变量
         async with self._lock():
             api_class(bot, session).export_to(self.ctx)
             executor = self._solve_code(code)
-            logger.debug(f"为用户 <y>{uin}</y> 创建 executor: {executor}")
+            logger.debug(f"为用户 {colored_uin} 创建 executor: {executor}")
             self.task = get_event_loop().create_task(executor())
             result, self.task = await self.task, None
 
             if buf := Buffer.get(uin).read().rstrip("\n"):
+                logger.debug(f"用户 {colored_uin} 清空缓冲:")
+                logger.opt(raw=True).debug(buf)
                 await UniMessage.text(buf).send()
+
             if result is not None:
-                await UniMessage.text(repr(result)).send()
+                result = repr(result)
+                logger.debug(f"用户 {colored_uin} 输出返回值: {escape_tag(result)}")
+                await UniMessage.text(result).send()
 
         # 处理异常
         if exc := self.ctx.setdefault("__exception__", (None, None))[0]:
