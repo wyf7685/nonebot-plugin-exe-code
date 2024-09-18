@@ -6,9 +6,9 @@ from typing import Any, ClassVar, cast
 
 import nonebot
 from nonebot.adapters import Bot, Event, Message
-from nonebot.log import logger
+from nonebot.internal.matcher import current_bot, current_event
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
-from nonebot_plugin_session import Session
+from nonebot_plugin_session import Session, SessionIdType
 from typing_extensions import Self
 
 from .constant import T_Context, T_Executor
@@ -34,7 +34,8 @@ async def __executor__():
 
 
 class Context:
-    _contexts: ClassVar[dict[str, Self]] = {}
+    __ua2session: ClassVar[dict[tuple[str, str], Session]] = {}
+    __contexts: ClassVar[dict[str, Self]] = {}
 
     uin: str
     ctx: T_Context
@@ -49,22 +50,35 @@ class Context:
         self.waitlist = Queue()
         self.task = None
 
-    @staticmethod
-    def _session2uin(session: Session | Event | str) -> str:
-        if isinstance(session, Session):
-            return session.id1 or "None"
+    @classmethod
+    def _session2uin(cls, session: Session | Event | str) -> str:
         if isinstance(session, Event):
-            return session.get_user_id()
-        return str(session)
+            if current_event.get() is not session:
+                raise RuntimeError("event mismatch")
+            key = (session.get_user_id(), current_bot.get().type)
+            if key not in cls.__ua2session:
+                raise RuntimeError(f"session {key!r} not initialized")
+            session = cls.__ua2session[key]
+        elif isinstance(session, str):
+            key = (session, current_bot.get().type)
+            if key not in cls.__ua2session:
+                raise RuntimeError(f"session {key!r} not initialized")
+            session = cls.__ua2session[key]
+
+        key = (session.id1 or "", session.bot_type)
+        if key not in cls.__ua2session:
+            cls.__ua2session[key] = session.model_copy()
+
+        return session.get_id(SessionIdType.USER).replace(" ", "_")
 
     @classmethod
     def get_context(cls, session: Session | Event | str) -> Self:
         uin = cls._session2uin(session)
-        if uin not in cls._contexts:
+        if uin not in cls.__contexts:
             logger.debug(f"为用户 <y>{uin}</y> 创建 Context")
-            cls._contexts[uin] = cls(uin)
+            cls.__contexts[uin] = cls(uin)
 
-        return cls._contexts[uin]
+        return cls.__contexts[uin]
 
     @contextlib.asynccontextmanager
     async def _lock(self) -> AsyncGenerator[None, None]:
