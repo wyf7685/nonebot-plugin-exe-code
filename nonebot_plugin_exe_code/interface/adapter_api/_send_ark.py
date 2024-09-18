@@ -1,13 +1,13 @@
 import contextlib
 from typing import Any, ClassVar
 
-from nonebot.log import logger
+import nonebot
 
 from ..help_doc import descript
 from ..interface import Interface
 from ..utils import debug_log
 
-logger = logger.opt(colors=True)
+logger = nonebot.logger.opt(colors=True)
 
 
 def build_ark(

@@ -4,7 +4,6 @@ from typing import Any, ClassVar, TypeVar
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot.internal.matcher import current_event
-from nonebot.log import logger
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage
 from nonebot_plugin_session import Session
 from nonebot_plugin_waiter import prompt as waiter_prompt
@@ -36,7 +35,6 @@ from .utils import (
     send_message,
 )
 
-logger = logger.opt(colors=True)
 api_registry: dict[type[Adapter], type["API"]] = {}
 message_alia(Message, MessageSegment)
 _A = TypeVar("_A", bound=type["API"])

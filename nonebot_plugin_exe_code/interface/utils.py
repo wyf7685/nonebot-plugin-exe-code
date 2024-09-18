@@ -3,10 +3,9 @@ import functools
 from collections.abc import Callable, Coroutine, Iterable
 from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast, overload
 
-from nonebot import get_adapters, get_driver
+import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
 from nonebot.internal.matcher import current_bot
-from nonebot.log import logger
 from nonebot.utils import is_coroutine_callable
 from nonebot_plugin_alconna.uniseg import (
     CustomNode,
@@ -58,6 +57,8 @@ def debug_log(call: Callable[P, R]) -> Callable[P, R]: ...
 def debug_log(
     call: Callable[P, Coro[R]] | Callable[P, R],
 ) -> Callable[P, Coro[R]] | Callable[P, R]:
+    logger = nonebot.logger.opt(colors=True)
+
     if is_coroutine_callable(call):
         call = cast(Callable[P, Coro[R]], call)
 
@@ -246,11 +247,11 @@ def _export_message() -> Callable[[T_Context], None]:
         msg = UniMessage.text("text").export_sync(adapter=adapter.get_name())
         return type(msg), msg.get_segment_class()
 
-    @get_driver().on_startup
+    @nonebot.get_driver().on_startup
     async def _() -> None:
         from .help_doc import message_alia
 
-        for a in get_adapters().values():
+        for a in nonebot.get_adapters().values():
             message_alia(*get_msg_cls(a))
 
     def export_message(context: T_Context) -> None:

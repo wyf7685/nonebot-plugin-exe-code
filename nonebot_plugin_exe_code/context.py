@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator
 from copy import deepcopy
 from typing import Any, ClassVar, cast
 
+import nonebot
 from nonebot.adapters import Bot, Event, Message
 from nonebot.log import logger
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
@@ -13,7 +14,7 @@ from typing_extensions import Self
 from .constant import T_Context, T_Executor
 from .interface import Buffer, default_context, get_api_class
 
-logger = logger.opt(colors=True)
+logger = nonebot.logger.opt(colors=True)
 
 EXECUTOR_INDENT = " " * 8
 EXECUTOR_FUNCTION = """\

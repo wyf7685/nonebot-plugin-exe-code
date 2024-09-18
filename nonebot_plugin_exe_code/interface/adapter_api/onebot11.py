@@ -8,8 +8,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 
+import nonebot
 from nonebot import on_fullmatch, on_message
-from nonebot.log import logger
 from typing_extensions import override
 
 from ..api import API as BaseAPI
@@ -43,7 +43,7 @@ with contextlib.suppress(ImportError):
         PrivateMessageEvent,
     )
 
-    logger = logger.opt(colors=True)
+    logger = nonebot.logger.opt(colors=True)
 
     async def create_ark_card(api: "API", ark: "MessageArk") -> MessageSegment:
         raise NotImplementedError
