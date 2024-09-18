@@ -215,7 +215,8 @@ class API(Interface):
     @export
     @debug_log
     def print(self, *args: Any, sep: str = " ", end: str = "\n", **_: Any) -> None:
-        Buffer.get(self.qid).write(str(sep).join(map(str, args)) + str(end))
+        buffer = Buffer.get(self.session.get_id(1).replace(" ", "_"))
+        buffer.write(str(sep).join(map(str, args)) + str(end))
 
     @export
     @debug_log
