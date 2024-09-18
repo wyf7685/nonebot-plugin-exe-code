@@ -8,7 +8,6 @@ dependencies = [
   "nonebot-plugin-alconna>=0.51.2",
   "nonebot-plugin-localstore>=0.6.0",
   "nonebot-plugin-session>=0.3.1",
-  "nonebot-plugin-userinfo>=0.2.4",
   "nonebot-plugin-waiter>=0.7.1",
   "Pillow>=10.4.0",
 ]

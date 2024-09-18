@@ -271,5 +271,4 @@ await receipt.recall()  # 撤回消息
 - [`nonebot/plugin-alconna`](https://github.com/nonebot/plugin-alconna): 跨平台的消息处理接口
 - [`nonebot/plugin-localstore`](https://github.com/nonebot/plugin-localstore): 插件数据存储
 - [`noneplugin/nonebot-plugin-session`](https://github.com/noneplugin/nonebot-plugin-session): 会话信息提取
-- [`noneplugin/nonebot-plugin-userinfo`](https://github.com/noneplugin/nonebot-plugin-userinfo): 用户信息获取
 - [`RF-Tar-Railt/nonebot-plugin-waiter`](https://github.com/RF-Tar-Railt/nonebot-plugin-waiter): 灵活获取用户输入

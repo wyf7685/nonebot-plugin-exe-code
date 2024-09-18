@@ -5,7 +5,6 @@ from nonebot.plugin.load import inherit_supported_adapters
 require("nonebot_plugin_alconna")
 require("nonebot_plugin_localstore")
 require("nonebot_plugin_session")
-require("nonebot_plugin_userinfo")
 require("nonebot_plugin_waiter")
 
 from . import matchers
@@ -22,7 +21,6 @@ __plugin_meta__ = PluginMetadata(
     supported_adapters=inherit_supported_adapters(
         "nonebot_plugin_alconna",
         "nonebot_plugin_session",
-        "nonebot_plugin_userinfo",
         "nonebot_plugin_waiter",
     ),
     extra={
