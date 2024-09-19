@@ -101,7 +101,7 @@ class Context:
             self.task = None
 
     def _solve_code(self, raw_code: str) -> T_Executor:
-        assert self.locked, "`Context._solve_code` must be called with lock"
+        assert self.locked, "`Context._solve_code` called without lock"
 
         # 预处理代码
         lines: list[str] = [
