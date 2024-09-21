@@ -27,8 +27,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 [![publish](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml)
 
 [![NoneBot Registry](https://img.shields.io/endpoint?url=https%3A%2F%2Fnbbdg.lgc2333.top%2Fplugin%2Fnonebot-plugin-exe-code)](https://registry.nonebot.dev/plugin/nonebot-plugin-exe-code:nonebot_plugin_exe_code)
-[![Supported Adapters](https://img.shields.io/endpoint?url=https%3A%2F%2Fnbbdg.lgc2333.top%2Fplugin-adapters%2Fnonebot-plugin-exe-code)](https://registry.nonebot.dev/plugin/nonebot-plugin-exe-code:nonebot_plugin_exe_code)  
-
+[![Supported Adapters](https://img.shields.io/endpoint?url=https%3A%2F%2Fnbbdg.lgc2333.top%2Fplugin-adapters%2Fnonebot-plugin-exe-code)](https://registry.nonebot.dev/plugin/nonebot-plugin-exe-code:nonebot_plugin_exe_code)
 
 </div>
 
@@ -216,6 +215,8 @@ await receipt.recall()  # 撤回消息
 <details>
     <summary>更新日志</summary>
   
+<!-- CHANGELOG -->
+
 - 2024.09.07 v1.1.0
 
   - `OneBot V11` 适配器接口: 群名片, 群禁言, 资料卡点赞
