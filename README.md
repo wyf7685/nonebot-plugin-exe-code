@@ -217,6 +217,15 @@ await receipt.recall()  # 撤回消息
   
 <!-- CHANGELOG -->
 
+- 2024.09.22 v1.1.1
+
+  - 优化平台消息类型获取
+  - 重命名 ob11 群禁言接口: `set_ban` -> `set_mute`
+  - 新增 satori 接口: 群禁言
+  - 新增 ob11 接口: 上传文件
+  - 移除依赖 userinfo
+  - 使用 session 作为用户标识
+
 - 2024.09.07 v1.1.0
 
   - `OneBot V11` 适配器接口: 群名片, 群禁言, 资料卡点赞
