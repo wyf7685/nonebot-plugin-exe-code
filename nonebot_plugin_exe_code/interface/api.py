@@ -5,7 +5,7 @@ from typing import Any, ClassVar, TypeVar
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot.internal.matcher import current_event
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage
-from nonebot_plugin_session import Session
+from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
 from typing_extensions import override
 
@@ -54,22 +54,38 @@ def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
 class API(Interface):
     __inst_name__: ClassVar[str] = "api"
 
-    bot: Bot
-    qid: str
-    gid: str | None
-    session: Session
-    event: Event
-
     def __init__(self, bot: Bot, session: Session) -> None:
         super().__init__()
-        self.bot = bot
-        self.qid = session.id1 or ""
-        self.gid = session.id2
-        self.session = session
-        self.event = current_event.get()
+        self.__bot = bot
+        self.__session = session
+        self.__event = current_event.get()
 
     async def _native_send(self, msg: str | Message | MessageSegment) -> Any:
         return await self.bot.send(self.event, msg)
+
+    @property
+    def bot(self) -> Bot:
+        return self.__bot
+
+    @property
+    def event(self) -> Event:
+        return self.__event
+
+    @property
+    def session(self) -> Session:
+        return self.__session
+
+    @property
+    def qid(self) -> str:
+        return self.session.id1 or ""
+
+    @property
+    def gid(self) -> str | None:
+        return self.session.id2
+
+    @property
+    def session_id(self) -> str:
+        return self.session.get_id(SessionIdType.USER)
 
     @descript(
         description="向QQ号为qid的用户发送私聊消息",
@@ -204,11 +220,11 @@ class API(Interface):
     @debug_log
     def set_const(self, name: str, value: T_OptConstVar = None) -> None:
         if value is None:
-            set_const(self.qid, name)
+            set_const(self.session_id, name)
             return
 
         try:
-            set_const(self.qid, name, value)
+            set_const(self.session_id, name, value)
         except TypeError as e:
             raise TypeError("设置常量的值必须可被json序列化") from e
 
@@ -279,7 +295,7 @@ class API(Interface):
     def export_to(self, context: T_Context) -> None:
         super().export_to(context)
 
-        context.update(load_const(self.qid))
+        context.update(load_const(self.session_id))
         context["qid"] = self.qid
         context["gid"] = self.gid
         export_message(context)
