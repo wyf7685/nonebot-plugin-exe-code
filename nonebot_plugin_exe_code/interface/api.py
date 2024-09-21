@@ -85,7 +85,7 @@ class API(Interface):
 
     @property
     def session_id(self) -> str:
-        return self.session.get_id(SessionIdType.USER)
+        return self.session.get_id(SessionIdType.USER).replace(" ", "_")
 
     @descript(
         description="向QQ号为qid的用户发送私聊消息",
