@@ -64,7 +64,7 @@ class Interface(metaclass=InterfaceMeta):
         context[self.__inst_name__] = self
 
     @classmethod
-    def _get_all_description(cls) -> tuple[list[str], list[str]]:
+    def get_all_description(cls) -> tuple[list[str], list[str]]:
         methods: list[_Desc] = []
         for c in cls.mro():
             if issubclass(c, Interface):

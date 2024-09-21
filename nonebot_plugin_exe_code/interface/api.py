@@ -260,7 +260,7 @@ class API(Interface):
                 text = f"{self.__inst_name__}.{text}"
             return await self.feedback(text)
 
-        content, description = self._get_all_description()
+        content, description = self.get_all_description()
         msgs: list[T_Message] = [
             "   ===== API说明 =====   ",
             " - API说明文档 - 目录 - \n" + "\n".join(content),

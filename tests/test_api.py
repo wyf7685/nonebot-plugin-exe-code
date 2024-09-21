@@ -44,7 +44,7 @@ async def test_help(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.adapter_api.onebot11 import API
 
-    content, description = API._get_all_description()  # noqa: SLF001
+    content, description = API.get_all_description()
     expected = [
         MessageSegment.node_custom(0, "forward", Message(MessageSegment.text(msg)))
         for msg in [
