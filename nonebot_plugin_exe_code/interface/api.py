@@ -238,10 +238,14 @@ class API(Interface):
     @debug_log
     async def input(
         self,
-        prompt: T_Message = "",
+        prompt: T_Message | None = None,
         timeout: float = 30,
     ) -> UniMessage:
-        prompt = await (await as_unimsg(prompt)).export() if prompt else ""
+        prompt = (
+            await (await as_unimsg(prompt)).export(self.bot)
+            if prompt is not None
+            else ""
+        )
         if result := await waiter_prompt(prompt, timeout=timeout):
             return await UniMessage.generate(message=result)
         raise TimeoutError("input 超时")
