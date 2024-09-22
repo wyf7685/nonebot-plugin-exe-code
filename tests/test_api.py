@@ -80,7 +80,15 @@ async def test_superuser(app: App) -> None:
         event, session = fake_v11_event_session(bot, superuser)
         user_id, group_id = fake_user_id(), fake_group_id()
 
-        ctx.should_call_send(event, Message("123"))
+        ctx.should_call_api(
+            "send_msg",
+            {
+                "message_type": "private",
+                "user_id": superuser,
+                "message": Message("123"),
+            },
+            {},
+        )
         with ensure_context(bot, event):
             await Context.execute(
                 bot,
@@ -88,7 +96,7 @@ async def test_superuser(app: App) -> None:
                 f"set_usr({user_id})\n"
                 f"set_grp({group_id})\n"
                 "get_ctx(qid)['var'] = 123\n"
-                "print(var)",
+                "await user(qid).send(var)",
             )
 
         assert str(user_id) in config.user
@@ -250,3 +258,24 @@ async def test_api_input(app: App) -> None:
             await handle_event(bot, input_event)
 
         await asyncio.gather(_test1(), _test2())
+
+
+code_test_api_input_timeout = """\
+print(await api.input("test-prompt", timeout=0.01))
+"""
+
+
+@pytest.mark.asyncio
+async def test_api_input_timeout(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.matchers.code import matcher
+
+    prompt = Message("test-prompt")
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, session = fake_v11_event_session(bot, superuser, exe_code_group)
+        ctx.should_call_send(event, prompt)
+
+        with ensure_context(bot, event, matcher()), pytest.raises(TimeoutError):
+            await Context.execute(bot, session, code_test_api_input_timeout)

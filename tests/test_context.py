@@ -54,6 +54,7 @@ async def test_cancel(app: App) -> None:
         assert result
 
 
+@pytest.mark.asyncio
 async def test_context_variable(app: App) -> None:
     from nonebot_plugin_alconna.uniseg import Image, UniMessage
 
@@ -84,3 +85,29 @@ async def test_context_variable(app: App) -> None:
     assert context[key] == val
     del context[key]
     assert key not in context.ctx
+
+
+@pytest.mark.asyncio
+async def test_session_fetch(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, session = fake_v11_event_session(bot)
+        wrong_event, _ = fake_v11_event_session(bot)
+
+        with (
+            ensure_context(bot, wrong_event),
+            pytest.raises(RuntimeError, match="event mismatch"),
+        ):
+            Context.get_context(event)
+
+        with ensure_context(bot, event):
+            with pytest.raises(RuntimeError, match="not initialized"):
+                Context.get_context(event)
+            with pytest.raises(RuntimeError, match="not initialized"):
+                Context.get_context(event.get_user_id())
+
+            Context.get_context(session)
+            Context.get_context(event)
+            Context.get_context(event.get_user_id())

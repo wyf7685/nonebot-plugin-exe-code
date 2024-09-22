@@ -4,14 +4,14 @@ import contextlib
 import itertools
 from collections.abc import Callable, Generator
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
 import nonebot
 from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 
 if TYPE_CHECKING:
-    from nonebot.adapters import Adapter, Bot, Event, console, qq, telegram
+    from nonebot.adapters import Adapter, Bot, Event, console, qq, satori, telegram
     from nonebot.adapters.onebot import v11
     from nonebot.adapters.telegram import event as tgevent
     from nonebot.matcher import Matcher
@@ -76,6 +76,21 @@ def fake_qq_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> "qq.Bot":
             token="app_token",
             secret="app_secret",
         ),
+        **kwargs,
+    )
+
+
+def fake_satori_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> "satori.Bot":
+    from nonebot.adapters.satori import Adapter, Bot
+    from nonebot.adapters.satori.config import ClientInfo
+    from nonebot.adapters.satori.models import Login, LoginStatus
+
+    return fake_bot(
+        ctx,
+        Adapter,
+        Bot,
+        login=Login(status=LoginStatus.ONLINE),
+        info=ClientInfo(port=8080),
         **kwargs,
     )
 
@@ -218,6 +233,66 @@ def fake_qq_c2c_message_create_event(**field: Any) -> "qq.C2CMessageCreateEvent"
     return FakeEvent(**field)
 
 
+def fake_satori_private_message_created_event(
+    **field: Any,
+) -> "satori.event.PrivateMessageCreatedEvent":
+    from nonebot.adapters.satori.event import EventType, PrivateMessageCreatedEvent
+    from nonebot.adapters.satori.message import RenderMessage
+    from nonebot.adapters.satori.models import Channel, ChannelType, User
+    from nonebot.adapters.satori.models import MessageObject as SatoriMessage
+    from pydantic import create_model
+
+    _Fake = create_model("_Fake", __base__=PrivateMessageCreatedEvent)
+    user_id = field.pop("user_id", "10")
+    field["message"] = {"id": "10000", "content": field.pop("content", "")}
+
+    class FakeEvent(_Fake):
+        __type__ = EventType.MESSAGE_CREATED
+        id: int = 10000
+        type: str = "message"
+        platform: str = "fake"
+        self_id: str = "100"
+        timestamp: datetime = datetime.now()  # noqa: DTZ005
+        channel: Channel = Channel(id=f"private:{user_id}", type=ChannelType.TEXT)
+        user: User = User(id=user_id)
+        message: SatoriMessage = SatoriMessage(id="10000", content="")
+        to_me: bool = False
+        reply: RenderMessage | None = None
+
+    return FakeEvent(**field)
+
+
+def fake_satori_public_message_created_event(
+    **field: Any,
+) -> "satori.event.PublicMessageCreatedEvent":
+    from nonebot.adapters.satori.event import EventType, PublicMessageCreatedEvent
+    from nonebot.adapters.satori.message import RenderMessage
+    from nonebot.adapters.satori.models import Channel, ChannelType, Member, User
+    from nonebot.adapters.satori.models import MessageObject as SatoriMessage
+    from pydantic import create_model
+
+    _Fake = create_model("_Fake", __base__=PublicMessageCreatedEvent)
+    user_id = field.pop("user_id", "10")
+    channel_id = field.pop("channel_id", "100")
+    field["message"] = {"id": "10000", "content": field.pop("content", "")}
+
+    class FakeEvent(_Fake):
+        __type__ = EventType.MESSAGE_CREATED
+        id: int = 10000
+        type: str = "message"
+        platform: str = "fake"
+        self_id: str = "100"
+        timestamp: datetime = datetime.now()  # noqa: DTZ005
+        channel: Channel = Channel(id=channel_id, type=ChannelType.TEXT)
+        user: User = User(id=user_id)
+        member: Member = Member(user=User(id=user_id))
+        message: SatoriMessage = SatoriMessage(id="10000", content="")
+        to_me: bool = False
+        reply: RenderMessage | None = None
+
+    return FakeEvent(**field)
+
+
 def fake_telegram_private_message_event(**field: Any) -> "tgevent.PrivateMessageEvent":
     from nonebot.adapters.telegram.event import MessageEvent, PrivateMessageEvent
     from nonebot.adapters.telegram.message import Message
@@ -329,6 +404,47 @@ def fake_qq_c2c_exe_code(user_id: str, code: str) -> "qq.C2CMessageCreateEvent":
     )
 
 
+def fake_satori_private_exe_code(
+    user_id: str, code: "str | satori.Message"
+) -> "satori.event.PrivateMessageCreatedEvent":
+    from nonebot.adapters.satori import MessageSegment
+
+    return fake_satori_private_message_created_event(
+        user_id=user_id,
+        content=MessageSegment.text("code ") + code,
+    )
+
+
+def fake_satori_public_exe_code(
+    user_id: str, channel_id: str, code: "str | satori.Message"
+) -> "satori.event.PublicMessageCreatedEvent":
+    from nonebot.adapters.satori import MessageSegment
+
+    return fake_satori_public_message_created_event(
+        user_id=user_id,
+        channel_id=channel_id,
+        content=MessageSegment.text("code ") + code,
+    )
+
+
+@overload
+def fake_v11_event_session(
+    bot: "v11.Bot",
+) -> tuple["v11.PrivateMessageEvent", "Session"]: ...
+@overload
+def fake_v11_event_session(
+    bot: "v11.Bot", user_id: int
+) -> tuple["v11.PrivateMessageEvent", "Session"]: ...
+@overload
+def fake_v11_event_session(
+    bot: "v11.Bot", *, group_id: int
+) -> tuple["v11.GroupMessageEvent", "Session"]: ...
+@overload
+def fake_v11_event_session(
+    bot: "v11.Bot", user_id: int, group_id: int
+) -> tuple["v11.GroupMessageEvent", "Session"]: ...
+
+
 def fake_v11_event_session(
     bot: "v11.Bot",
     user_id: int | None = None,
@@ -378,6 +494,50 @@ def fake_qq_event_session(
             author=FriendAuthor(id=user_id, user_openid=user_id),
         )
 
+    session = extract_session(bot, event)
+    return event, session
+
+
+@overload
+def fake_satori_event_session(
+    bot: "satori.Bot",
+) -> tuple["satori.event.PrivateMessageCreatedEvent", "Session"]: ...
+@overload
+def fake_satori_event_session(
+    bot: "satori.Bot", user_id: str
+) -> tuple["satori.event.PrivateMessageCreatedEvent", "Session"]: ...
+@overload
+def fake_satori_event_session(
+    bot: "satori.Bot", *, channel_id: str
+) -> tuple["satori.event.PublicMessageCreatedEvent", "Session"]: ...
+@overload
+def fake_satori_event_session(
+    bot: "satori.Bot", user_id: str, channel_id: str
+) -> tuple["satori.event.PublicMessageCreatedEvent", "Session"]: ...
+
+
+def fake_satori_event_session(
+    bot: "satori.Bot",
+    user_id: str | None = None,
+    channel_id: str | None = None,
+) -> tuple[
+    "satori.event.PrivateMessageCreatedEvent | satori.event.PublicMessageCreatedEvent",
+    "Session",
+]:
+    from nonebot_plugin_session import extract_session
+
+    user_id = str(user_id or fake_user_id())
+    if channel_id is not None:
+        event = fake_satori_public_message_created_event(
+            user_id=user_id,
+            channel_id=channel_id,
+            content="",
+        )
+    else:
+        event = fake_satori_private_message_created_event(
+            user_id=user_id,
+            content="",
+        )
     session = extract_session(bot, event)
     return event, session
 

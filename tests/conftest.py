@@ -3,7 +3,7 @@ from collections.abc import AsyncGenerator
 
 import nonebot
 import pytest
-from nonebot.adapters import console, onebot, qq, telegram
+from nonebot.adapters import console, onebot, qq, satori, telegram
 from nonebug import NONEBOT_INIT_KWARGS, App
 
 superuser = 7685000
@@ -51,4 +51,5 @@ def _load_bot() -> None:
     driver.register_adapter(console.Adapter)
     driver.register_adapter(onebot.v11.Adapter)
     driver.register_adapter(qq.Adapter)
+    driver.register_adapter(satori.Adapter)
     driver.register_adapter(telegram.Adapter)
