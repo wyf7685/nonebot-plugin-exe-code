@@ -1,5 +1,5 @@
 import pytest
-from nonebot.adapters.satori import Message, MessageSegment
+from nonebot.adapters.satori import Message
 from nonebug import App
 
 from tests.conftest import exe_code_group, exe_code_user, superuser

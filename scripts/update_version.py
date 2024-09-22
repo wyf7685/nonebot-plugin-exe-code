@@ -61,6 +61,7 @@ replace_file(
     new_changelog,
 )
 
+os.system("uv lock --no-cache")
 os.system("git add -u")
 os.system(f'git commit -m "version {new_ver}"')
 os.system(f"git tag v{new_ver}")

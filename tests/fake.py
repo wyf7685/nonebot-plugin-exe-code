@@ -2,7 +2,7 @@
 
 import contextlib
 import itertools
-from collections.abc import Callable, Generator
+from collections.abc import Generator
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, overload
 
@@ -18,17 +18,8 @@ if TYPE_CHECKING:
     from nonebot_plugin_session import Session
 
 
-def _faker(start: int) -> Callable[[], int]:
-    gen = itertools.count(start)
-
-    def faker() -> int:
-        return next(gen)
-
-    return faker
-
-
-fake_user_id = _faker(100000)
-fake_group_id = _faker(200000)
+fake_user_id = (lambda: (g := itertools.count(100000)) and (lambda: next(g)))()
+fake_group_id = (lambda: (g := itertools.count(200000)) and (lambda: next(g)))()
 fake_img_bytes = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
     b"\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc```"
@@ -238,8 +229,7 @@ def fake_satori_private_message_created_event(
 ) -> "satori.event.PrivateMessageCreatedEvent":
     from nonebot.adapters.satori.event import EventType, PrivateMessageCreatedEvent
     from nonebot.adapters.satori.message import RenderMessage
-    from nonebot.adapters.satori.models import Channel, ChannelType, User
-    from nonebot.adapters.satori.models import MessageObject as SatoriMessage
+    from nonebot.adapters.satori.models import Channel, ChannelType, MessageObject, User
     from pydantic import create_model
 
     _Fake = create_model("_Fake", __base__=PrivateMessageCreatedEvent)
@@ -255,7 +245,7 @@ def fake_satori_private_message_created_event(
         timestamp: datetime = datetime.now()  # noqa: DTZ005
         channel: Channel = Channel(id=f"private:{user_id}", type=ChannelType.TEXT)
         user: User = User(id=user_id)
-        message: SatoriMessage = SatoriMessage(id="10000", content="")
+        message: MessageObject = MessageObject(id="10000", content="")
         to_me: bool = False
         reply: RenderMessage | None = None
 
@@ -267,8 +257,13 @@ def fake_satori_public_message_created_event(
 ) -> "satori.event.PublicMessageCreatedEvent":
     from nonebot.adapters.satori.event import EventType, PublicMessageCreatedEvent
     from nonebot.adapters.satori.message import RenderMessage
-    from nonebot.adapters.satori.models import Channel, ChannelType, Member, User
-    from nonebot.adapters.satori.models import MessageObject as SatoriMessage
+    from nonebot.adapters.satori.models import (
+        Channel,
+        ChannelType,
+        Member,
+        MessageObject,
+        User,
+    )
     from pydantic import create_model
 
     _Fake = create_model("_Fake", __base__=PublicMessageCreatedEvent)
@@ -286,7 +281,7 @@ def fake_satori_public_message_created_event(
         channel: Channel = Channel(id=channel_id, type=ChannelType.TEXT)
         user: User = User(id=user_id)
         member: Member = Member(user=User(id=user_id))
-        message: SatoriMessage = SatoriMessage(id="10000", content="")
+        message: MessageObject = MessageObject(id="10000", content="")
         to_me: bool = False
         reply: RenderMessage | None = None
 
