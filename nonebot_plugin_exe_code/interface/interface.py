@@ -1,4 +1,3 @@
-import weakref
 from collections.abc import Callable, Generator
 from typing import Any, ClassVar, NamedTuple, cast
 
@@ -61,18 +60,15 @@ class Interface(metaclass=InterfaceMeta):
     __export_method__: ClassVar[list[str]]
     __method_description__: ClassVar[dict[str, str]]
 
-    __ctx_ref: weakref.ReferenceType[T_Context]
+    __context: T_Context
     __exported: set[str]
 
     def __init__(self, context: T_Context) -> None:
-        self.__ctx_ref = weakref.ref(context)
+        self.__context = context
+        self.__exported = set()
 
     def _export(self, key: str, val: Any) -> None:
-        context = self.__ctx_ref()
-        if context is None:  # pragma: no cover
-            raise RuntimeError("context dict not exist")
-
-        context[key] = val
+        self.__context[key] = val
         self.__exported.add(key)
 
     def export(self) -> None:
@@ -84,16 +80,15 @@ class Interface(metaclass=InterfaceMeta):
         self.export()
         return self
 
-    def __exit__(self, *_: object) -> tuple[object, ...]:
-        if context := self.__ctx_ref():
-            for name in self.__exported:
-                context.pop(name, None)
-        return _
+    def __exit__(self, *_: object) -> bool:
+        for name in self.__exported:
+            self.__context.pop(name, None)
+        return False
 
     async def __aenter__(self) -> Self:
         return self.__enter__()
 
-    async def __aexit__(self, *_: object) -> tuple[object, ...]:
+    async def __aexit__(self, *_: object) -> bool:
         return self.__exit__(*_)
 
     @classmethod
