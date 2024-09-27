@@ -83,7 +83,7 @@ class Context:
         return cls.__contexts[uin]
 
     @contextlib.asynccontextmanager
-    async def _lock(self) -> AsyncGenerator[None, None]:
+    async def lock(self) -> AsyncGenerator[None, None]:
         fut: Future[None]
 
         if self.locked:
@@ -133,7 +133,7 @@ class Context:
         colored_uin = f"<y>{escape_tag(uin)}</y>"
 
         # 执行代码时加锁，避免出现多段代码分别读写变量
-        async with self._lock():
+        async with self.lock():
             api_class(bot, session).export_to(self.ctx)
             executor = self._solve_code(code)
             escaped = escape_tag(repr(executor))

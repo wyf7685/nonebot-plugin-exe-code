@@ -13,6 +13,7 @@ async def handle_getraw(
     ctx: CodeContext,
     message: EventReplyMessage,
 ) -> NoReturn:
-    ctx.set_gem(message)
-    ctx.set_gurl(await UniMessage.generate(message=message))
+    async with ctx.lock():
+        ctx.set_gem(message)
+        ctx.set_gurl(await UniMessage.generate(message=message))
     await UniMessage.text(str(message)).finish()
