@@ -120,8 +120,13 @@ class Context:
             _executor = executor
 
             async def executor() -> None:
-                async for value in _executor():
-                    await api.feedback(repr(value))
+                try:
+                    async for value in _executor():
+                        await api.feedback(repr(value))
+                except BaseException as err:
+                    import traceback
+                    self.ctx["last_exc"] = self.ctx["__exception__"]
+                    self.ctx["__exception__"] = (err, traceback.format_exc())
 
         return executor
 
