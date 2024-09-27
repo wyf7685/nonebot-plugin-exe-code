@@ -136,7 +136,9 @@ class Context:
         async with self._lock():
             api_class(bot, session).export_to(self.ctx)
             executor = self._solve_code(code)
-            logger.debug(f"为用户 {colored_uin} 创建 executor: {executor}")
+            escaped = escape_tag(repr(executor))
+            logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
+
             self.task = get_event_loop().create_task(executor())
             result, self.task = await self.task, None
 
