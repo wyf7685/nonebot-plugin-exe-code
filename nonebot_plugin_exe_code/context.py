@@ -1,4 +1,5 @@
 import contextlib
+import inspect
 from asyncio import Future, Queue, Task, get_event_loop
 from collections.abc import AsyncGenerator
 from copy import deepcopy
@@ -13,7 +14,7 @@ from nonebot_plugin_session import Session, SessionIdType
 from typing_extensions import Self
 
 from .constant import T_Context, T_Executor
-from .interface import Buffer, default_context, get_api_class
+from .interface import API, Buffer, default_context, get_api_class
 
 logger = nonebot.logger.opt(colors=True)
 
@@ -113,7 +114,16 @@ class Context:
 
         # 包装为异步函数
         exec(code, self.ctx, self.ctx)  # noqa: S102
-        return self.ctx.pop("__executor__")
+        executor = self.ctx.pop("__executor__")
+
+        if inspect.isasyncgenfunction(executor):
+            _executor = executor
+
+            async def executor() -> None:
+                async for value in _executor():
+                    await cast(API, self.ctx["api"]).feedback(repr(value))
+
+        return executor
 
     @classmethod
     async def execute(cls, bot: Bot, session: Session, code: str) -> None:
