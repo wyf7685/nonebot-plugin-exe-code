@@ -101,7 +101,7 @@ class Context:
             self.locked = False
             self.task = None
 
-    def _solve_code(self, raw_code: str) -> T_Executor:
+    def _solve_code(self, raw_code: str, api: API) -> T_Executor:
         assert self.locked, "`Context._solve_code` called without lock"
 
         # 预处理代码
@@ -121,7 +121,7 @@ class Context:
 
             async def executor() -> None:
                 async for value in _executor():
-                    await cast(API, self.ctx["api"]).feedback(repr(value))
+                    await api.feedback(repr(value))
 
         return executor
 
@@ -133,9 +133,8 @@ class Context:
         colored_uin = f"<y>{escape_tag(uin)}</y>"
 
         # 执行代码时加锁，避免出现多段代码分别读写变量
-        async with self.lock():
-            api_class(bot, session).export_to(self.ctx)
-            executor = self._solve_code(code)
+        async with self.lock(), api_class(bot, session, self.ctx) as api:
+            executor = self._solve_code(code, api)
             escaped = escape_tag(repr(executor))
             logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
 

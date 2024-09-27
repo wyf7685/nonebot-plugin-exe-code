@@ -22,7 +22,6 @@ from ..constant import (
     INTERFACE_EXPORT_METHOD,
     INTERFACE_METHOD_DESCRIPTION,
     T_API_Result,
-    T_Context,
     T_Message,
 )
 
@@ -213,7 +212,7 @@ async def send_forward_message(
     )
 
 
-def _export_superuser() -> Callable[[T_Context], None]:
+def _export_superuser() -> Callable[[], dict[str, Any]]:
     def f(s: set[str], x: str) -> bool:
         return (s.remove if x in s else s.add)(x) or (x in s)
 
@@ -227,12 +226,10 @@ def _export_superuser() -> Callable[[T_Context], None]:
 
         return f(config.group, str(x))
 
-    def export_manager(ctx: T_Context) -> None:
+    def export_manager() -> dict[str, Any]:
         from ..context import Context
 
-        ctx["get_ctx"] = Context.get_context
-        ctx["set_usr"] = set_usr
-        ctx["set_grp"] = set_grp
+        return {"get_ctx": Context.get_context, "set_usr": set_usr, "set_grp": set_grp}
 
     return export_manager
 
@@ -240,7 +237,7 @@ def _export_superuser() -> Callable[[T_Context], None]:
 export_superuser = _export_superuser()
 
 
-def _export_message() -> Callable[[T_Context], None]:
+def _export_message() -> Callable[[], dict[str, Any]]:
     def get_msg_cls(adapter: Adapter) -> tuple[type[Message], type[MessageSegment]]:
         msg = UniMessage.text("text").export_sync(adapter=adapter.get_name())
         return type(msg), msg.get_segment_class()
@@ -252,10 +249,9 @@ def _export_message() -> Callable[[T_Context], None]:
         for a in nonebot.get_adapters().values():
             message_alia(*get_msg_cls(a))
 
-    def export_message(context: T_Context) -> None:
-        context["Message"], context["MessageSegment"] = get_msg_cls(
-            current_bot.get().adapter
-        )
+    def export_message() -> dict[str, Any]:
+        m, ms = get_msg_cls(current_bot.get().adapter)
+        return {"Messae": m, "MessageSegment": ms}
 
     return export_message
 

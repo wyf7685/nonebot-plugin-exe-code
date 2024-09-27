@@ -1,5 +1,8 @@
+import weakref
 from collections.abc import Callable, Generator
 from typing import Any, ClassVar, NamedTuple, cast
+
+from typing_extensions import Self
 
 from ..constant import INTERFACE_INST_NAME, INTERFACE_METHOD_DESCRIPTION, T_Context
 from .help_doc import FuncDescription
@@ -58,10 +61,40 @@ class Interface(metaclass=InterfaceMeta):
     __export_method__: ClassVar[list[str]]
     __method_description__: ClassVar[dict[str, str]]
 
-    def export_to(self, context: T_Context) -> None:
+    __ctx_ref: weakref.ReferenceType[T_Context]
+    __exported: set[str]
+
+    def __init__(self, context: T_Context) -> None:
+        self.__ctx_ref = weakref.ref(context)
+
+    def _export(self, key: str, val: Any) -> None:
+        context = self.__ctx_ref()
+        if context is None:  # pragma: no cover
+            raise RuntimeError("context dict not exist")
+
+        context[key] = val
+        self.__exported.add(key)
+
+    def export(self) -> None:
+        self._export(self.__inst_name__, self)
         for name in type(self).get_export_method():
-            context[name] = getattr(self, name)
-        context[self.__inst_name__] = self
+            self._export(name, getattr(self, name))
+
+    def __enter__(self) -> Self:
+        self.export()
+        return self
+
+    def __exit__(self, *_: object) -> tuple[object, ...]:
+        if context := self.__ctx_ref():
+            for name in self.__exported:
+                context.pop(name, None)
+        return _
+
+    async def __aenter__(self) -> Self:
+        return self.__enter__()
+
+    async def __aexit__(self, *_: object) -> tuple[object, ...]:
+        return self.__exit__(*_)
 
     @classmethod
     def get_all_description(cls) -> tuple[list[str], list[str]]:

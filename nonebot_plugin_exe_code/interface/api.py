@@ -54,8 +54,8 @@ def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
 class API(Interface):
     __inst_name__: ClassVar[str] = "api"
 
-    def __init__(self, bot: Bot, session: Session) -> None:
-        super().__init__()
+    def __init__(self, bot: Bot, session: Session, context: T_Context) -> None:
+        super().__init__(context)
         self.__bot = bot
         self.__session = session
         self.__event = current_event.get()
@@ -293,19 +293,22 @@ class API(Interface):
         context = Context.get_context(self.session).ctx
         context.clear()
         context.update(default_context)
-        self.export_to(context)
+        self.export()
 
     @override
-    def export_to(self, context: T_Context) -> None:
-        super().export_to(context)
+    def export(self) -> None:
+        super().export()
 
-        context.update(load_const(self.session_id))
-        context["qid"] = self.qid
-        context["gid"] = self.gid
-        export_message(context)
+        for k, v in load_const(self.session_id).items():
+            self._export(k, v)
+        self._export("qid", self.qid)
+        self._export("gid", self.gid)
+        for k, v in export_message().items():
+            self._export(k, v)
 
         if is_super_user(self.bot, self.qid):
-            export_superuser(context)
+            for k, v in export_superuser().items():
+                self._export(k, v)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(user_id={self.qid})"
