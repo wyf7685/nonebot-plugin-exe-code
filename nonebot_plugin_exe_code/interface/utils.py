@@ -22,6 +22,7 @@ from ..constant import (
     INTERFACE_EXPORT_METHOD,
     INTERFACE_METHOD_DESCRIPTION,
     T_API_Result,
+    T_Context,
     T_Message,
 )
 
@@ -228,8 +229,11 @@ class _Sudo:
         (s.remove if (x := str(x)) in (s := self.__config.group) else s.add)(x)
         return x in s
 
+    def ctxd(self, uin: str) -> T_Context:
+        return self.__Context.get_context(uin).ctx
+
     def ctx(self, uin: str) -> Any:
-        ctx = self.__Context.get_context(uin).ctx
+        ctx = self.ctxd(uin)
 
         return type(
             "_ContextProxy",
@@ -238,6 +242,7 @@ class _Sudo:
                 "__getattr__": lambda _, *args: dict.__getitem__(ctx, *args),
                 "__setattr__": lambda _, *args: dict.__setitem__(ctx, *args),
                 "__delattr__": lambda _, *args: dict.__delitem__(ctx, *args),
+                "keys": lambda _: dict.keys(ctx),
             },
         )()
 
