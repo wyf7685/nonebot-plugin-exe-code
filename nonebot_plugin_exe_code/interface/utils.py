@@ -22,6 +22,7 @@ from ..constant import (
     INTERFACE_EXPORT_METHOD,
     INTERFACE_METHOD_DESCRIPTION,
     T_API_Result,
+    T_Context,
     T_Message,
 )
 
@@ -212,29 +213,35 @@ async def send_forward_message(
     )
 
 
-def _export_superuser() -> Callable[[], dict[str, Any]]:
-    def f(s: set[str], x: str) -> bool:
-        return (s.remove if x in s else s.add)(x) or (x in s)
+class _Sudo:
+    class _ContextProxy:
+        def __init__(self, ctx: T_Context) -> None:
+            self.__ctx = ctx
 
-    def set_usr(x: Any) -> bool:
+        def __getattr__(self, __name: str) -> Any:
+            return self.__ctx[__name]
+
+    def __init__(self) -> None:
         from ..config import config
-
-        return f(config.user, str(x))
-
-    def set_grp(x: Any) -> bool:
-        from ..config import config
-
-        return f(config.group, str(x))
-
-    def export_manager() -> dict[str, Any]:
         from ..context import Context
 
-        return {"get_ctx": Context.get_context, "set_usr": set_usr, "set_grp": set_grp}
+        self.__config = config
+        self.__Context = Context
 
-    return export_manager
+    def set_usr(self, x: Any) -> bool:
+        (s.remove if (x := str(x)) in (s := self.__config.user) else s.add)(x)
+        return x in s
+
+    def set_grp(self, x: Any) -> bool:
+        (s.remove if (x := str(x)) in (s := self.__config.group) else s.add)(x)
+        return x in s
+
+    def ctx(self, uin: str) -> "_ContextProxy":
+        return self._ContextProxy(self.__Context.get_context(uin).ctx)
 
 
-export_superuser = _export_superuser()
+def export_superuser() -> dict[str, Any]:
+    return {"sudo": _Sudo()}
 
 
 def _export_message() -> Callable[[], dict[str, Any]]:
