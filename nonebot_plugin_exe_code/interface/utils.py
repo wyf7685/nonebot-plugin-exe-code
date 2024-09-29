@@ -22,7 +22,6 @@ from ..constant import (
     INTERFACE_EXPORT_METHOD,
     INTERFACE_METHOD_DESCRIPTION,
     T_API_Result,
-    T_Context,
     T_Message,
 )
 
@@ -214,13 +213,6 @@ async def send_forward_message(
 
 
 class _Sudo:
-    class _ContextProxy:
-        def __init__(self, ctx: T_Context) -> None:
-            self.__ctx = ctx
-
-        def __getattr__(self, __name: str) -> Any:
-            return self.__ctx[__name]
-
     def __init__(self) -> None:
         from ..config import config
         from ..context import Context
@@ -236,8 +228,18 @@ class _Sudo:
         (s.remove if (x := str(x)) in (s := self.__config.group) else s.add)(x)
         return x in s
 
-    def ctx(self, uin: str) -> "_ContextProxy":
-        return self._ContextProxy(self.__Context.get_context(uin).ctx)
+    def ctx(self, uin: str) -> Any:
+        ctx = self.__Context.get_context(uin).ctx
+
+        return type(
+            "_ContextProxy",
+            (object,),
+            {
+                "__getattr__": lambda _, *args: dict.__getitem__(ctx, *args),
+                "__setattr__": lambda _, *args: dict.__setitem__(ctx, *args),
+                "__delattr__": lambda _, *args: dict.__delitem__(ctx, *args),
+            },
+        )()
 
 
 def export_superuser() -> dict[str, Any]:

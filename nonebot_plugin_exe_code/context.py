@@ -125,6 +125,7 @@ class Context:
                         await api.feedback(repr(value))
                 except BaseException as err:
                     import traceback
+
                     self.ctx["last_exc"] = self.ctx["__exception__"]
                     self.ctx["__exception__"] = (err, traceback.format_exc())
 

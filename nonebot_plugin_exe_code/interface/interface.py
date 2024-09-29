@@ -60,14 +60,18 @@ class Interface(metaclass=InterfaceMeta):
     __export_method__: ClassVar[list[str]]
     __method_description__: ClassVar[dict[str, str]]
 
-    __context: T_Context
+    __context: T_Context | None
     __exported: set[str]
 
-    def __init__(self, context: T_Context) -> None:
+    def __init__(self, context: T_Context | None = None) -> None:
         self.__context = context
         self.__exported = set()
 
     def _export(self, key: str, val: Any) -> None:
+        if self.__context is None:
+            raise TypeError(
+                f"Interface class {type(self).__name__!r} not allowed to export"
+            )
         self.__context[key] = val
         self.__exported.add(key)
 
@@ -81,8 +85,9 @@ class Interface(metaclass=InterfaceMeta):
         return self
 
     def __exit__(self, *_: object) -> bool:
-        for name in self.__exported:
-            self.__context.pop(name, None)
+        if self.__context is not None:
+            for name in self.__exported:
+                self.__context.pop(name, None)
         return False
 
     async def __aenter__(self) -> Self:

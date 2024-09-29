@@ -93,10 +93,10 @@ async def test_superuser(app: App) -> None:
             await Context.execute(
                 bot,
                 session,
-                f"set_usr({user_id})\n"
-                f"set_grp({group_id})\n"
-                "get_ctx(qid)['var'] = 123\n"
-                "await user(qid).send(var)",
+                f"sudo.set_usr({user_id})\n"
+                f"sudo.set_grp({group_id})\n"
+                "sudo.ctx(qid).var = 123\n"
+                "await user(qid).send(var)\n",
             )
 
         assert str(user_id) in config.user

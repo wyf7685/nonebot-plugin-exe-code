@@ -294,7 +294,10 @@ async def test_terminate(app: App) -> None:
         async def _test2() -> None:
             await asyncio.sleep(0.05)
             with pytest.raises(FinishedException):
-                await handle_terminate(target=str(user_id))
+                await handle_terminate(
+                    target=str(user_id),
+                    context=Context.get_context(str(user_id)),
+                )
 
         with ensure_context(bot, event):
             await asyncio.gather(_test1(), _test2())
