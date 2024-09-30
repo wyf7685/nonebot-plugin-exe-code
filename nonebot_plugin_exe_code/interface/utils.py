@@ -155,6 +155,19 @@ async def as_unimsg(message: Any) -> UniMessage:
     return message
 
 
+def as_unimsg_sync(message: Any) -> UniMessage:
+    if not is_message_t(message):
+        message = str(message)
+    if isinstance(message, MessageSegment):
+        message = cast(type[Message], message.get_message_class())(message)
+    if isinstance(message, str | Segment):
+        message = UniMessage(message)
+    elif isinstance(message, Message):
+        message = UniMessage.generate_sync(message=message)
+
+    return message
+
+
 class ReachLimit(Exception):  # noqa: N818
     limit: int = 6
 
@@ -198,14 +211,14 @@ async def send_forward_message(
     target: Target | None,
     msgs: Iterable[T_Message],
 ) -> Receipt:
-    async def create_node(msg: T_Message) -> CustomNode:
-        return CustomNode(
+    nodes = [
+        CustomNode(
             uid="0",
             name="forward",
-            content=await as_unimsg(msg),
+            content=as_unimsg_sync(msg),
         )
-
-    nodes = await asyncio.gather(*[create_node(msg) for msg in msgs])
+        for msg in msgs
+    ]
     return await send_message(
         session=session,
         target=target,
@@ -251,23 +264,20 @@ def export_superuser() -> dict[str, Any]:
     return {"sudo": _Sudo()}
 
 
-def _export_message() -> Callable[[], dict[str, Any]]:
-    def get_msg_cls(adapter: Adapter) -> tuple[type[Message], type[MessageSegment]]:
-        msg = UniMessage.text("text").export_sync(adapter=adapter.get_name())
-        return type(msg), msg.get_segment_class()
-
-    @nonebot.get_driver().on_startup
-    async def _() -> None:
-        from .help_doc import message_alia
-
-        for a in nonebot.get_adapters().values():
-            message_alia(*get_msg_cls(a))
-
-    def export_message() -> dict[str, Any]:
-        m, ms = get_msg_cls(current_bot.get().adapter)
-        return {"Messae": m, "MessageSegment": ms}
-
-    return export_message
+@functools.cache
+def _get_msg_cls(adapter: Adapter) -> tuple[type[Message], type[MessageSegment]]:
+    msg = UniMessage.text("text").export_sync(adapter=adapter.get_name())
+    return type(msg), msg.get_segment_class()
 
 
-export_message = _export_message()
+@nonebot.get_driver().on_startup
+async def _() -> None:
+    from .help_doc import message_alia
+
+    for a in nonebot.get_adapters().values():
+        message_alia(*_get_msg_cls(a))
+
+
+def export_message() -> dict[str, Any]:
+    m, ms = _get_msg_cls(current_bot.get().adapter)
+    return {"Messae": m, "MessageSegment": ms}
