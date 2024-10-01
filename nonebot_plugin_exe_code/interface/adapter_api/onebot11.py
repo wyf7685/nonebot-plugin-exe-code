@@ -6,7 +6,7 @@ from base64 import b64encode
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import nonebot
 from nonebot import on_fullmatch, on_message
@@ -39,6 +39,7 @@ with contextlib.suppress(ImportError):
         ActionFailed,
         Adapter,
         Message,
+        MessageEvent,
         MessageSegment,
         PrivateMessageEvent,
     )
@@ -121,6 +122,10 @@ with contextlib.suppress(ImportError):
 
     @register_api(Adapter)
     class API(SendArk, BaseAPI):
+        @property
+        def mid(self) -> str:
+            return str(cast(MessageEvent, self.event).message_id)
+
         @descript(
             description="调用 OneBot V11 接口",
             parameters=dict(

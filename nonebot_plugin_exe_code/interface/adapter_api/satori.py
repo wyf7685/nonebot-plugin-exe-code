@@ -7,10 +7,14 @@ from ..help_doc import descript
 from ..utils import debug_log
 
 with contextlib.suppress(ImportError):
-    from nonebot.adapters.satori import Adapter, Bot
+    from nonebot.adapters.satori import Adapter, Bot, MessageEvent
 
     @register_api(Adapter)
     class API(BaseAPI):
+        @property
+        def mid(self) -> str:
+            return cast(MessageEvent, self.event).message.id
+
         @descript(
             description="设置群禁言",
             parameters=dict(
