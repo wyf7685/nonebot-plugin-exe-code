@@ -290,6 +290,41 @@ with contextlib.suppress(ImportError):
             await self.call_api("send_like", user_id=int(qid or self.qid), times=times)
 
         @descript(
+            description="[NapCat/Lagrange] 群聊消息回应",
+            parameters=dict(
+                emoji_id="回应的表情ID",
+                message_id="需要回应的消息ID，可通过getmid获取",
+                gid="[Lagrange] 指定群聊ID，默认为当前群聊",
+            ),
+        )
+        @debug_log
+        async def set_reaction(
+            self,
+            emoji_id: str | int,
+            message_id: str | int,
+            gid: str | int | None = None,
+        ) -> None:
+            with contextlib.suppress(ActionFailed):
+                await self.bot.call_api(
+                    "set_msg_emoji_like",
+                    message_id=int(message_id),
+                    emoji_id=int(emoji_id),
+                )
+                return
+
+            if (gid := gid or self.gid) is not None:
+                with contextlib.suppress(ActionFailed):
+                    await self.bot.call_api(
+                        api="set_group_reaction",
+                        group_id=int(gid),
+                        message_id=int(message_id),
+                        code=str(emoji_id),
+                    )
+                    return
+
+            raise RuntimeError("发送消息回应失败")
+
+        @descript(
             description="发送群文件",
             parameters=dict(
                 file="需要发送的文件，可以是url/base64/bytes/Path",
