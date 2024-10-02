@@ -168,6 +168,20 @@ def as_unimsg_sync(message: Any) -> UniMessage:
     return message
 
 
+async def as_msg(message: Any) -> Message:
+    if not is_message_t(message):
+        message = str(message)
+
+    if isinstance(message, str | Segment):
+        message = UniMessage(message)
+    if isinstance(message, UniMessage):
+        message = await message.export()
+    if isinstance(message, MessageSegment):
+        message = cast(type[Message], message.get_message_class())(message)
+
+    return message
+
+
 class ReachLimit(Exception):  # noqa: N818
     limit: int = 6
 

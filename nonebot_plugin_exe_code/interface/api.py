@@ -1,9 +1,8 @@
 import asyncio
 from collections.abc import Callable
-from typing import Any, ClassVar, Generic, TypeVar, cast
+from typing import Any, ClassVar, Generic, TypeVar
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
-from nonebot.internal.matcher import current_event
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage
 from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
@@ -23,6 +22,7 @@ from .user import User
 from .user_const_var import default_context, load_const, set_const
 from .utils import (
     Buffer,
+    as_msg,
     as_unimsg,
     debug_log,
     export,
@@ -56,14 +56,17 @@ def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
 class API(Generic[_B, _E], Interface):
     __inst_name__: ClassVar[str] = "api"
 
-    def __init__(self, bot: _B, session: Session, context: T_Context) -> None:
+    def __init__(
+        self,
+        bot: _B,
+        event: _E,
+        session: Session,
+        context: T_Context,
+    ) -> None:
         super().__init__(context)
         self.__bot = bot
-        self.__event = cast(_E, current_event.get())
+        self.__event = event
         self.__session = session
-
-    async def _native_send(self, msg: str | Message | MessageSegment) -> Any:
-        return await self.bot.send(self.event, msg)
 
     @property
     def bot(self) -> _B:
@@ -88,6 +91,21 @@ class API(Generic[_B, _E], Interface):
     @property
     def session_id(self) -> str:
         return self.session.get_id(SessionIdType.USER).replace(" ", "_")
+
+    @descript(
+        description="调用 bot.send 向当前会话发送平台消息",
+        parameters=dict(
+            msg="要发送的消息",
+            kwds="任意额外参数",
+        ),
+    )
+    @debug_log
+    async def native_send(
+        self,
+        msg: T_Message,
+        **kwds: Any,
+    ) -> Any:
+        return await self.bot.send(self.event, await as_msg(msg), **kwds)
 
     @descript(
         description="向QQ号为qid的用户发送私聊消息",

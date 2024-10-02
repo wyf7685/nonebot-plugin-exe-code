@@ -10,7 +10,7 @@ from nonebot.adapters import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
 from nonebot.utils import escape_tag
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
-from nonebot_plugin_session import Session, SessionIdType
+from nonebot_plugin_session import Session, SessionIdType, extract_session
 from typing_extensions import Self
 
 from .constant import T_Context, T_Executor
@@ -132,14 +132,15 @@ class Context:
         return executor
 
     @classmethod
-    async def execute(cls, bot: Bot, session: Session, code: str) -> None:
+    async def execute(cls, bot: Bot, event: Event, code: str) -> None:
+        session = extract_session(bot, event)
         uin = cls._session2uin(session)
         self = cls.get_context(session)
         api_class = get_api_class(bot)
         colored_uin = f"<y>{escape_tag(uin)}</y>"
 
         # 执行代码时加锁，避免出现多段代码分别读写变量
-        async with self.lock(), api_class(bot, session, self.ctx) as api:
+        async with self.lock(), api_class(bot, event, session, self.ctx) as api:
             executor = self._solve_code(code, api)
             escaped = escape_tag(repr(executor))
             logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
