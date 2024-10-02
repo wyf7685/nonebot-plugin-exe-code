@@ -238,7 +238,7 @@ with contextlib.suppress(ImportError):
             logger.debug(f"[NapCat] 创建图片外显: <y>{summary}</y>, <c>{url}</c>")
             seg = MessageSegment.image(url)
             seg.data["summary"] = summary
-            await self._native_send(Message(seg))
+            await self.native_send(Message(seg))
 
         @descript(
             description="设置群名片",
@@ -410,4 +410,4 @@ with contextlib.suppress(ImportError):
         @override
         async def _send_ark(self, ark: "MessageArk") -> Any:
             card = Message(await create_ark_card(self, ark))
-            return await self._native_send(card)
+            return await self.native_send(card)

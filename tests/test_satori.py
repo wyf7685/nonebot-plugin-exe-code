@@ -73,7 +73,7 @@ async def test_satori_set_mute(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_satori_bot(ctx)
-        event, session = fake_satori_event_session(bot, channel_id=str(exe_code_group))
+        event, _ = fake_satori_event_session(bot, channel_id=str(exe_code_group))
         ctx.should_call_api(
             "guild_member_mute",
             {
@@ -83,11 +83,11 @@ async def test_satori_set_mute(app: App) -> None:
             },
         )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_satori_set_mute)
+            await Context.execute(bot, event, code_test_satori_set_mute)
 
-        event, session = fake_satori_event_session(bot)
+        event, _ = fake_satori_event_session(bot)
         with (
             ensure_context(bot, event),
             pytest.raises(ValueError, match="未指定群组ID"),
         ):
-            await Context.execute(bot, session, code_test_satori_set_mute)
+            await Context.execute(bot, event, code_test_satori_set_mute)

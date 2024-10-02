@@ -50,7 +50,7 @@ async def test_ob11_send_ark(app: App, mocker: MockerFixture) -> None:
         botV11 = fake_v11_bot(ctx, self_id="test-v11")
         botQQ = fake_qq_bot(ctx, self_id="test-qq")
 
-        event_code, session = fake_v11_event_session(botV11)
+        event_code, _ = fake_v11_event_session(botV11)
         event_qq = fake_qq_c2c_message_create_event(content=key)
         event_v11 = fake_v11_private_message_event(
             user_id=exe_code_qbot_id,
@@ -70,7 +70,7 @@ async def test_ob11_send_ark(app: App, mocker: MockerFixture) -> None:
 
         async def _test1() -> None:
             with ensure_context(botV11, event_code):
-                await Context.execute(botV11, session, code_test_ob11_send_ark)
+                await Context.execute(botV11, event_code, code_test_ob11_send_ark)
 
         async def _test2() -> None:
             await asyncio.sleep(0.01)
@@ -99,7 +99,7 @@ async def test_ob11_send_ark_fail(app: App, mocker: MockerFixture) -> None:
         botV11 = fake_v11_bot(ctx, self_id="test-v11")
         botQQ = fake_qq_bot(ctx, self_id="test-qq")
 
-        event_code, session = fake_v11_event_session(botV11)
+        event_code, _ = fake_v11_event_session(botV11)
         event_qq = fake_qq_c2c_message_create_event(content=key)
         ctx.should_call_api(
             "send_msg",
@@ -122,7 +122,7 @@ async def test_ob11_send_ark_fail(app: App, mocker: MockerFixture) -> None:
                 ensure_context(botV11, event_code),
                 pytest.raises(RuntimeError, match="test"),
             ):
-                await Context.execute(botV11, session, code_test_ob11_send_ark)
+                await Context.execute(botV11, event_code, code_test_ob11_send_ark)
 
         async def _test2() -> None:
             await asyncio.sleep(0.01)

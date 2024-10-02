@@ -17,7 +17,7 @@ with contextlib.suppress(ImportError):
     class API(SendArk, BaseAPI[Bot, Event]):
         @override
         async def _send_ark(self, ark: MessageArk) -> Any:
-            return await self._native_send(MessageSegment.ark(ark))
+            return await self.native_send(MessageSegment.ark(ark))
 
         @descript(
             description="发送ark卡片",

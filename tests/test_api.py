@@ -29,14 +29,14 @@ async def test_help_method(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         help_desc: FuncDescription = getattr(
             API.set_const, INTERFACE_METHOD_DESCRIPTION
         )
         expected = Message(f"api.{help_desc.format(API.set_const)}")
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
-            await Context.execute(bot, session, "await help(api.set_const)")
+            await Context.execute(bot, event, "await help(api.set_const)")
 
 
 @pytest.mark.asyncio
@@ -56,7 +56,7 @@ async def test_help(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
 
         ctx.should_call_api(
             "send_private_forward_msg",
@@ -67,7 +67,7 @@ async def test_help(app: App) -> None:
             {},
         )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, "await help()")
+            await Context.execute(bot, event, "await help()")
 
 
 @pytest.mark.asyncio
@@ -77,7 +77,7 @@ async def test_superuser(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, superuser)
+        event, _ = fake_v11_event_session(bot, superuser)
         user_id, group_id = fake_user_id(), fake_group_id()
 
         ctx.should_call_api(
@@ -92,7 +92,7 @@ async def test_superuser(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(
                 bot,
-                session,
+                event,
                 f"sudo.set_usr({user_id})\n"
                 f"sudo.set_grp({group_id})\n"
                 "sudo.ctx(qid).var = 123\n"
@@ -110,7 +110,7 @@ async def test_send_limit(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
 
         for i in range(6):
             ctx.should_call_send(event, Message(str(i)))
@@ -118,7 +118,7 @@ async def test_send_limit(app: App) -> None:
         with ensure_context(bot, event), pytest.raises(ReachLimit):
             await Context.execute(
                 bot,
-                session,
+                event,
                 "for i in range(7): await feedback(i)",
             )
 
@@ -131,15 +131,15 @@ async def test_is_group(app: App) -> None:
         bot = fake_v11_bot(ctx)
         code = "print(api.is_group())"
 
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         ctx.should_call_send(event, Message("False"))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code)
+            await Context.execute(bot, event, code)
 
-        event, session = fake_v11_event_session(bot, group_id=fake_group_id())
+        event, _ = fake_v11_event_session(bot, group_id=fake_group_id())
         ctx.should_call_send(event, Message("True"))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code)
+            await Context.execute(bot, event, code)
 
 
 @pytest.mark.asyncio
@@ -148,7 +148,7 @@ async def test_feedback_forward(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         expected = [
             MessageSegment.node_custom(0, "forward", Message("1")),
             MessageSegment.node_custom(0, "forward", Message("2")),
@@ -164,7 +164,7 @@ async def test_feedback_forward(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(
                 bot,
-                session,
+                event,
                 'await feedback(["1", "2"], fwd=True)',
             )
 
@@ -175,7 +175,7 @@ async def test_send_private_forward(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         expected = [
             MessageSegment.node_custom(0, "forward", Message("1")),
             MessageSegment.node_custom(0, "forward", Message("2")),
@@ -191,7 +191,7 @@ async def test_send_private_forward(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(
                 bot,
-                session,
+                event,
                 'await user(qid).send_fwd(["1", "2"])',
             )
 
@@ -202,7 +202,7 @@ async def test_send_group_forward(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         expected = [
             MessageSegment.node_custom(0, "forward", Message("1")),
             MessageSegment.node_custom(0, "forward", Message("2")),
@@ -218,7 +218,7 @@ async def test_send_group_forward(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(
                 bot,
-                session,
+                event,
                 'await group(gid).send_fwd(["1", "2"])',
             )
 
@@ -240,7 +240,7 @@ async def test_api_input(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, superuser, exe_code_group)
+        event, _ = fake_v11_event_session(bot, superuser, exe_code_group)
         input_event = fake_v11_group_message_event(
             user_id=superuser,
             group_id=exe_code_group,
@@ -251,7 +251,7 @@ async def test_api_input(app: App) -> None:
 
         async def _test1() -> None:
             with ensure_context(bot, event, matcher()):
-                await Context.execute(bot, session, code_test_api_input)
+                await Context.execute(bot, event, code_test_api_input)
 
         async def _test2() -> None:
             await asyncio.sleep(0.1)
@@ -274,8 +274,8 @@ async def test_api_input_timeout(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, superuser, exe_code_group)
+        event, _ = fake_v11_event_session(bot, superuser, exe_code_group)
         ctx.should_call_send(event, prompt)
 
         with ensure_context(bot, event, matcher()), pytest.raises(TimeoutError):
-            await Context.execute(bot, session, code_test_api_input_timeout)
+            await Context.execute(bot, event, code_test_api_input_timeout)

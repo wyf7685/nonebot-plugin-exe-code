@@ -15,11 +15,11 @@ async def test_lock(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
 
         async def _test(delay: float, code: str) -> None:
             await asyncio.sleep(delay)
-            await Context.execute(bot, session, code)
+            await Context.execute(bot, event, code)
 
         ctx.should_call_send(event, Message("1"))
         ctx.should_call_send(event, Message("2"))
@@ -42,7 +42,7 @@ async def test_cancel(app: App) -> None:
 
         async def _test1() -> None:
             with pytest.raises(asyncio.CancelledError):
-                await Context.execute(bot, session, "await sleep(1); print(1)")
+                await Context.execute(bot, event, "await sleep(1); print(1)")
 
         async def _test2() -> None:
             nonlocal result

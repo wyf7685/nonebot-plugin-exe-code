@@ -98,6 +98,7 @@ class API(Generic[_B, _E], Interface):
             msg="要发送的消息",
             kwds="任意额外参数",
         ),
+        result="bot.send 的返回值",
     )
     @debug_log
     async def native_send(

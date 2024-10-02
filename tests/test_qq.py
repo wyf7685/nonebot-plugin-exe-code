@@ -79,9 +79,9 @@ async def test_build_send_ark(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_qq_bot(ctx)
         event, session = fake_qq_event_session(bot)
-        ctx.should_call_send(event, MessageSegment.ark(expected_build_ark))
+        ctx.should_call_send(event, Message(MessageSegment.ark(expected_build_ark)))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_build_ark)
+            await Context.execute(bot, event, code_test_build_ark)
 
     assert Context.get_context(session)["ark"] == expected_build_ark
 
@@ -116,10 +116,10 @@ async def test_qq_ark_23(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_qq_bot(ctx)
-        event, session = fake_qq_event_session(bot)
-        ctx.should_call_send(event, MessageSegment.ark(expected_ark_23))
+        event, _ = fake_qq_event_session(bot)
+        ctx.should_call_send(event, Message(MessageSegment.ark(expected_ark_23)))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_qq_ark_23)
+            await Context.execute(bot, event, code_test_qq_ark_23)
 
 
 code_test_qq_ark_24 = """\
@@ -143,10 +143,10 @@ async def test_qq_ark_24(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_qq_bot(ctx)
-        event, session = fake_qq_event_session(bot)
-        ctx.should_call_send(event, MessageSegment.ark(expected_ark_24))
+        event, _ = fake_qq_event_session(bot)
+        ctx.should_call_send(event, Message(MessageSegment.ark(expected_ark_24)))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_qq_ark_24)
+            await Context.execute(bot, event, code_test_qq_ark_24)
 
 
 code_test_qq_ark_37 = """\
@@ -170,7 +170,7 @@ async def test_qq_ark_37(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_qq_bot(ctx)
-        event, session = fake_qq_event_session(bot)
-        ctx.should_call_send(event, MessageSegment.ark(expected_ark_37))
+        event, _ = fake_qq_event_session(bot)
+        ctx.should_call_send(event, Message(MessageSegment.ark(expected_ark_37)))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_qq_ark_37)
+            await Context.execute(bot, event, code_test_qq_ark_37)

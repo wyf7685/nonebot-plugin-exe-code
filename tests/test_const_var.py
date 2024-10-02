@@ -32,12 +32,12 @@ async def test_const_var(app: App) -> None:
 
         event, session = fake_v11_event_session(bot, user_id)
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_const_var_1)
+            await Context.execute(bot, event, code_test_const_var_1)
 
         event, session = fake_v11_event_session(bot, user_id)
         ctx.should_call_send(event, Message("1"))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_const_var_2)
+            await Context.execute(bot, event, code_test_const_var_2)
 
     assert Context.get_context(session).ctx.get("test_var") is None
 
@@ -53,12 +53,12 @@ async def test_invalid_const_var_name(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         with (
             ensure_context(bot, event),
             pytest.raises(ValueError, match="'@@@' 不是合法的 Python 标识符"),
         ):
-            await Context.execute(bot, session, code_test_invalid_const_var_name)
+            await Context.execute(bot, event, code_test_invalid_const_var_name)
 
 
 code_test_invalid_const_var_value = """\
@@ -72,9 +72,9 @@ async def test_invalid_const_var_value(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         with (
             ensure_context(bot, event),
             pytest.raises(TypeError, match="设置常量的值必须可被json序列化"),
         ):
-            await Context.execute(bot, session, code_test_invalid_const_var_value)
+            await Context.execute(bot, event, code_test_invalid_const_var_value)

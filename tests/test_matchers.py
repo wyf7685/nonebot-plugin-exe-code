@@ -282,14 +282,14 @@ async def test_terminate(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
-        event, session = fake_v11_event_session(bot, user_id)
+        event, _ = fake_v11_event_session(bot, user_id)
         ctx.should_call_send(event, Message("test 1"))
         expected = "中止" + MessageSegment.at(user_id) + "的执行任务"
         ctx.should_call_send(event, expected)
 
         async def _test1() -> None:
             with pytest.raises(asyncio.CancelledError):
-                await Context.execute(bot, session, code_test_terminate)
+                await Context.execute(bot, event, code_test_terminate)
 
         async def _test2() -> None:
             await asyncio.sleep(0.05)

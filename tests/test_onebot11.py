@@ -27,11 +27,11 @@ async def test_ob11_img_summary(app: App) -> None:
         bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot, group_id=exe_code_group)
         with ensure_context(bot, event), pytest.raises(ValueError, match="无效 url"):
-            await Context.execute(bot, session, code_test_ob11_img_summary)
+            await Context.execute(bot, event, code_test_ob11_img_summary)
         Context.get_context(session).set_value("gurl", url)
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_img_summary)
+            await Context.execute(bot, event, code_test_ob11_img_summary)
 
 
 code_test_ob11_recall = """\
@@ -45,10 +45,10 @@ async def test_ob11_recall(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("delete_msg", {"message_id": 1}, {})
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_recall)
+            await Context.execute(bot, event, code_test_ob11_recall)
 
 
 code_test_ob11_get_msg = """\
@@ -62,7 +62,7 @@ async def test_ob11_get_msg(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api(
             "get_msg",
             {"message_id": 1},
@@ -70,7 +70,7 @@ async def test_ob11_get_msg(app: App) -> None:
         )
         ctx.should_call_send(event, Message("123"))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_get_msg)
+            await Context.execute(bot, event, code_test_ob11_get_msg)
 
 
 code_test_ob11_get_fwd = """\
@@ -84,7 +84,7 @@ async def test_ob11_get_fwd(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api(
             "get_forward_msg",
             {"message_id": 1},
@@ -92,7 +92,7 @@ async def test_ob11_get_fwd(app: App) -> None:
         )
         ctx.should_call_send(event, Message("123"))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_get_fwd)
+            await Context.execute(bot, event, code_test_ob11_get_fwd)
 
 
 code_test_ob11_exception_1 = """\
@@ -107,10 +107,10 @@ async def test_ob11_exception_1(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("not_an_action", {"arg": 123}, exception=ActionFailed())
         with ensure_context(bot, event), pytest.raises(ActionFailed):
-            await Context.execute(bot, session, code_test_ob11_exception_1)
+            await Context.execute(bot, event, code_test_ob11_exception_1)
 
 
 code_test_ob11_exception_2 = """\
@@ -124,11 +124,11 @@ async def test_ob11_exception_2(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("not_an_action", {"arg": 123}, exception=Exception())
         ctx.should_call_send(event, Message("<Result error=Exception()>"))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_exception_2)
+            await Context.execute(bot, event, code_test_ob11_exception_2)
 
 
 code_test_ob11_exception_3 = """\
@@ -145,11 +145,11 @@ async def test_ob11_exception_3(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("not_an_action", {"arg": 123}, exception=Exception())
         ctx.should_call_send(event, Message("RuntimeError('TEST')"))
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_exception_3)
+            await Context.execute(bot, event, code_test_ob11_exception_3)
 
 
 code_test_ob11_exception_4 = """\
@@ -163,9 +163,9 @@ async def test_ob11_exception_4(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         with ensure_context(bot, event), pytest.raises(AttributeError):
-            await Context.execute(bot, session, code_test_ob11_exception_4)
+            await Context.execute(bot, event, code_test_ob11_exception_4)
 
 
 code_test_ob11_call_api_1 = """\
@@ -181,14 +181,14 @@ async def test_ob11_call_api_1(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("test_action", {"arg": "ping"}, result=["pong"])
         ctx.should_call_send(
             event,
             Message(MessageSegment.text("<Result data=['pong']>\npong")),
         )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_call_api_1)
+            await Context.execute(bot, event, code_test_ob11_call_api_1)
 
 
 code_test_ob11_call_api_2 = """\
@@ -203,10 +203,10 @@ async def test_ob11_call_api_2(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("test_action", {"arg": "ping"}, result=["pong"])
         with ensure_context(bot, event), pytest.raises(KeyError):
-            await Context.execute(bot, session, code_test_ob11_call_api_2)
+            await Context.execute(bot, event, code_test_ob11_call_api_2)
 
 
 code_test_ob11_call_api_3 = """\
@@ -221,10 +221,10 @@ async def test_ob11_call_api_3(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("test_action", {"arg": "ping"}, result=None)
         with ensure_context(bot, event), pytest.raises(TypeError):
-            await Context.execute(bot, session, code_test_ob11_call_api_3)
+            await Context.execute(bot, event, code_test_ob11_call_api_3)
 
 
 code_test_ob11_set_card = """\
@@ -238,7 +238,7 @@ async def test_ob11_set_card(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api(
             "set_group_card",
             {
@@ -248,11 +248,11 @@ async def test_ob11_set_card(app: App) -> None:
             },
         )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_set_card)
+            await Context.execute(bot, event, code_test_ob11_set_card)
 
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         with ensure_context(bot, event), pytest.raises(ValueError, match="未指定群号"):
-            await Context.execute(bot, session, code_test_ob11_set_card)
+            await Context.execute(bot, event, code_test_ob11_set_card)
 
 
 code_test_ob11_set_mute = """\
@@ -266,7 +266,7 @@ async def test_ob11_set_mute(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api(
             "set_group_ban",
             {
@@ -276,11 +276,11 @@ async def test_ob11_set_mute(app: App) -> None:
             },
         )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_set_mute)
+            await Context.execute(bot, event, code_test_ob11_set_mute)
 
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         with ensure_context(bot, event), pytest.raises(ValueError, match="未指定群号"):
-            await Context.execute(bot, session, code_test_ob11_set_mute)
+            await Context.execute(bot, event, code_test_ob11_set_mute)
 
 
 code_test_ob11_send_like = """\
@@ -294,13 +294,13 @@ async def test_ob11_send_like(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=exe_code_group)
+        event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api(
             "send_like",
             {"user_id": event.user_id, "times": 10},
         )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_send_like)
+            await Context.execute(bot, event, code_test_ob11_send_like)
 
 
 code_test_ob11_send_private_file = """\
@@ -315,13 +315,13 @@ async def test_ob11_send_private_file(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         ctx.should_call_api(
             "upload_private_file",
             {"user_id": event.user_id, "file": "file", "name": "name"},
         )
         with ensure_context(bot, event), pytest.raises(ValueError, match="不是数字"):
-            await Context.execute(bot, session, code_test_ob11_send_private_file)
+            await Context.execute(bot, event, code_test_ob11_send_private_file)
 
 
 code_test_ob11_send_group_file = """\
@@ -336,17 +336,17 @@ async def test_ob11_send_group_file(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot, group_id=fake_group_id())
+        event, _ = fake_v11_event_session(bot, group_id=fake_group_id())
         ctx.should_call_api(
             "upload_group_file",
             {"group_id": event.group_id, "file": "file", "name": "name"},
         )
         with ensure_context(bot, event), pytest.raises(ValueError, match="不是数字"):
-            await Context.execute(bot, session, code_test_ob11_send_group_file)
+            await Context.execute(bot, event, code_test_ob11_send_group_file)
 
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         with ensure_context(bot, event), pytest.raises(ValueError, match="未指定群号"):
-            await Context.execute(bot, session, code_test_ob11_send_group_file)
+            await Context.execute(bot, event, code_test_ob11_send_group_file)
 
 
 code_test_ob11_send_file = """\
@@ -360,21 +360,21 @@ async def test_ob11_send_file(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         ctx.should_call_api(
             "upload_private_file",
             {"user_id": event.user_id, "file": "file", "name": "name"},
         )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_send_file)
+            await Context.execute(bot, event, code_test_ob11_send_file)
 
-        event, session = fake_v11_event_session(bot, group_id=fake_group_id())
+        event, _ = fake_v11_event_session(bot, group_id=fake_group_id())
         ctx.should_call_api(
             "upload_group_file",
             {"group_id": event.group_id, "file": "file", "name": "name"},
         )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_send_file)
+            await Context.execute(bot, event, code_test_ob11_send_file)
 
 
 code_test_ob11_file2str = """\
@@ -395,7 +395,7 @@ async def test_ob11_file2str(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event, _ = fake_v11_event_session(bot)
         ctx.should_call_api(
             "upload_private_file",
             {"user_id": event.user_id, "file": "base64://ZmlsZQ==", "name": "name"},
@@ -409,4 +409,4 @@ async def test_ob11_file2str(app: App) -> None:
             {"user_id": event.user_id, "file": "base64://ZmlsZQ==", "name": "name"},
         )
         with ensure_context(bot, event):
-            await Context.execute(bot, session, code_test_ob11_file2str)
+            await Context.execute(bot, event, code_test_ob11_file2str)
