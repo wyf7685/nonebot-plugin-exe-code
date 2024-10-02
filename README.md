@@ -217,6 +217,15 @@ await receipt.recall()  # 撤回消息
   
 <!-- CHANGELOG -->
 
+- 2024.10.02 v1.1.2
+
+  - 支持代码内使用 yield 返回多个值
+  - get 类命令加锁
+  - 执行结束删除导出变量
+  - 修改 SUPERUERS 管理函数格式
+  - ob11 & satori 可使用 `api.mid` 快捷获取 message_id
+  - ob11 & satori 接口: set_reaction
+
 - 2024.09.22 v1.1.1
 
   - 优化平台消息类型获取
