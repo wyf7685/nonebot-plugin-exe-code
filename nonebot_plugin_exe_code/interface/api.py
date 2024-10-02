@@ -53,7 +53,7 @@ def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
     return decorator
 
 
-class API(Interface, Generic[_B, _E]):
+class API(Generic[_B, _E], Interface):
     __inst_name__: ClassVar[str] = "api"
 
     def __init__(self, bot: _B, session: Session, context: T_Context) -> None:
