@@ -10,7 +10,7 @@ with contextlib.suppress(ImportError):
     from nonebot.adapters.satori import Adapter, Bot, MessageEvent
 
     @register_api(Adapter)
-    class API(BaseAPI):
+    class API(BaseAPI[Bot, MessageEvent]):
         @property
         def mid(self) -> str:
             return cast(MessageEvent, self.event).message.id
@@ -34,7 +34,7 @@ with contextlib.suppress(ImportError):
                 gid = self.gid
             if (gid := str(gid)).startswith("private:"):
                 raise ValueError("未指定群组ID")
-            await cast(Bot, self.bot).guild_member_mute(
+            await self.bot.guild_member_mute(
                 guild_id=str(gid),
                 user_id=str(qid or self.qid),
                 duration=float(duration) * 1000,
@@ -60,7 +60,7 @@ with contextlib.suppress(ImportError):
             if (channel_id := str(channel_id)).startswith("private:"):
                 raise ValueError("未指定群组ID")
 
-            await cast(Bot, self.bot).reaction_create(
+            await self.bot.reaction_create(
                 channel_id=channel_id,
                 message_id=str(message_id),
                 emoji=f"face:{emoji_id}",

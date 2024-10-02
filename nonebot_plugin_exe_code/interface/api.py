@@ -1,6 +1,6 @@
 import asyncio
 from collections.abc import Callable
-from typing import Any, ClassVar, TypeVar
+from typing import Any, ClassVar, Generic, TypeVar, cast
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot.internal.matcher import current_event
@@ -38,6 +38,8 @@ from .utils import (
 api_registry: dict[type[Adapter], type["API"]] = {}
 message_alia(Message, MessageSegment)
 _A = TypeVar("_A", bound=type["API"])
+_B = TypeVar("_B", bound=Bot)
+_E = TypeVar("_E", bound=Event)
 
 
 def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
@@ -51,24 +53,24 @@ def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
     return decorator
 
 
-class API(Interface):
+class API(Interface, Generic[_B, _E]):
     __inst_name__: ClassVar[str] = "api"
 
-    def __init__(self, bot: Bot, session: Session, context: T_Context) -> None:
+    def __init__(self, bot: _B, session: Session, context: T_Context) -> None:
         super().__init__(context)
         self.__bot = bot
+        self.__event = cast(_E, current_event.get())
         self.__session = session
-        self.__event = current_event.get()
 
     async def _native_send(self, msg: str | Message | MessageSegment) -> Any:
         return await self.bot.send(self.event, msg)
 
     @property
-    def bot(self) -> Bot:
+    def bot(self) -> _B:
         return self.__bot
 
     @property
-    def event(self) -> Event:
+    def event(self) -> _E:
         return self.__event
 
     @property

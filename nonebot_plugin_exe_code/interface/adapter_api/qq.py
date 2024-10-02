@@ -10,11 +10,11 @@ from ..utils import debug_log
 from ._send_ark import SendArk
 
 with contextlib.suppress(ImportError):
-    from nonebot.adapters.qq import Adapter, MessageSegment
+    from nonebot.adapters.qq import Adapter, Bot, Event, MessageSegment
     from nonebot.adapters.qq.models import MessageArk
 
     @register_api(Adapter)
-    class API(SendArk, BaseAPI):
+    class API(SendArk, BaseAPI[Bot, Event]):
         @override
         async def _send_ark(self, ark: MessageArk) -> Any:
             return await self._native_send(MessageSegment.ark(ark))

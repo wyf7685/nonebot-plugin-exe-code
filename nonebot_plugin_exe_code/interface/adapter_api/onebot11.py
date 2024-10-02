@@ -38,6 +38,8 @@ with contextlib.suppress(ImportError):
     from nonebot.adapters.onebot.v11 import (
         ActionFailed,
         Adapter,
+        Bot,
+        Event,
         Message,
         MessageEvent,
         MessageSegment,
@@ -121,7 +123,7 @@ with contextlib.suppress(ImportError):
             return MessageSegment.json(card_json)
 
     @register_api(Adapter)
-    class API(SendArk, BaseAPI):
+    class API(SendArk, BaseAPI[Bot, Event]):
         @property
         def mid(self) -> str:
             return str(cast(MessageEvent, self.event).message_id)
