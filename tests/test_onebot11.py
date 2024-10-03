@@ -147,7 +147,7 @@ async def test_ob11_exception_3(app: App) -> None:
         bot = fake_v11_bot(ctx)
         event, _ = fake_v11_event_session(bot, group_id=exe_code_group)
         ctx.should_call_api("not_an_action", {"arg": 123}, exception=Exception())
-        ctx.should_call_send(event, Message("RuntimeError('TEST')"))
+        ctx.should_call_send(event, Message("ActionFailed(msg='TEST')"))
         with ensure_context(bot, event):
             await Context.execute(bot, event, code_test_ob11_exception_3)
 
