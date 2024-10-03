@@ -63,6 +63,9 @@ class API(Generic[_B, _E], Interface):
         session: Session,
         context: T_Context,
     ) -> None:
+        if not self._validate(bot, event):
+            raise RuntimeError("Bot/Event type mismatch")
+
         super().__init__(context)
         self.__bot = bot
         self.__event = event
@@ -91,6 +94,14 @@ class API(Generic[_B, _E], Interface):
     @property
     def session_id(self) -> str:
         return self.session.get_id(SessionIdType.USER).replace(" ", "_")
+
+    @property
+    def mid(self) -> str | int:
+        raise NotImplementedError
+
+    @classmethod
+    def _validate(cls, bot: _B, event: _E) -> bool:  # noqa: ARG003
+        return True
 
     @descript(
         description="调用 bot.send 向当前会话发送平台消息",

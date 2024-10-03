@@ -1,6 +1,7 @@
 import contextlib
 from typing import Any
 
+from nonebot.adapters import Event
 from typing_extensions import override
 
 from ..api import API as BaseAPI
@@ -10,11 +11,22 @@ from ..utils import debug_log
 from ._send_ark import SendArk
 
 with contextlib.suppress(ImportError):
-    from nonebot.adapters.qq import Adapter, Bot, Event, MessageSegment
+    from nonebot.adapters.qq import Adapter, Bot, MessageSegment
+    from nonebot.adapters.qq.event import MessageEvent
     from nonebot.adapters.qq.models import MessageArk
 
     @register_api(Adapter)
-    class API(SendArk, BaseAPI[Bot, Event]):
+    class API(SendArk, BaseAPI[Bot, MessageEvent]):
+        @property
+        @override
+        def mid(self) -> str:
+            return self.event.event_id or ""
+
+        @classmethod
+        @override
+        def _validate(cls, bot: Bot, event: Event) -> bool:
+            return isinstance(bot, Bot) and isinstance(event, MessageEvent)
+
         @override
         async def _send_ark(self, ark: MessageArk) -> Any:
             return await self.native_send(MessageSegment.ark(ark))

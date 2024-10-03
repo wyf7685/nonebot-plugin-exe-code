@@ -1,5 +1,7 @@
 import contextlib
-from typing import cast
+
+from nonebot.adapters import Event
+from typing_extensions import override
 
 from ..api import API as BaseAPI
 from ..api import register_api
@@ -12,8 +14,14 @@ with contextlib.suppress(ImportError):
     @register_api(Adapter)
     class API(BaseAPI[Bot, MessageEvent]):
         @property
+        @override
         def mid(self) -> str:
-            return cast(MessageEvent, self.event).message.id
+            return self.event.message.id
+
+        @classmethod
+        @override
+        def _validate(cls, bot: Bot, event: Event) -> bool:
+            return isinstance(bot, Bot) and isinstance(event, MessageEvent)
 
         @descript(
             description="设置群禁言",

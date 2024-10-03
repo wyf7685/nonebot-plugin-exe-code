@@ -6,10 +6,11 @@ from base64 import b64encode
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol
 
 import nonebot
 from nonebot import on_fullmatch, on_message
+from nonebot.adapters import Event
 from typing_extensions import override
 
 from ..api import API as BaseAPI
@@ -39,7 +40,6 @@ with contextlib.suppress(ImportError):
         ActionFailed,
         Adapter,
         Bot,
-        Event,
         Message,
         MessageEvent,
         MessageSegment,
@@ -123,10 +123,16 @@ with contextlib.suppress(ImportError):
             return MessageSegment.json(card_json)
 
     @register_api(Adapter)
-    class API(SendArk, BaseAPI[Bot, Event]):
+    class API(SendArk, BaseAPI[Bot, MessageEvent]):
         @property
-        def mid(self) -> str:
-            return str(cast(MessageEvent, self.event).message_id)
+        @override
+        def mid(self) -> int:
+            return self.event.message_id
+
+        @classmethod
+        @override
+        def _validate(cls, bot: Bot, event: Event) -> bool:
+            return isinstance(bot, Bot) and isinstance(event, MessageEvent)
 
         @descript(
             description="调用 OneBot V11 接口",
@@ -297,7 +303,7 @@ with contextlib.suppress(ImportError):
             await self.call_api("send_like", user_id=int(qid or self.qid), times=times)
 
         @descript(
-            description="[NapCat/Lagrange] 群聊消息回应",
+            description="[NapCat/LLOneBot/Lagrange] 群聊消息回应",
             parameters=dict(
                 emoji_id="回应的表情ID",
                 message_id="需要回应的消息ID，可通过getmid获取",
@@ -312,6 +318,7 @@ with contextlib.suppress(ImportError):
             gid: str | int | None = None,
         ) -> None:
             with contextlib.suppress(ActionFailed):
+                # NapCat/LLOneBot
                 await self.bot.call_api(
                     "set_msg_emoji_like",
                     message_id=int(message_id),
@@ -321,6 +328,7 @@ with contextlib.suppress(ImportError):
 
             if (gid := gid or self.gid) is not None:
                 with contextlib.suppress(ActionFailed):
+                    # Lagrange
                     await self.bot.call_api(
                         api="set_group_reaction",
                         group_id=int(gid),
