@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Protocol
 import nonebot
 from nonebot import on_fullmatch, on_message
 from nonebot.adapters import Event
+from nonebot.utils import escape_tag
 from typing_extensions import override
 
 from ..api import API as BaseAPI
@@ -160,7 +161,11 @@ with contextlib.suppress(ImportError):
                 res = {"error": e}
             except BaseException as e:
                 res = {"error": e}
-                msg = f"用户({self.qid})调用api<y>{api}</y>时发生错误: <r>{e}</r>"
+                msg = (
+                    f"用户(<c>{escape_tag(self.qid)}<c>) "
+                    f"调用 api <y>{escape_tag(api)}</y> 时发生错误: "
+                    f"<r>{escape_tag(repr(e))}</r>"
+                )
                 logger.opt(exception=e).warning(msg)
 
             if isinstance(res, dict):
@@ -168,7 +173,9 @@ with contextlib.suppress(ImportError):
 
             result = Result(res)
             if result.error is not None and raise_text is not None:
-                raise RuntimeError(raise_text) from result.error
+                info = getattr(result.error, "info", {})
+                info.setdefault("msg", raise_text)
+                raise ActionFailed(**info) from result.error
             return result
 
         def __getattr__(self, name: str) -> "_ApiCall":
@@ -319,21 +326,23 @@ with contextlib.suppress(ImportError):
         ) -> None:
             with contextlib.suppress(ActionFailed):
                 # NapCat/LLOneBot
-                await self.bot.call_api(
+                await self.call_api(
                     "set_msg_emoji_like",
                     message_id=int(message_id),
                     emoji_id=int(emoji_id),
+                    raise_text="调用 NapCat/LLOneBot 接口 set_msg_emoji_like 出错",
                 )
                 return
 
             if (gid := gid or self.gid) is not None:
                 with contextlib.suppress(ActionFailed):
                     # Lagrange
-                    await self.bot.call_api(
-                        api="set_group_reaction",
+                    await self.call_api(
+                        "set_group_reaction",
                         group_id=int(gid),
                         message_id=int(message_id),
                         code=str(emoji_id),
+                        raise_text="调用 Lagrange 接口 set_group_reaction 出错",
                     )
                     return
 
