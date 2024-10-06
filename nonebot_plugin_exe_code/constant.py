@@ -1,4 +1,4 @@
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable, Coroutine, Iterable
 from typing import Any
 
 from nonebot.adapters import Message, MessageSegment
@@ -23,6 +23,6 @@ T_Context = dict[str, Any]
 T_Executor = Callable[[], Coroutine[None, None, Any]]
 T_API_Result = dict[str, Any] | list[Any] | None
 T_Message = str | Message | MessageSegment | UniMessage | Segment
-T_ForwardMsg = list[T_Message]
+T_ForwardMsg = Iterable[T_Message | tuple[str, str, T_Message]]
 T_ConstVar = str | bool | int | float | dict[str, "T_ConstVar"] | list["T_ConstVar"]
 T_OptConstVar = T_ConstVar | None

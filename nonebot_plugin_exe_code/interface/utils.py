@@ -1,6 +1,6 @@
 import asyncio
 import functools
-from collections.abc import Callable, Coroutine, Iterable
+from collections.abc import Callable, Coroutine
 from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast, overload
 
 import nonebot
@@ -22,6 +22,7 @@ from ..constant import (
     INTERFACE_METHOD_DESCRIPTION,
     T_API_Result,
     T_Context,
+    T_ForwardMsg,
     T_Message,
 )
 
@@ -222,10 +223,12 @@ send_message = _send_message()
 async def send_forward_message(
     session: Session,
     target: Target | None,
-    msgs: Iterable[T_Message],
+    msgs: T_ForwardMsg,
 ) -> Receipt:
     nodes = [
-        CustomNode(
+        CustomNode(msg[0], msg[1], as_unimsg_sync(msg[2]))
+        if isinstance(msg, tuple)
+        else CustomNode(
             uid="0",
             name="forward",
             content=as_unimsg_sync(msg),
