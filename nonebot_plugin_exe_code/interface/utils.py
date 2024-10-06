@@ -5,7 +5,6 @@ from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast, overload
 
 import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
-from nonebot.internal.matcher import current_bot
 from nonebot.utils import is_coroutine_callable
 from nonebot_plugin_alconna.uniseg import (
     CustomNode,
@@ -292,6 +291,6 @@ async def _() -> None:
         message_alia(*_get_msg_cls(a))
 
 
-def export_message() -> dict[str, Any]:
-    m, ms = _get_msg_cls(current_bot.get().adapter)
+def export_message(adapter: Adapter) -> dict[str, Any]:
+    m, ms = _get_msg_cls(adapter)
     return {"Messae": m, "MessageSegment": ms}

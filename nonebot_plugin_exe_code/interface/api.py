@@ -335,7 +335,7 @@ class API(Generic[_B, _E], Interface):
             self._export(k, v)
         self._export("qid", self.qid)
         self._export("gid", self.gid)
-        for k, v in export_message().items():
+        for k, v in export_message(self.bot.adapter).items():
             self._export(k, v)
 
         if is_super_user(self.bot, self.qid):
