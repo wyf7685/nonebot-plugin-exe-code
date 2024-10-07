@@ -40,4 +40,4 @@ class User(Interface):
         return await self.api.send_prv_fwd(self.uid, msgs)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(user_id={self.uid})"
+        return f"<{self.__class__.__name__} user_id={self.uid}>"

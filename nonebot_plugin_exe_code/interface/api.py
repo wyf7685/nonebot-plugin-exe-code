@@ -358,4 +358,4 @@ class API(Generic[_B, _E], Interface):
                 self._export(k, v)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(user_id={self.qid})"
+        return f"<{self.__class__.__name__} user_id={self.qid}>"
