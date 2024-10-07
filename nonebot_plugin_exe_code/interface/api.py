@@ -10,10 +10,10 @@ from typing_extensions import override
 
 from ..constant import (
     INTERFACE_METHOD_DESCRIPTION,
+    T_ConstVar,
     T_Context,
     T_ForwardMsg,
     T_Message,
-    T_OptConstVar,
 )
 from .group import Group
 from .help_doc import FuncDescription, descript, message_alia
@@ -262,7 +262,7 @@ class API(Generic[_B, _E], Interface):
     )
     @debug_log
     @strict
-    def set_const(self, name: str, value: T_OptConstVar = None) -> None:
+    def set_const(self, name: str, value: T_ConstVar = None) -> None:
         if value is None:
             set_const(self.session_id, name)
             return

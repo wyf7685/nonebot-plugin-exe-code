@@ -1,11 +1,24 @@
 import asyncio
+import contextlib
 import functools
 import inspect
 from collections.abc import Callable, Coroutine
-from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast, overload
+from typing import (
+    Any,
+    ClassVar,
+    Generic,
+    ParamSpec,
+    TypeVar,
+    cast,
+    get_args,
+    get_origin,
+    overload,
+)
 
 import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
+from nonebot.compat import type_validate_python
+from nonebot.typing import origin_is_union
 from nonebot.utils import generic_check_issubclass, is_coroutine_callable
 from nonebot_plugin_alconna.uniseg import (
     CustomNode,
@@ -80,6 +93,32 @@ def debug_log(
     )
 
 
+def generic_check_isinstance(value: Any, annotation: Any) -> bool:
+    if annotation is Any:
+        return True
+    if annotation is float:
+        return isinstance(value, int | float)
+    if generic_check_issubclass(type(value), annotation):
+        return True
+
+    origin = get_origin(annotation)
+
+    with contextlib.suppress(TypeError):
+        if isinstance(value, (origin, annotation)):  # noqa: UP038
+            return True
+    with contextlib.suppress(Exception):
+        type_validate_python(annotation, value)
+        return True
+
+    if origin_is_union(origin):
+        return all(generic_check_isinstance(value, type_) for type_ in get_args(origin))
+    if origin:
+        with contextlib.suppress(TypeError):
+            return issubclass(origin, annotation)
+
+    return False
+
+
 @overload
 def strict(call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
 
@@ -93,20 +132,13 @@ def strict(
 ) -> Callable[P, Coro[R]] | Callable[P, R]:
     sig = inspect.signature(call)
 
-    def check_value(annotation: Any, value: Any) -> bool:
-        if annotation is Any:
-            return True
-        if annotation is float and isinstance(value, int):
-            return True
-        return generic_check_issubclass(type(value), annotation)
-
     def check_args(args: tuple, kwargs: dict) -> None:
         arguments = sig.bind(*args, **kwargs).arguments
         for name, value in arguments.items():
             if name in {"cls", "self"}:
                 continue
             annotation = sig.parameters[name].annotation
-            if not check_value(annotation, value):
+            if not generic_check_isinstance(value, annotation):
                 from .help_doc import format_annotation
 
                 raise TypeError(

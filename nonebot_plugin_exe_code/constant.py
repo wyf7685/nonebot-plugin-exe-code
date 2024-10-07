@@ -24,5 +24,4 @@ T_Executor = Callable[[], Coroutine[None, None, Any]]
 T_API_Result = dict[str, Any] | list[Any] | None
 T_Message = str | Message | MessageSegment | UniMessage | Segment
 T_ForwardMsg = Iterable[T_Message | tuple[str, str, T_Message]]
-T_ConstVar = str | bool | int | float | dict[str, Any] | list[Any]
-T_OptConstVar = T_ConstVar | None
+T_ConstVar = str | bool | int | float | dict | list | None

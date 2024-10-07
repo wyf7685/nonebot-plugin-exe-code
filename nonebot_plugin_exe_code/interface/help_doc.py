@@ -13,9 +13,9 @@ from ..constant import (
     DESCRIPTION_RECEIPT_TYPE,
     DESCRIPTION_RESULT_TYPE,
     INTERFACE_METHOD_DESCRIPTION,
+    T_ConstVar,
     T_ForwardMsg,
     T_Message,
-    T_OptConstVar,
 )
 from .utils import Result
 
@@ -26,9 +26,9 @@ R = TypeVar("R")
 type_alias: dict[Any, str] = {
     Receipt: "Receipt",
     Result: "Result",
+    T_ConstVar: "T_ConstVar",
     T_Message: "T_Message",
     T_ForwardMsg: "T_ForwardMsg",
-    T_OptConstVar: "Optional[T_ConstVar]",
     EMPTY: "Unkown",  # not supposed to appear in docs
 }
 
@@ -100,11 +100,6 @@ def descript(
                 assert name in parameters, f"{text} 未添加描述"
 
         ret = sig.return_annotation
-        # if origin := getattr(ret, "__origin__", None):
-        #     args: tuple[type, ...] = getattr(ret, "__args__")
-        #     if origin is Awaitable:
-        #         ret = args[0]
-
         text = f"方法 {call.__name__!r} 的返回值"
         assert ret is not EMPTY, f"{text} 未添加类型注释"
 

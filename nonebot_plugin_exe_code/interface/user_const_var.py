@@ -4,7 +4,7 @@ from typing import Any
 
 from nonebot_plugin_alconna.uniseg import At, Image, Reply, Text, UniMessage
 
-from ..constant import DATA_DIR, T_ConstVar, T_Context, T_OptConstVar
+from ..constant import DATA_DIR, T_ConstVar, T_Context
 
 default_context: T_Context = {}
 
@@ -28,7 +28,7 @@ def _const_var_path(uin: str) -> Path:
     return fp
 
 
-def set_const(uin: str, name: str, value: T_OptConstVar = None) -> None:
+def set_const(uin: str, name: str, value: T_ConstVar = None) -> None:
     if not name.isidentifier():
         raise ValueError(f"{name!r} 不是合法的 Python 标识符")
 
