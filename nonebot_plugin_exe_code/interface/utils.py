@@ -61,8 +61,6 @@ class Coro(Coroutine[None, None, T], Generic[T]): ...
 
 @overload
 def debug_log(call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
-
-
 @overload
 def debug_log(call: Callable[P, R]) -> Callable[P, R]: ...
 
@@ -116,8 +114,6 @@ def generic_check_isinstance(value: Any, annotation: Any) -> bool:
 
 @overload
 def strict(call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
-
-
 @overload
 def strict(call: Callable[P, R]) -> Callable[P, R]: ...
 
