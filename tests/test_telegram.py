@@ -4,7 +4,9 @@ from nonebug import App
 
 from tests.conftest import exe_code_group, superuser
 from tests.fake import (
+    ensure_context,
     fake_telegram_bot,
+    fake_telegram_event_session,
     fake_telegram_group_message_event,
     fake_telegram_private_message_event,
     fake_user_id,
@@ -45,3 +47,15 @@ async def test_telegram_group(app: App) -> None:
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, expected, reply_markup=None)
         ctx.should_finished(matcher)
+
+
+@pytest.mark.asyncio
+async def test_telegram_mid(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_telegram_bot(ctx)
+        event, _ = fake_telegram_event_session(bot)
+        ctx.should_call_send(event, Message("1"), reply_markup=None)
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, "print(api.mid)")

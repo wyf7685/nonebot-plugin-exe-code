@@ -279,6 +279,20 @@ async def test_terminate(app: App) -> None:
         ctx.should_pass_permission(matcher)
         ctx.should_finished(matcher)
 
+        target_id = fake_user_id()
+        event = fake_v11_group_message_event(
+            group_id=exe_code_group,
+            user_id=superuser,
+            message="terminate" + MessageSegment.at(target_id),
+        )
+        ctx.receive_event(bot, event)
+        ctx.should_pass_permission(matcher)
+        ctx.should_call_send(
+            event,
+            f"获取 Context 失败: session ('{target_id}', '{bot.type}') not initialized",
+        )
+        ctx.should_finished(matcher)
+
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         user_id = fake_user_id()

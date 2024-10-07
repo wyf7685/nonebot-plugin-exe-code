@@ -96,7 +96,7 @@ async def test_superuser(app: App) -> None:
                 f"sudo.set_usr({user_id})\n"
                 f"sudo.set_grp({group_id})\n"
                 "sudo.ctx(qid).var = 123\n"
-                "await user(qid).send(var)\n",
+                "await user(qid).send(str(var))\n",
             )
 
         assert str(user_id) in config.user
@@ -279,3 +279,15 @@ async def test_api_input_timeout(app: App) -> None:
 
         with ensure_context(bot, event, matcher()), pytest.raises(TimeoutError):
             await Context.execute(bot, event, code_test_api_input_timeout)
+
+
+@pytest.mark.asyncio
+async def test_api_type_mismatch(app: App) -> None:
+    from nonebot_plugin_exe_code.interface.adapter_api.satori import API
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, session = fake_v11_event_session(bot, superuser, exe_code_group)
+
+        with pytest.raises(RuntimeError, match="Bot/Event type mismatch"):
+            API(bot, event, session, {})  # pyright: ignore[reportArgumentType]

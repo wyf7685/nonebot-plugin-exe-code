@@ -17,7 +17,6 @@ from typing import (
 
 import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
-from nonebot.compat import type_validate_python
 from nonebot.typing import origin_is_union
 from nonebot.utils import generic_check_issubclass, is_coroutine_callable
 from nonebot_plugin_alconna.uniseg import (
@@ -106,15 +105,11 @@ def generic_check_isinstance(value: Any, annotation: Any) -> bool:
     with contextlib.suppress(TypeError):
         if isinstance(value, (origin, annotation)):  # noqa: UP038
             return True
-    with contextlib.suppress(Exception):
-        type_validate_python(annotation, value)
-        return True
 
     if origin_is_union(origin):
-        return all(generic_check_isinstance(value, type_) for type_ in get_args(origin))
-    if origin:
-        with contextlib.suppress(TypeError):
-            return issubclass(origin, annotation)
+        for type_ in get_args(annotation):
+            if generic_check_isinstance(value, type_):
+                return True
 
     return False
 
@@ -131,6 +126,12 @@ def strict(
     call: Callable[P, Coro[R]] | Callable[P, R],
 ) -> Callable[P, Coro[R]] | Callable[P, R]:
     sig = inspect.signature(call)
+    params = sig.parameters.copy()
+    params.pop("cls", None)
+    params.pop("self", None)
+
+    if any(param.annotation is sig.empty for param in params.values()):
+        raise TypeError(f"Strict callable {call.__name__!r} is not fully typed")
 
     def check_args(args: tuple, kwargs: dict) -> None:
         arguments = sig.bind(*args, **kwargs).arguments
@@ -379,7 +380,7 @@ def _get_msg_cls(adapter: Adapter) -> tuple[type[Message], type[MessageSegment]]
 
 
 @nonebot.get_driver().on_startup
-async def _() -> None:
+async def _on_driver_startup() -> None:
     from .help_doc import message_alia
 
     for a in nonebot.get_adapters().values():

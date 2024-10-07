@@ -19,7 +19,7 @@ async def _context(target: Annotated[str, Depends(_target)]) -> Context | None:
     try:
         return Context.get_context(target)
     except Exception as err:
-        await matcher.finish(f"获取 Context 失败: {err!r}")
+        await matcher.finish(f"获取 Context 失败: {err}")
 
 
 @matcher.handle()

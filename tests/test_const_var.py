@@ -75,6 +75,6 @@ async def test_invalid_const_var_value(app: App) -> None:
         event, _ = fake_v11_event_session(bot)
         with (
             ensure_context(bot, event),
-            pytest.raises(TypeError, match="设置常量的值必须可被json序列化"),
+            pytest.raises(TypeError, match="Invalid argument"),
         ):
             await Context.execute(bot, event, code_test_invalid_const_var_value)

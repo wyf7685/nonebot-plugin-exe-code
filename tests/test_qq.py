@@ -174,3 +174,15 @@ async def test_qq_ark_37(app: App) -> None:
         ctx.should_call_send(event, Message(MessageSegment.ark(expected_ark_37)))
         with ensure_context(bot, event):
             await Context.execute(bot, event, code_test_qq_ark_37)
+
+
+@pytest.mark.asyncio
+async def test_qq_mid(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_qq_bot(ctx)
+        event, _ = fake_qq_event_session(bot)
+        # ctx.should_call_send(event, Message("10000"))
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, "print(api.mid)")

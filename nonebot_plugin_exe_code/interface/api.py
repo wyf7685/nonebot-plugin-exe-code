@@ -267,10 +267,7 @@ class API(Generic[_B, _E], Interface):
             set_const(self.session_id, name)
             return
 
-        try:
-            set_const(self.session_id, name, value)
-        except TypeError as e:
-            raise TypeError("设置常量的值必须可被json序列化") from e
+        set_const(self.session_id, name, value)
 
     @export
     @debug_log

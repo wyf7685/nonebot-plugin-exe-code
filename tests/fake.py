@@ -537,6 +537,48 @@ def fake_satori_event_session(
     return event, session
 
 
+@overload
+def fake_telegram_event_session(
+    bot: "telegram.Bot",
+) -> tuple["tgevent.PrivateMessageEvent", "Session"]: ...
+@overload
+def fake_telegram_event_session(
+    bot: "telegram.Bot", user_id: int
+) -> tuple["tgevent.PrivateMessageEvent", "Session"]: ...
+@overload
+def fake_telegram_event_session(
+    bot: "telegram.Bot", *, group_id: int
+) -> tuple["tgevent.GroupMessageEvent", "Session"]: ...
+@overload
+def fake_telegram_event_session(
+    bot: "telegram.Bot", user_id: int, group_id: int
+) -> tuple["tgevent.GroupMessageEvent", "Session"]: ...
+
+
+def fake_telegram_event_session(
+    bot: "telegram.Bot",
+    user_id: int | None = None,
+    group_id: int | None = None,
+) -> tuple["tgevent.PrivateMessageEvent | tgevent.GroupMessageEvent", "Session"]:
+    from nonebot.adapters.telegram import Message
+    from nonebot_plugin_session import extract_session
+
+    user_id = user_id or fake_user_id()
+    if group_id is not None:
+        event = fake_telegram_private_message_event(
+            user_id=user_id,
+            group_id=group_id,
+            message=Message(),
+        )
+    else:
+        event = fake_telegram_group_message_event(
+            user_id=user_id,
+            message=Message(),
+        )
+    session = extract_session(bot, event)
+    return event, session
+
+
 @contextlib.contextmanager
 def ensure_context(
     bot: "Bot",

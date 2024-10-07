@@ -115,7 +115,7 @@ def startswith(text: str) -> Rule:
     def starts_checker(event: Event) -> bool:
         try:
             msg = event.get_message()
-        except NotImplementedError:
+        except NotImplementedError:  # pragma: no cover
             Matcher.skip()
 
         return msg.extract_plain_text().strip().startswith(text)

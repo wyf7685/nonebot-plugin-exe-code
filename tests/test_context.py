@@ -111,3 +111,23 @@ async def test_session_fetch(app: App) -> None:
             Context.get_context(session)
             Context.get_context(event)
             Context.get_context(event.get_user_id())
+
+
+@pytest.mark.asyncio
+async def test_async_generator_executor(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.interface.utils import ReachLimit
+
+    ReachLimit.limit = 3
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, session = fake_v11_event_session(bot)
+
+        ctx.should_call_send(event, Message("1"))
+        ctx.should_call_send(event, Message("2"))
+        ctx.should_call_send(event, Message("3"))
+        with ensure_context(bot, event), pytest.raises(ReachLimit):
+            await Context.get_context(session).execute(
+                bot, event, "yield 1\nyield 2\nyield 3\nyield 4"
+            )

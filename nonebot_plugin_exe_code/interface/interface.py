@@ -29,7 +29,7 @@ class Interface:
 
     def __init_subclass__(cls) -> None:
         if cls.__inst_name__ == Interface.__inst_name__:
-            cls.__inst_name__ = cls.__name__.lower()
+            cls.__inst_name__ = cls.__name__.lower()  # pragma: no cover
         cls.__export_method__ = [
             name for name, value in cls.__dict__.items() if is_export_method(value)
         ]
@@ -40,7 +40,7 @@ class Interface:
         }
 
     def _export(self, key: str, val: Any) -> None:
-        if self.__context is None:
+        if self.__context is None:  # pragma: no cover
             raise TypeError(
                 f"Interface class {type(self).__name__!r} not allowed to export"
             )
