@@ -33,6 +33,7 @@ from .utils import (
     is_super_user,
     send_forward_message,
     send_message,
+    strict,
 )
 
 api_registry: dict[type[Adapter], type["API"]] = {}
@@ -112,9 +113,10 @@ class API(Generic[_B, _E], Interface):
         result="bot.send 的返回值",
     )
     @debug_log
+    @strict
     async def native_send(
         self,
-        msg: T_Message,
+        msg: Any,
         **kwds: Any,
     ) -> Any:
         return await self.bot.send(self.event, await as_msg(msg), **kwds)
@@ -127,6 +129,7 @@ class API(Generic[_B, _E], Interface):
         ),
     )
     @debug_log
+    @strict
     async def send_prv(self, qid: int | str, msg: T_Message) -> Receipt:
         return await send_message(
             session=self.session,
@@ -142,6 +145,7 @@ class API(Generic[_B, _E], Interface):
         ),
     )
     @debug_log
+    @strict
     async def send_grp(self, gid: int | str, msg: T_Message) -> Receipt:
         return await send_message(
             session=self.session,
@@ -158,6 +162,7 @@ class API(Generic[_B, _E], Interface):
         result="Receipt",
     )
     @debug_log
+    @strict
     async def send_prv_fwd(self, qid: int | str, msgs: T_ForwardMsg) -> Receipt:
         return await send_forward_message(
             session=self.session,
@@ -173,6 +178,7 @@ class API(Generic[_B, _E], Interface):
         ),
     )
     @debug_log
+    @strict
     async def send_grp_fwd(self, gid: int | str, msgs: T_ForwardMsg) -> Receipt:
         return await send_forward_message(
             session=self.session,
@@ -186,6 +192,7 @@ class API(Generic[_B, _E], Interface):
         parameters=dict(msgs="发送的消息列表"),
     )
     @debug_log
+    @strict
     async def send_fwd(self, msgs: T_ForwardMsg) -> Receipt:
         return await send_forward_message(
             session=self.session,
@@ -202,6 +209,7 @@ class API(Generic[_B, _E], Interface):
         ),
     )
     @debug_log
+    @strict
     async def feedback(self, msg: Any, *, fwd: bool = False) -> Receipt:
         if isinstance(msg, list) and fwd and all(is_message_t(i) for i in msg):
             return await self.send_fwd(msg)
@@ -221,6 +229,7 @@ class API(Generic[_B, _E], Interface):
         parameters=dict(qid="用户QQ号"),
         result="User对象",
     )
+    @strict
     def user(self, qid: int | str) -> "User":
         return User(self, str(qid))
 
@@ -230,6 +239,7 @@ class API(Generic[_B, _E], Interface):
         parameters=dict(gid="群号"),
         result="Group对象",
     )
+    @strict
     def group(self, gid: int | str) -> "Group":
         return Group(self, str(gid))
 
@@ -239,6 +249,7 @@ class API(Generic[_B, _E], Interface):
         result="当前会话为群聊返回True，否则返回False",
     )
     @debug_log
+    @strict
     def is_group(self) -> bool:
         return not UniMessage.get_target().private
 
@@ -250,6 +261,7 @@ class API(Generic[_B, _E], Interface):
         ),
     )
     @debug_log
+    @strict
     def set_const(self, name: str, value: T_OptConstVar = None) -> None:
         if value is None:
             set_const(self.session_id, name)
@@ -268,6 +280,7 @@ class API(Generic[_B, _E], Interface):
 
     @export
     @debug_log
+    @strict
     async def input(
         self,
         prompt: T_Message | None = None,
@@ -288,8 +301,9 @@ class API(Generic[_B, _E], Interface):
         parameters=dict(method="需要获取帮助的函数，留空则为完整文档"),
     )
     @debug_log
-    async def help(self, method: Any = ...) -> Receipt:
-        if method is not ...:
+    @strict
+    async def help(self, method: Callable | None = None) -> Receipt:
+        if method is not None:
             desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
             text = desc.format(method)
             if not is_export_method(method):
@@ -310,6 +324,7 @@ class API(Generic[_B, _E], Interface):
         parameters=dict(seconds="等待的时间，单位秒"),
     )
     @debug_log
+    @strict
     async def sleep(self, seconds: float) -> None:
         await asyncio.sleep(seconds)
 

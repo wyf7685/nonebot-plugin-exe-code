@@ -1,11 +1,12 @@
 import asyncio
 import functools
+import inspect
 from collections.abc import Callable, Coroutine
 from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast, overload
 
 import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
-from nonebot.utils import is_coroutine_callable
+from nonebot.utils import generic_check_issubclass, is_coroutine_callable
 from nonebot_plugin_alconna.uniseg import (
     CustomNode,
     Receipt,
@@ -72,6 +73,61 @@ def debug_log(
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             nonebot.logger.debug(f"{call.__name__}: args={args!r}, kwargs={kwargs!r}")
             return call(*args, **kwargs)
+
+    return cast(
+        Callable[P, Coro[R]] | Callable[P, R],
+        functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS),
+    )
+
+
+@overload
+def strict(call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
+
+
+@overload
+def strict(call: Callable[P, R]) -> Callable[P, R]: ...
+
+
+def strict(
+    call: Callable[P, Coro[R]] | Callable[P, R],
+) -> Callable[P, Coro[R]] | Callable[P, R]:
+    sig = inspect.signature(call)
+
+    def check_value(annotation: Any, value: Any) -> bool:
+        if annotation is Any:
+            return True
+        if annotation is float and isinstance(value, int):
+            return True
+        return generic_check_issubclass(type(value), annotation)
+
+    def check_args(args: tuple, kwargs: dict) -> None:
+        arguments = sig.bind(*args, **kwargs).arguments
+        for name, value in arguments.items():
+            if name in {"cls", "self"}:
+                continue
+            annotation = sig.parameters[name].annotation
+            if not check_value(annotation, value):
+                from .help_doc import format_annotation
+
+                raise TypeError(
+                    f"Invalid argument for param {name!r} of {call.__name__!r}: "
+                    f"expect {format_annotation(annotation)}, "
+                    f"got {format_annotation(type(value))}"
+                )
+
+    if is_coroutine_callable(call):
+
+        async def wrapper(  # pyright: ignore[reportRedeclaration]
+            *args: P.args, **kwargs: P.kwargs
+        ) -> R:
+            check_args(args, kwargs)
+            return await cast(Callable[P, Coro[R]], call)(*args, **kwargs)
+
+    else:
+
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            check_args(args, kwargs)
+            return cast(Callable[P, R], call)(*args, **kwargs)
 
     return cast(
         Callable[P, Coro[R]] | Callable[P, R],

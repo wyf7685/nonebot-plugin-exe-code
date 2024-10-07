@@ -17,7 +17,7 @@ from typing_extensions import override
 from ..api import API as BaseAPI
 from ..api import register_api
 from ..help_doc import descript
-from ..utils import Result, debug_log, export
+from ..utils import Result, debug_log, export, strict
 from ._send_ark import SendArk
 
 if TYPE_CHECKING:
@@ -191,6 +191,7 @@ with contextlib.suppress(ImportError):
             parameters=dict(msg_id="需要撤回的消息ID，可通过Result/getmid获取"),
         )
         @debug_log
+        @strict
         async def recall(self, msg_id: int) -> Result:
             logger.debug(f"[OneBot V11] 撤回消息: {msg_id=}")
             return await self.call_api(
@@ -206,6 +207,7 @@ with contextlib.suppress(ImportError):
             result="获取到的消息",
         )
         @debug_log
+        @strict
         async def get_msg(self, msg_id: int) -> Message:
             logger.debug(f"[OneBot V11] 获取消息: {msg_id=}")
             res = await self.call_api(
@@ -222,6 +224,7 @@ with contextlib.suppress(ImportError):
             result="获取到的合并转发消息列表",
         )
         @debug_log
+        @strict
         async def get_fwd(self, msg_id: int) -> list[Message]:
             logger.debug(f"[OneBot V11] 获取合并转发消息: {msg_id=}")
             res = await self.call_api(
@@ -239,6 +242,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def img_summary(self, summary: str, url: str | None = None) -> None:
             if url is None:
                 from ...context import Context
@@ -262,6 +266,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def set_card(
             self,
             card: str,
@@ -286,8 +291,12 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def set_mute(
-            self, duration: float, qid: str | int, gid: str | int | None = None
+            self,
+            duration: float,
+            qid: str | int,
+            gid: str | int | None = None,
         ) -> None:
             if gid is None and self.gid is None:
                 raise ValueError("未指定群号")
@@ -306,6 +315,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def send_like(self, times: int, qid: str | int | None = None) -> None:
             await self.call_api("send_like", user_id=int(qid or self.qid), times=times)
 
@@ -318,6 +328,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def set_reaction(
             self,
             emoji_id: str | int,
@@ -357,6 +368,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def send_group_file(
             self,
             file: str | bytes | BytesIO | Path,
@@ -387,6 +399,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def send_private_file(
             self,
             file: str | bytes | BytesIO | Path,
@@ -414,6 +427,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def send_file(
             self,
             file: str | bytes | BytesIO | Path,

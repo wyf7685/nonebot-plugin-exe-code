@@ -5,7 +5,7 @@ from nonebot_plugin_alconna.uniseg import Receipt
 from ..constant import T_ForwardMsg, T_Message
 from .help_doc import descript
 from .interface import Interface
-from .utils import debug_log
+from .utils import debug_log, strict
 
 if TYPE_CHECKING:
     from .api import API
@@ -26,6 +26,7 @@ class User(Interface):
         parameters=dict(msg="需要发送的消息"),
     )
     @debug_log
+    @strict
     async def send(self, msg: T_Message) -> Receipt:
         return await self.api.send_prv(self.uid, msg)
 
@@ -34,6 +35,7 @@ class User(Interface):
         parameters=dict(msgs="需要发送的消息列表"),
     )
     @debug_log
+    @strict
     async def send_fwd(self, msgs: T_ForwardMsg) -> Receipt:
         return await self.api.send_prv_fwd(self.uid, msgs)
 

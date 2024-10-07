@@ -6,7 +6,7 @@ from typing_extensions import override
 from ..api import API as BaseAPI
 from ..api import register_api
 from ..help_doc import descript
-from ..utils import debug_log
+from ..utils import debug_log, strict
 
 with contextlib.suppress(ImportError):
     from nonebot.adapters.satori import Adapter, Bot, MessageEvent
@@ -32,6 +32,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def set_mute(
             self,
             duration: float,
@@ -57,6 +58,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @debug_log
+        @strict
         async def set_reaction(
             self,
             emoji_id: int,

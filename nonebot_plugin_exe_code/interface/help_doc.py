@@ -38,7 +38,7 @@ def message_alia(m: type[Message], ms: type[MessageSegment]) -> None:
     type_alias[ms] = "MessageSegment"
 
 
-def _type_string(t: type | str) -> str:
+def format_annotation(t: type | str) -> str:
     if isinstance(t, str):
         return t
     if t in type_alias:
@@ -49,11 +49,11 @@ def _type_string(t: type | str) -> str:
 def func_declaration(func: Callable[..., Any], ignore: set[str]) -> str:
     sig = inspect.signature(func)
     params = [
-        f"{name}: {_type_string(param.annotation)}"
+        f"{name}: {format_annotation(param.annotation)}"
         for name, param in sig.parameters.items()
         if name not in ignore
     ]
-    result = _type_string(sig.return_annotation)
+    result = format_annotation(sig.return_annotation)
 
     return f"{func.__name__}({', '.join(params)}) -> {result}"
 

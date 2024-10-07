@@ -7,7 +7,7 @@ from typing_extensions import override
 from ..api import API as BaseAPI
 from ..api import register_api
 from ..help_doc import descript
-from ..utils import debug_log
+from ..utils import debug_log, strict
 from ._send_ark import SendArk
 
 with contextlib.suppress(ImportError):
@@ -36,5 +36,6 @@ with contextlib.suppress(ImportError):
             parameters=dict(ark="通过build_ark构建的ark结构体"),
         )
         @debug_log
+        @strict
         async def send_ark(self, ark: MessageArk) -> None:
             await self._send_ark(ark)
