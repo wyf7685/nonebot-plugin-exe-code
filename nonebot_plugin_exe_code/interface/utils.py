@@ -314,12 +314,14 @@ async def send_forward_message(
     msgs: T_ForwardMsg,
 ) -> Receipt:
     nodes = [
-        CustomNode(msg[0], msg[1], as_unimsg_sync(msg[2]))
-        if isinstance(msg, tuple)
-        else CustomNode(
-            uid="0",
-            name="forward",
-            content=as_unimsg_sync(msg),
+        (
+            CustomNode(msg[0], msg[1], as_unimsg_sync(msg[2]))
+            if isinstance(msg, tuple)
+            else CustomNode(
+                uid="0",
+                name="forward",
+                content=as_unimsg_sync(msg),
+            )
         )
         for msg in msgs
     ]
