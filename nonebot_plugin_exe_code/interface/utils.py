@@ -348,10 +348,12 @@ class _Sudo:
         (s.remove if (x := str(x)) in (s := self.__config.group) else s.add)(x)
         return x in s
 
-    def ctxd(self, uin: str) -> T_Context:
-        return self.__Context.get_context(uin).ctx
+    @strict
+    def ctxd(self, uin: int | str) -> T_Context:
+        return self.__Context.get_context(str(uin)).ctx
 
-    def ctx(self, uin: str) -> Any:
+    @strict
+    def ctx(self, uin: int | str) -> Any:
         ctx = self.ctxd(uin)
 
         return type(
