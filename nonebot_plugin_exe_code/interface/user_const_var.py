@@ -4,7 +4,8 @@ from typing import Any
 
 from nonebot_plugin_alconna.uniseg import At, Image, Reply, Text, UniMessage
 
-from ..constant import DATA_DIR, T_ConstVar, T_Context
+from ..constant import DATA_DIR
+from ..typings import T_ConstVar, T_Context, UserStr
 
 default_context: T_Context = {}
 
@@ -18,7 +19,7 @@ def context_var(item: Any, name: str | None = None) -> None:
 context_var((None, None), "__exception__")
 context_var(lambda x: At(flag="user", target=str(x)), "At")
 context_var(lambda x: Reply(id=str(x)), "Reply")
-[context_var(i) for i in {Image, Text, UniMessage}]
+[context_var(i) for i in {Image, Text, UniMessage, UserStr}]
 
 
 def _const_var_path(uin: str) -> Path:

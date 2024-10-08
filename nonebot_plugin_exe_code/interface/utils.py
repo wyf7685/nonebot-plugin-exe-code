@@ -1,43 +1,18 @@
 import asyncio
-import contextlib
 import functools
 import inspect
 from collections.abc import Callable, Coroutine
-from typing import (
-    Any,
-    ClassVar,
-    Generic,
-    ParamSpec,
-    TypeVar,
-    cast,
-    get_args,
-    get_origin,
-    overload,
-)
+from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast, overload
 
 import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
-from nonebot.typing import origin_is_union
-from nonebot.utils import generic_check_issubclass, is_coroutine_callable
-from nonebot_plugin_alconna.uniseg import (
-    CustomNode,
-    Receipt,
-    Reference,
-    Segment,
-    Target,
-    UniMessage,
-)
+from nonebot.utils import is_coroutine_callable
+from nonebot_plugin_alconna.uniseg import Receipt, Segment, Target, UniMessage
 from nonebot_plugin_session import Session
 from typing_extensions import Self, TypeIs
 
-from ..constant import (
-    INTERFACE_EXPORT_METHOD,
-    INTERFACE_METHOD_DESCRIPTION,
-    T_API_Result,
-    T_Context,
-    T_ForwardMsg,
-    T_Message,
-)
+from ..constant import INTERFACE_EXPORT_METHOD, INTERFACE_METHOD_DESCRIPTION
+from ..typings import T_API_Result, T_Context, T_Message, generic_check_isinstance
 
 WRAPPER_ASSIGNMENTS = (
     *functools.WRAPPER_ASSIGNMENTS,
@@ -88,28 +63,6 @@ def debug_log(
         Callable[P, Coro[R]] | Callable[P, R],
         functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS),
     )
-
-
-def generic_check_isinstance(value: Any, annotation: Any) -> bool:
-    if annotation is Any:
-        return True
-    if annotation is float:
-        return isinstance(value, int | float)
-    if generic_check_issubclass(type(value), annotation):
-        return True
-
-    origin = get_origin(annotation)
-
-    with contextlib.suppress(TypeError):
-        if isinstance(value, (origin, annotation)):  # noqa: UP038
-            return True
-
-    if origin_is_union(origin):
-        for type_ in get_args(annotation):
-            if generic_check_isinstance(value, type_):
-                return True
-
-    return False
 
 
 @overload
@@ -232,7 +185,9 @@ async def as_unimsg(message: Any) -> UniMessage:
         message = str(message)
     if isinstance(message, MessageSegment):
         message = cast(type[Message], message.get_message_class())(message)
-    if isinstance(message, str | Segment):
+    if isinstance(message, str):
+        message = UniMessage.text(message)
+    if isinstance(message, Segment):
         message = UniMessage(message)
     elif isinstance(message, Message):
         message = await UniMessage.generate(message=message)
@@ -245,7 +200,9 @@ def as_unimsg_sync(message: Any) -> UniMessage:
         message = str(message)
     if isinstance(message, MessageSegment):
         message = cast(type[Message], message.get_message_class())(message)
-    if isinstance(message, str | Segment):
+    if isinstance(message, str):
+        message = UniMessage.text(message)
+    if isinstance(message, Segment):
         message = UniMessage(message)
     elif isinstance(message, Message):
         message = UniMessage.generate_sync(message=message)
@@ -303,30 +260,6 @@ def _send_message():  # noqa: ANN202
 
 
 send_message = _send_message()
-
-
-async def send_forward_message(
-    session: Session,
-    target: Target | None,
-    msgs: T_ForwardMsg,
-) -> Receipt:
-    nodes = [
-        (
-            CustomNode(msg[0], msg[1], as_unimsg_sync(msg[2]))
-            if isinstance(msg, tuple)
-            else CustomNode(
-                uid="0",
-                name="forward",
-                content=as_unimsg_sync(msg),
-            )
-        )
-        for msg in msgs
-    ]
-    return await send_message(
-        session=session,
-        target=target,
-        message=Reference(nodes=nodes),
-    )
 
 
 class _Sudo:

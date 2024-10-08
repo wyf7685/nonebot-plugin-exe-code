@@ -8,7 +8,8 @@ from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
 from typing_extensions import override
 
-from ..constant import INTERFACE_METHOD_DESCRIPTION, T_ConstVar, T_Context, T_Message
+from ..constant import INTERFACE_METHOD_DESCRIPTION
+from ..typings import T_ConstVar, T_Context, T_Message
 from .group import Group
 from .help_doc import FuncDescription, descript, message_alia
 from .interface import Interface
@@ -169,21 +170,21 @@ class API(Generic[_B, _E], Interface):
     @export
     @descript(
         description="获取用户对象",
-        parameters=dict(qid="用户QQ号"),
+        parameters=dict(uid="用户ID"),
         result="User对象",
     )
     @strict
-    def user(self, qid: int | str) -> "User":
-        return User(self, str(qid))
+    def user(self, uid: int | str) -> "User[API]":
+        return User(self, str(uid))
 
     @export
     @descript(
         description="获取群聊对象",
-        parameters=dict(gid="群号"),
+        parameters=dict(gid="群组ID"),
         result="Group对象",
     )
     @strict
-    def group(self, gid: int | str) -> "Group":
+    def group(self, gid: int | str) -> "Group[API]":
         return Group(self, str(gid))
 
     @descript(
@@ -242,12 +243,12 @@ class API(Generic[_B, _E], Interface):
     )
     @debug_log
     @strict
-    async def help(self, method: Callable) -> Receipt:
+    async def help(self, method: Callable) -> None:
         desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
         text = desc.format(method)
         if not is_export_method(method):
             text = f"{self.__inst_name__}.{text}"
-        return await self.feedback(text)
+        await self.feedback(UniMessage.text(text))
 
     @export
     @descript(

@@ -3,7 +3,8 @@ from typing import Any, ClassVar, NamedTuple, cast
 
 from typing_extensions import Self
 
-from ..constant import INTERFACE_METHOD_DESCRIPTION, T_Context
+from ..constant import INTERFACE_METHOD_DESCRIPTION
+from ..typings import T_Context
 from .help_doc import FuncDescription
 from .utils import is_export_method
 

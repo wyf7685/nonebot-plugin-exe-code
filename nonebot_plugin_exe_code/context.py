@@ -13,8 +13,8 @@ from nonebot_plugin_alconna.uniseg import Image, UniMessage
 from nonebot_plugin_session import Session, SessionIdType, extract_session
 from typing_extensions import Self
 
-from .constant import T_Context, T_Executor
 from .interface import API, Buffer, default_context, get_api_class
+from .typings import T_Context, T_Executor
 
 logger = nonebot.logger.opt(colors=True)
 

@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from nonebot_plugin_alconna.uniseg import Receipt
 
-from ..constant import T_Message
+from ..typings import T_Message
 from .help_doc import descript
 from .interface import Interface
 from .utils import debug_log, strict
@@ -11,12 +11,15 @@ if TYPE_CHECKING:
     from .api import API
 
 
-class Group(Interface):
+_A = TypeVar("_A", bound="API")
+
+
+class Group(Generic[_A], Interface):
     __inst_name__: ClassVar[str] = "grp"
-    api: "API"
+    api: _A
     uid: str
 
-    def __init__(self, api: "API", uid: str) -> None:
+    def __init__(self, api: _A, uid: str) -> None:
         super().__init__()
         self.api = api
         self.uid = uid
@@ -29,15 +32,6 @@ class Group(Interface):
     @strict
     async def send(self, msg: T_Message) -> Receipt:
         return await self.api.send_grp(self.uid, msg)
-
-    # @descript(
-    #     description="向群聊发送合并转发消息",
-    #     parameters=dict(msgs="需要发送的消息列表"),
-    # )
-    # @debug_log
-    # @strict
-    # async def send_fwd(self, msgs: T_ForwardMsg) -> Receipt:
-    #     return await self.api.send_grp_fwd(self.uid, msgs)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} group_id={self.uid}>"

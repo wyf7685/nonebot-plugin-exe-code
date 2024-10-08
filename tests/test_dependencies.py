@@ -51,7 +51,7 @@ async def test_extract_code(app: App) -> None:
             MessageSegment.text(")"),
         ]
     )
-    expected = f'print("{user_id}")\nprint("{img_url}")'
+    expected = f'print(UserStr("{user_id}"))\nprint("{img_url}")'
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)

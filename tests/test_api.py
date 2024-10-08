@@ -5,12 +5,16 @@ from typing import TYPE_CHECKING
 
 import pytest
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
+from nonebot.adapters.satori import Message as SatoriMessage
+from nonebot.adapters.satori import MessageSegment as SatoriMessageSegment
 from nonebug import App
 
 from tests.conftest import exe_code_group, superuser
 from tests.fake import (
     ensure_context,
     fake_group_id,
+    fake_satori_bot,
+    fake_satori_event_session,
     fake_user_id,
     fake_v11_bot,
     fake_v11_event_session,
@@ -41,10 +45,12 @@ async def test_help_method(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_help(app: App) -> None:
+    from nonebot_plugin_exe_code.constant import INTERFACE_METHOD_DESCRIPTION
     from nonebot_plugin_exe_code.context import Context
-    from nonebot_plugin_exe_code.interface.adapter_api.onebot11 import API
+    from nonebot_plugin_exe_code.interface.adapter_api.onebot11 import API as OB11API
+    from nonebot_plugin_exe_code.interface.api import API
 
-    content, description = API.get_all_description()
+    content, description = OB11API.get_all_description()
     expected = [
         MessageSegment.node_custom(0, "forward", Message(MessageSegment.text(msg)))
         for msg in [
@@ -68,6 +74,17 @@ async def test_help(app: App) -> None:
         )
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help()")
+
+    desc: FuncDescription = getattr(API.set_const, INTERFACE_METHOD_DESCRIPTION)
+    expected = SatoriMessage(
+        SatoriMessageSegment.text(f"api.{desc.format(API.set_const)}")
+    )
+    async with app.test_api() as ctx:
+        bot = fake_satori_bot(ctx)
+        event, _ = fake_satori_event_session(bot)
+        ctx.should_call_send(event, expected)
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, "await help(api.set_const)")
 
 
 @pytest.mark.asyncio
@@ -140,33 +157,6 @@ async def test_is_group(app: App) -> None:
         ctx.should_call_send(event, Message("True"))
         with ensure_context(bot, event):
             await Context.execute(bot, event, code)
-
-
-@pytest.mark.asyncio
-async def test_feedback_forward(app: App) -> None:
-    from nonebot_plugin_exe_code.context import Context
-
-    async with app.test_api() as ctx:
-        bot = fake_v11_bot(ctx)
-        event, _ = fake_v11_event_session(bot)
-        expected = [
-            MessageSegment.node_custom(0, "forward", Message("1")),
-            MessageSegment.node_custom(0, "forward", Message("2")),
-        ]
-        ctx.should_call_api(
-            "send_private_forward_msg",
-            {
-                "user_id": event.user_id,
-                "messages": expected,
-            },
-            {},
-        )
-        with ensure_context(bot, event):
-            await Context.execute(
-                bot,
-                event,
-                'await feedback(["1", "2"], fwd=True)',
-            )
 
 
 @pytest.mark.asyncio

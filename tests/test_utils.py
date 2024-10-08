@@ -97,3 +97,12 @@ async def test_driver_startup() -> None:
     from nonebot_plugin_exe_code.interface.utils import _on_driver_startup
 
     await _on_driver_startup()
+
+
+@pytest.mark.usefixtures("app")
+def test_user_str() -> None:
+    from nonebot_plugin_exe_code.typings import UserStr
+
+    assert (UserStr("some string") @ "123").extract_args() == ["123"]
+    with pytest.raises(TypeError):
+        _ = UserStr("some string") @ 123  # pyright: ignore[reportOperatorIssue]

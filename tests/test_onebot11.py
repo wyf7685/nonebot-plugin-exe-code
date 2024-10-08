@@ -589,3 +589,32 @@ async def test_ob11_set_reaction(app: App) -> None:
             await Context.execute(bot, event, code_test_ob11_set_reaction)
             with pytest.raises(RuntimeError, match="发送消息回应失败"):
                 await Context.execute(bot, event, code_test_ob11_set_reaction)
+
+
+@pytest.mark.asyncio
+async def test_ob11_send_fwd(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, _ = fake_v11_event_session(bot)
+        expected = Message(
+            [
+                MessageSegment.node_custom(123, "test", Message("1")),
+                MessageSegment.node_custom(0, "forward", Message("2")),
+            ]
+        )
+        ctx.should_call_api(
+            "send_private_forward_msg",
+            {
+                "user_id": event.user_id,
+                "messages": expected,
+            },
+            {},
+        )
+        with ensure_context(bot, event):
+            await Context.execute(
+                bot,
+                event,
+                'await api.send_fwd([UserStr("123") @ "1" @ "test", "2"])',
+            )

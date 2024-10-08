@@ -55,7 +55,7 @@ def _extract_code() -> Any:
             if isinstance(seg, Text):
                 code += seg.text
             elif isinstance(seg, At):
-                code += f'"{seg.target}"'
+                code += f'UserStr("{seg.target}")'
             elif isinstance(seg, Image):
                 code += f'"{seg.url or "[url]"}"'
 

@@ -7,27 +7,23 @@ from collections.abc import Callable
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import nonebot
 from nonebot import on_fullmatch, on_message
 from nonebot.adapters import Event
+from nonebot.adapters.onebot.v11.message import Message
 from nonebot.utils import escape_tag
-from nonebot_plugin_alconna.uniseg import Receipt, Target
 from typing_extensions import override
 
-from ...constant import INTERFACE_METHOD_DESCRIPTION, T_ForwardMsg, T_Message
+from ...constant import INTERFACE_METHOD_DESCRIPTION
+from ...typings import T_ForwardMsg, T_Message, UserStr
 from ..api import API as BaseAPI
 from ..api import register_api
+from ..group import Group as BaseGroup
 from ..help_doc import FuncDescription, descript
-from ..utils import (
-    Result,
-    debug_log,
-    export,
-    is_export_method,
-    send_forward_message,
-    strict,
-)
+from ..user import User as BaseUser
+from ..utils import Result, as_msg, debug_log, export, is_export_method, strict
 from ._send_ark import SendArk
 
 if TYPE_CHECKING:
@@ -44,6 +40,39 @@ def file2str(file: str | bytes | BytesIO | Path) -> str:
     if isinstance(file, bytes):
         file = f"base64://{b64encode(file).decode()}"
     return file
+
+
+async def _extract_user_str_args(us: UserStr) -> tuple[int, "Message", str | None]:
+    user_id = int(us)
+    args = us.extract_args()
+    assert len(args) > 0
+    content = cast("Message", await as_msg(args.pop(0)))
+    name = None
+    if args:
+        name = (await as_msg(args.pop(0))).extract_plain_text()
+    return user_id, content, name
+
+
+async def convert_forward(msgs: T_ForwardMsg) -> "Message":
+    from nonebot.adapters.onebot.v11 import Message, MessageSegment
+
+    result = Message()
+    for msg in msgs:
+        if isinstance(msg, UserStr):
+            user_id, content, name = await _extract_user_str_args(msg)
+            result += MessageSegment.node_custom(
+                user_id=user_id,
+                nickname=name or "forward",
+                content=content,
+            )
+        else:
+            result += MessageSegment.node_custom(
+                user_id=0,
+                nickname="forward",
+                content=cast("Message", await as_msg(msg)),
+            )
+
+    return result
 
 
 with contextlib.suppress(ImportError):
@@ -201,15 +230,14 @@ with contextlib.suppress(ImportError):
                 qid="需要发送消息的QQ号",
                 msgs="发送的消息列表",
             ),
-            result="Receipt",
         )
         @debug_log
         @strict
-        async def send_prv_fwd(self, qid: int | str, msgs: T_ForwardMsg) -> Receipt:
-            return await send_forward_message(
-                session=self.session,
-                target=Target.user(str(qid)),
-                msgs=msgs,
+        async def send_prv_fwd(self, qid: int | str, msgs: T_ForwardMsg) -> Result:
+            return await self.call_api(
+                "send_private_forward_msg",
+                user_id=int(qid),
+                messages=await convert_forward(msgs),
             )
 
         @descript(
@@ -221,11 +249,11 @@ with contextlib.suppress(ImportError):
         )
         @debug_log
         @strict
-        async def send_grp_fwd(self, gid: int | str, msgs: T_ForwardMsg) -> Receipt:
-            return await send_forward_message(
-                session=self.session,
-                target=Target.group(str(gid)),
-                msgs=msgs,
+        async def send_grp_fwd(self, gid: int | str, msgs: T_ForwardMsg) -> Result:
+            return await self.call_api(
+                "send_group_forward_msg",
+                user_id=int(gid),
+                messages=await convert_forward(msgs),
             )
 
         @export
@@ -235,12 +263,12 @@ with contextlib.suppress(ImportError):
         )
         @debug_log
         @strict
-        async def send_fwd(self, msgs: T_ForwardMsg) -> Receipt:
-            return await send_forward_message(
-                session=self.session,
-                target=None,
-                msgs=msgs,
-            )
+        async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
+            if not self.is_group():
+                return await self.send_prv_fwd(self.qid, msgs)
+            if self.gid is not None:
+                return await self.send_grp_fwd(self.gid, msgs)
+            raise ValueError("获取消息上下文失败")
 
         @export
         @override
@@ -250,13 +278,14 @@ with contextlib.suppress(ImportError):
         )
         @debug_log
         @strict
-        async def help(self, method: Callable | None = None) -> Receipt:
+        async def help(self, method: Callable | None = None) -> None:
             if method is not None:
                 desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
                 text = desc.format(method)
                 if not is_export_method(method):
                     text = f"{self.__inst_name__}.{text}"
-                return await self.feedback(text)
+                await self.feedback(text)
+                return
 
             content, description = self.get_all_description()
             msgs: list[T_Message] = [
@@ -264,7 +293,7 @@ with contextlib.suppress(ImportError):
                 " - API说明文档 - 目录 - \n" + "\n".join(content),
                 *description,
             ]
-            return await self.send_fwd(msgs)
+            await self.send_fwd(msgs)
 
         @export
         @descript(
@@ -523,3 +552,48 @@ with contextlib.suppress(ImportError):
         async def _send_ark(self, ark: "MessageArk") -> Any:
             card = Message(await create_ark_card(self, ark))
             return await self.native_send(card)
+
+        @export
+        @descript(
+            description="获取用户对象",
+            parameters=dict(uid="用户QQ号"),
+            result="User对象",
+        )
+        @strict
+        def user(  # pyright: ignore[reportIncompatibleMethodOverride]
+            self, uid: int | str
+        ) -> "User":
+            return User(self, str(uid))
+
+        @export
+        @descript(
+            description="获取群聊对象",
+            parameters=dict(gid="群号"),
+            result="Group对象",
+        )
+        @strict
+        def group(  # pyright: ignore[reportIncompatibleMethodOverride]
+            self, gid: int | str
+        ) -> "Group":
+            return Group(self, str(gid))
+
+    class User(BaseUser[API]):
+        @override
+        @descript(
+            description="向用户发送私聊合并转发消息",
+            parameters=dict(msgs="需要发送的消息列表"),
+        )
+        @debug_log
+        @strict
+        async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
+            return await self.api.send_prv_fwd(self.uid, msgs)
+
+    class Group(BaseGroup[API]):
+        @descript(
+            description="向群聊发送合并转发消息",
+            parameters=dict(msgs="需要发送的消息列表"),
+        )
+        @debug_log
+        @strict
+        async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
+            return await self.api.send_grp_fwd(self.uid, msgs)

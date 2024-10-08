@@ -13,10 +13,8 @@ from ..constant import (
     DESCRIPTION_RECEIPT_TYPE,
     DESCRIPTION_RESULT_TYPE,
     INTERFACE_METHOD_DESCRIPTION,
-    T_ConstVar,
-    T_ForwardMsg,
-    T_Message,
 )
+from ..typings import T_ConstVar, T_ForwardMsg, T_Message
 from .utils import Result
 
 EMPTY = inspect.Signature.empty
