@@ -3,6 +3,7 @@ import contextlib
 import functools
 import uuid
 from base64 import b64encode
+from collections.abc import Callable
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
@@ -12,12 +13,21 @@ import nonebot
 from nonebot import on_fullmatch, on_message
 from nonebot.adapters import Event
 from nonebot.utils import escape_tag
+from nonebot_plugin_alconna.uniseg import Receipt, Target
 from typing_extensions import override
 
+from ...constant import INTERFACE_METHOD_DESCRIPTION, T_ForwardMsg, T_Message
 from ..api import API as BaseAPI
 from ..api import register_api
-from ..help_doc import descript
-from ..utils import Result, debug_log, export, strict
+from ..help_doc import FuncDescription, descript
+from ..utils import (
+    Result,
+    debug_log,
+    export,
+    is_export_method,
+    send_forward_message,
+    strict,
+)
 from ._send_ark import SendArk
 
 if TYPE_CHECKING:
@@ -184,6 +194,77 @@ with contextlib.suppress(ImportError):
                     f"'{self.__class__.__name__}' object has no attribute '{name}'"
                 )
             return functools.partial(self.call_api, name)
+
+        @descript(
+            description="向QQ号为qid的用户发送合并转发消息",
+            parameters=dict(
+                qid="需要发送消息的QQ号",
+                msgs="发送的消息列表",
+            ),
+            result="Receipt",
+        )
+        @debug_log
+        @strict
+        async def send_prv_fwd(self, qid: int | str, msgs: T_ForwardMsg) -> Receipt:
+            return await send_forward_message(
+                session=self.session,
+                target=Target.user(str(qid)),
+                msgs=msgs,
+            )
+
+        @descript(
+            description="向群号为gid的群聊发送合并转发消息",
+            parameters=dict(
+                gid="需要发送消息的群号",
+                msgs="发送的消息列表",
+            ),
+        )
+        @debug_log
+        @strict
+        async def send_grp_fwd(self, gid: int | str, msgs: T_ForwardMsg) -> Receipt:
+            return await send_forward_message(
+                session=self.session,
+                target=Target.group(str(gid)),
+                msgs=msgs,
+            )
+
+        @export
+        @descript(
+            description="向当前会话发送合并转发消息",
+            parameters=dict(msgs="发送的消息列表"),
+        )
+        @debug_log
+        @strict
+        async def send_fwd(self, msgs: T_ForwardMsg) -> Receipt:
+            return await send_forward_message(
+                session=self.session,
+                target=None,
+                msgs=msgs,
+            )
+
+        @export
+        @override
+        @descript(
+            description="向当前会话发送API说明",
+            parameters=dict(method="需要获取帮助的函数，留空则为合并转发的完整文档"),
+        )
+        @debug_log
+        @strict
+        async def help(self, method: Callable | None = None) -> Receipt:
+            if method is not None:
+                desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
+                text = desc.format(method)
+                if not is_export_method(method):
+                    text = f"{self.__inst_name__}.{text}"
+                return await self.feedback(text)
+
+            content, description = self.get_all_description()
+            msgs: list[T_Message] = [
+                "   ===== API说明 =====   ",
+                " - API说明文档 - 目录 - \n" + "\n".join(content),
+                *description,
+            ]
+            return await self.send_fwd(msgs)
 
         @export
         @descript(

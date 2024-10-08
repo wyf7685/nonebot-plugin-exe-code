@@ -88,11 +88,15 @@ class Interface:
 
     @classmethod
     def get_all_description(cls) -> tuple[list[str], list[str]]:
-        methods: list[_Desc] = []
+        method_dict: dict[str, _Desc] = {}
         for c in cls.mro():
             if issubclass(c, Interface):
-                methods.extend(c._get_method_description())  # noqa: SLF001
-        methods.sort(key=lambda x: (1 - x.is_export, x.inst_name, x.func_name))
+                for desc in c._get_method_description():  # noqa: SLF001
+                    method_dict.setdefault(desc.func_name, desc)
+        methods = sorted(
+            method_dict.values(),
+            key=lambda x: (1 - x.is_export, x.inst_name, x.func_name),
+        )
 
         content: list[str] = []
         result: list[str] = []

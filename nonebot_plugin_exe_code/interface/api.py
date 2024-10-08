@@ -8,13 +8,7 @@ from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
 from typing_extensions import override
 
-from ..constant import (
-    INTERFACE_METHOD_DESCRIPTION,
-    T_ConstVar,
-    T_Context,
-    T_ForwardMsg,
-    T_Message,
-)
+from ..constant import INTERFACE_METHOD_DESCRIPTION, T_ConstVar, T_Context, T_Message
 from .group import Group
 from .help_doc import FuncDescription, descript, message_alia
 from .interface import Interface
@@ -31,7 +25,6 @@ from .utils import (
     is_export_method,
     is_message_t,
     is_super_user,
-    send_forward_message,
     send_message,
     strict,
 )
@@ -153,53 +146,6 @@ class API(Generic[_B, _E], Interface):
             message=msg,
         )
 
-    @descript(
-        description="向QQ号为qid的用户发送合并转发消息",
-        parameters=dict(
-            qid="需要发送消息的QQ号",
-            msgs="发送的消息列表",
-        ),
-        result="Receipt",
-    )
-    @debug_log
-    @strict
-    async def send_prv_fwd(self, qid: int | str, msgs: T_ForwardMsg) -> Receipt:
-        return await send_forward_message(
-            session=self.session,
-            target=Target.user(str(qid)),
-            msgs=msgs,
-        )
-
-    @descript(
-        description="向群号为gid的群聊发送合并转发消息",
-        parameters=dict(
-            gid="需要发送消息的群号",
-            msgs="发送的消息列表",
-        ),
-    )
-    @debug_log
-    @strict
-    async def send_grp_fwd(self, gid: int | str, msgs: T_ForwardMsg) -> Receipt:
-        return await send_forward_message(
-            session=self.session,
-            target=Target.group(str(gid)),
-            msgs=msgs,
-        )
-
-    @export
-    @descript(
-        description="向当前会话发送合并转发消息",
-        parameters=dict(msgs="发送的消息列表"),
-    )
-    @debug_log
-    @strict
-    async def send_fwd(self, msgs: T_ForwardMsg) -> Receipt:
-        return await send_forward_message(
-            session=self.session,
-            target=None,
-            msgs=msgs,
-        )
-
     @export
     @descript(
         description="向当前会话发送消息",
@@ -210,10 +156,7 @@ class API(Generic[_B, _E], Interface):
     )
     @debug_log
     @strict
-    async def feedback(self, msg: Any, *, fwd: bool = False) -> Receipt:
-        if isinstance(msg, list) and fwd and all(is_message_t(i) for i in msg):
-            return await self.send_fwd(msg)
-
+    async def feedback(self, msg: Any) -> Receipt:
         if not is_message_t(msg):
             msg = str(msg)
 
@@ -294,26 +237,17 @@ class API(Generic[_B, _E], Interface):
 
     @export
     @descript(
-        description="向当前会话发送API说明",
-        parameters=dict(method="需要获取帮助的函数，留空则为完整文档"),
+        description="向当前会话发送 API 说明",
+        parameters=dict(method="需要获取帮助的函数"),
     )
     @debug_log
     @strict
-    async def help(self, method: Callable | None = None) -> Receipt:
-        if method is not None:
-            desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
-            text = desc.format(method)
-            if not is_export_method(method):
-                text = f"{self.__inst_name__}.{text}"
-            return await self.feedback(text)
-
-        content, description = self.get_all_description()
-        msgs: list[T_Message] = [
-            "   ===== API说明 =====   ",
-            " - API说明文档 - 目录 - \n" + "\n".join(content),
-            *description,
-        ]
-        return await self.feedback(msgs, fwd=True)
+    async def help(self, method: Callable) -> Receipt:
+        desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
+        text = desc.format(method)
+        if not is_export_method(method):
+            text = f"{self.__inst_name__}.{text}"
+        return await self.feedback(text)
 
     @export
     @descript(
