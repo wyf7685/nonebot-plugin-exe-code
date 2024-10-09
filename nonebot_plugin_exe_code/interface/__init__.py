@@ -12,4 +12,3 @@ def get_api_class(bot: Bot) -> type[API[Bot, Event]]:
         if isinstance(bot.adapter, cls):
             return api
     return API
-
