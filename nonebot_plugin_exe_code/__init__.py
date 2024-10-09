@@ -7,7 +7,7 @@ require("nonebot_plugin_localstore")
 require("nonebot_plugin_session")
 require("nonebot_plugin_waiter")
 
-from . import matchers
+from . import matchers as matchers
 from .config import Config
 
 __version__ = "1.1.2"
@@ -28,5 +28,3 @@ __plugin_meta__ = PluginMetadata(
         "version": __version__,
     },
 )
-
-matchers.load()

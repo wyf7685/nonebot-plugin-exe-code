@@ -12,7 +12,7 @@ from .fake import ensure_context, fake_v11_bot, fake_v11_event_session
 def test_strict() -> None:
     from nonebot_plugin_exe_code.interface.utils import strict
 
-    with pytest.raises(TypeError, match=""):
+    with pytest.raises(TypeError, match="not fully typed"):
 
         @strict
         def _test_no_annotation(arg) -> None: ...  # noqa: ANN001

@@ -47,7 +47,7 @@ async def test_help_method(app: App) -> None:
 async def test_help(app: App) -> None:
     from nonebot_plugin_exe_code.constant import INTERFACE_METHOD_DESCRIPTION
     from nonebot_plugin_exe_code.context import Context
-    from nonebot_plugin_exe_code.interface.adapter_api.onebot11 import API as OB11API
+    from nonebot_plugin_exe_code.interface.adapters.onebot11 import API as OB11API
     from nonebot_plugin_exe_code.interface.api import API
 
     content, description = OB11API.get_all_description()
@@ -273,7 +273,7 @@ async def test_api_input_timeout(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_api_type_mismatch(app: App) -> None:
-    from nonebot_plugin_exe_code.interface.adapter_api.satori import API
+    from nonebot_plugin_exe_code.interface.adapters.satori import API
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
