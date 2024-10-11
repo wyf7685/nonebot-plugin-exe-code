@@ -83,7 +83,6 @@ class FuncDescription:
 class _FuncDescriptor(Generic[T, P, R]):
     wrapped: Callable[Concatenate[T, P], R]
     description: FuncDescription
-    __method_description__: FuncDescription
 
     def __init__(
         self, call: Callable[Concatenate[T, P], R], desc: FuncDescription
