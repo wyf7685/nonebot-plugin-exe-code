@@ -93,6 +93,7 @@ async def test_help(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help(user('').send)")
 
+
 @pytest.mark.asyncio
 async def test_descriptor(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
@@ -105,6 +106,7 @@ async def test_descriptor(app: App) -> None:
 
         with ensure_context(bot, event), pytest.raises(AttributeError):
             await Context.execute(bot, event, "del group('').send")
+
 
 @pytest.mark.asyncio
 async def test_superuser(app: App) -> None:
