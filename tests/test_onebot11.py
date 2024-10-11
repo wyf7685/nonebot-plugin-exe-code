@@ -595,19 +595,37 @@ async def test_ob11_set_reaction(app: App) -> None:
 async def test_ob11_send_fwd(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
+    expected = Message(
+        [
+            MessageSegment.node_custom(123, "test", Message("1")),
+            MessageSegment.node_custom(0, "forward", Message("2")),
+        ]
+    )
+
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
+
         event, _ = fake_v11_event_session(bot)
-        expected = Message(
-            [
-                MessageSegment.node_custom(123, "test", Message("1")),
-                MessageSegment.node_custom(0, "forward", Message("2")),
-            ]
-        )
         ctx.should_call_api(
             "send_private_forward_msg",
             {
                 "user_id": event.user_id,
+                "messages": expected,
+            },
+            {},
+        )
+        with ensure_context(bot, event):
+            await Context.execute(
+                bot,
+                event,
+                'await api.send_fwd([UserStr("123") @ "1" @ "test", "2"])',
+            )
+
+        event, _ = fake_v11_event_session(bot, group_id=fake_group_id())
+        ctx.should_call_api(
+            "send_group_forward_msg",
+            {
+                "group_id": event.group_id,
                 "messages": expected,
             },
             {},

@@ -183,6 +183,6 @@ async def test_qq_mid(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_qq_bot(ctx)
         event, _ = fake_qq_event_session(bot)
-        # ctx.should_call_send(event, Message("10000"))
+        ctx.should_call_send(event, Message("id"))
         with ensure_context(bot, event):
             await Context.execute(bot, event, "print(api.mid)")

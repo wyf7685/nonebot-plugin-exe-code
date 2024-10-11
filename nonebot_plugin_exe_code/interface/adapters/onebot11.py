@@ -162,11 +162,6 @@ with contextlib.suppress(ImportError):
 
     @register_api(Adapter)
     class API(SendArk, BaseAPI[Bot, MessageEvent]):
-        @property
-        @override
-        def mid(self) -> int:
-            return self.event.message_id
-
         @classmethod
         @override
         def _validate(cls, bot: Bot, event: Event) -> bool:
@@ -266,7 +261,7 @@ with contextlib.suppress(ImportError):
                 return await self.send_prv_fwd(self.qid, msgs)
             if self.gid is not None:
                 return await self.send_grp_fwd(self.gid, msgs)
-            raise ValueError("获取消息上下文失败")
+            raise ValueError("获取消息上下文失败")  # pragma: no cover
 
         @descript(
             description="向当前会话发送API说明",
@@ -578,7 +573,6 @@ with contextlib.suppress(ImportError):
             description="向用户发送私聊合并转发消息",
             parameters=dict(msgs="需要发送的消息列表"),
         )
-        @override
         @debug_log
         @strict
         async def send_fwd(self, msgs: T_ForwardMsg) -> Result:

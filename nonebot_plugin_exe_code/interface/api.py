@@ -30,11 +30,11 @@ from .utils import (
     strict,
 )
 
-api_registry: dict[type[Adapter], type["API"]] = {}
-message_alia(Message, MessageSegment)
 _A = TypeVar("_A", bound=type["API"])
 _B = TypeVar("_B", bound=Bot)
 _E = TypeVar("_E", bound=Event)
+api_registry: dict[type[Adapter], type["API"]] = {}
+message_alia(Message, MessageSegment)
 
 
 def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
@@ -92,7 +92,7 @@ class API(Generic[_B, _E], Interface):
 
     @property
     def mid(self) -> str | int:
-        raise NotImplementedError
+        return UniMessage.get_message_id(self.event, self.bot)
 
     @classmethod
     def _validate(cls, bot: _B, event: _E) -> bool:  # noqa: ARG003
@@ -195,7 +195,7 @@ class API(Generic[_B, _E], Interface):
     @debug_log
     @strict
     def is_group(self) -> bool:
-        return not UniMessage.get_target().private
+        return not UniMessage.get_target(self.event, self.bot).private
 
     @descript(
         description="设置环境常量，在每次执行代码时加载",

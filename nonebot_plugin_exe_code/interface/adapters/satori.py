@@ -13,11 +13,6 @@ with contextlib.suppress(ImportError):
 
     @register_api(Adapter)
     class API(BaseAPI[Bot, MessageEvent]):
-        @property
-        @override
-        def mid(self) -> str:
-            return self.event.message.id
-
         @classmethod
         @override
         def _validate(cls, bot: Bot, event: Event) -> bool:

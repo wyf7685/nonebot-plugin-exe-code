@@ -20,58 +20,58 @@ WRAPPER_ASSIGNMENTS = (
     INTERFACE_METHOD_DESCRIPTION,
 )
 
-P = ParamSpec("P")
-R = TypeVar("R")
-T = TypeVar("T")
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+_T = TypeVar("_T")
 
 
-def export(call: Callable[P, R]) -> Callable[P, R]:
+def export(call: Callable[_P, _R]) -> Callable[_P, _R]:
     """将一个方法标记为导出函数"""
     setattr(call, INTERFACE_EXPORT_METHOD, True)
     return call
 
 
-class Coro(Coroutine[None, None, T], Generic[T]): ...
+class Coro(Coroutine[None, None, _T], Generic[_T]): ...
 
 
 @overload
-def debug_log(call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
+def debug_log(call: Callable[_P, Coro[_R]]) -> Callable[_P, Coro[_R]]: ...
 @overload
-def debug_log(call: Callable[P, R]) -> Callable[P, R]: ...
+def debug_log(call: Callable[_P, _R]) -> Callable[_P, _R]: ...
 
 
 def debug_log(
-    call: Callable[P, Coro[R]] | Callable[P, R],
-) -> Callable[P, Coro[R]] | Callable[P, R]:
+    call: Callable[_P, Coro[_R]] | Callable[_P, _R],
+) -> Callable[_P, Coro[_R]] | Callable[_P, _R]:
     if is_coroutine_callable(call):
 
         async def wrapper(  # pyright: ignore[reportRedeclaration]
-            *args: P.args, **kwargs: P.kwargs
-        ) -> R:
+            *args: _P.args, **kwargs: _P.kwargs
+        ) -> _R:
             nonebot.logger.debug(f"{call.__name__}: args={args!r}, kwargs={kwargs!r}")
-            return await cast(Callable[P, Coro[R]], call)(*args, **kwargs)
+            return await cast(Callable[_P, Coro[_R]], call)(*args, **kwargs)
 
     else:
 
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
             nonebot.logger.debug(f"{call.__name__}: args={args!r}, kwargs={kwargs!r}")
-            return cast(Callable[P, R], call)(*args, **kwargs)
+            return cast(Callable[_P, _R], call)(*args, **kwargs)
 
     return cast(
-        Callable[P, Coro[R]] | Callable[P, R],
+        Callable[_P, Coro[_R]] | Callable[_P, _R],
         functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS),
     )
 
 
 @overload
-def strict(call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
+def strict(call: Callable[_P, Coro[_R]]) -> Callable[_P, Coro[_R]]: ...
 @overload
-def strict(call: Callable[P, R]) -> Callable[P, R]: ...
+def strict(call: Callable[_P, _R]) -> Callable[_P, _R]: ...
 
 
 def strict(
-    call: Callable[P, Coro[R]] | Callable[P, R],
-) -> Callable[P, Coro[R]] | Callable[P, R]:
+    call: Callable[_P, Coro[_R]] | Callable[_P, _R],
+) -> Callable[_P, Coro[_R]] | Callable[_P, _R]:
     sig = inspect.signature(call)
     params = sig.parameters.copy()
     params.pop("cls", None)
@@ -98,19 +98,19 @@ def strict(
     if is_coroutine_callable(call):
 
         async def wrapper(  # pyright: ignore[reportRedeclaration]
-            *args: P.args, **kwargs: P.kwargs
-        ) -> R:
+            *args: _P.args, **kwargs: _P.kwargs
+        ) -> _R:
             check_args(args, kwargs)
-            return await cast(Callable[P, Coro[R]], call)(*args, **kwargs)
+            return await cast(Callable[_P, Coro[_R]], call)(*args, **kwargs)
 
     else:
 
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
             check_args(args, kwargs)
-            return cast(Callable[P, R], call)(*args, **kwargs)
+            return cast(Callable[_P, _R], call)(*args, **kwargs)
 
     return cast(
-        Callable[P, Coro[R]] | Callable[P, R],
+        Callable[_P, Coro[_R]] | Callable[_P, _R],
         functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS),
     )
 

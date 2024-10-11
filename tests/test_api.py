@@ -93,11 +93,18 @@ async def test_help(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help(user('').send)")
 
+@pytest.mark.asyncio
+async def test_descriptor(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_satori_bot(ctx)
+        event, _ = fake_satori_event_session(bot)
         with ensure_context(bot, event), pytest.raises(AttributeError):
             await Context.execute(bot, event, "api.feedback = None")
 
         with ensure_context(bot, event), pytest.raises(AttributeError):
-            await Context.execute(bot, event, "del api.feedback")
+            await Context.execute(bot, event, "del group('').send")
 
 @pytest.mark.asyncio
 async def test_superuser(app: App) -> None:

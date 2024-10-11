@@ -32,9 +32,9 @@ if TYPE_CHECKING:
     from .interface import Interface
 
 EMPTY = inspect.Signature.empty
-T = TypeVar("T", bound="Interface")
-P = ParamSpec("P")
-R = TypeVar("R")
+_T = TypeVar("_T", bound="Interface")
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
 
 type_alias: dict[Any, str] = {
     Receipt: "Receipt",
@@ -46,7 +46,7 @@ type_alias: dict[Any, str] = {
 }
 
 
-def message_alia(m: type[Message], ms: type[MessageSegment]) -> None:
+def message_alia(m: type[Message], ms: type[MessageSegment], /) -> None:
     type_alias[m] = "Message"
     type_alias[ms] = "MessageSegment"
 
@@ -72,9 +72,9 @@ def func_declaration(func: Callable[..., Any], ignore: set[str]) -> str:
 
 
 @dataclass
-class MethodDescription(Generic[T, P, R]):
+class MethodDescription(Generic[_T, _P, _R]):
     inst_name: str
-    func: Callable[Concatenate[T, P], R]
+    func: Callable[Concatenate[_T, _P], _R]
     description: str
     parameters: dict[str, str] | None
     result: str | None
@@ -93,31 +93,31 @@ class MethodDescription(Generic[T, P, R]):
         )
 
 
-class _MethodDescriptor(Generic[T, P, R]):
+class _MethodDescriptor(Generic[_T, _P, _R]):
     name: str
-    desc: MethodDescription[T, P, R]
+    desc: MethodDescription[_T, _P, _R]
 
-    def __init__(self, desc: MethodDescription[T, P, R]) -> None:
+    def __init__(self, desc: MethodDescription[_T, _P, _R]) -> None:
         self.desc = desc
         setattr(desc.func, INTERFACE_METHOD_DESCRIPTION, desc)
 
-    def __set_name__(self, owner: type[T], name: str) -> None:
+    def __set_name__(self, owner: type[_T], name: str) -> None:
         self.name = name
         self.desc.inst_name = owner.__inst_name__
 
-    def __make_wrapper(self, obj: T) -> Callable[P, R]:
+    def __make_wrapper(self, obj: _T) -> Callable[_P, _R]:
         if inspect.iscoroutinefunction(self.desc.func):
 
-            async def wrapper_async(*args: P.args, **kwargs: P.kwargs) -> R:
+            async def wrapper_async(*args: _P.args, **kwargs: _P.kwargs) -> _R:
                 return await cast(
-                    Callable[Concatenate[T, P], Coroutine[None, None, R]],
+                    Callable[Concatenate[_T, _P], Coroutine[None, None, _R]],
                     self.desc.func,
                 )(obj, *args, **kwargs)
 
-            wrapper = cast(Callable[P, R], wrapper_async)
+            wrapper = cast(Callable[_P, _R], wrapper_async)
         else:
 
-            def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
                 return self.desc.func(obj, *args, **kwargs)
 
         return functools.update_wrapper(
@@ -127,21 +127,21 @@ class _MethodDescriptor(Generic[T, P, R]):
         )
 
     @overload
-    def __get__(self, obj: T, objtype: type[T]) -> Callable[P, R]: ...
+    def __get__(self, obj: _T, objtype: type[_T]) -> Callable[_P, _R]: ...
     @overload
     def __get__(
-        self, obj: None, objtype: type[T]
-    ) -> Callable[Concatenate[T, P], R]: ...
+        self, obj: None, objtype: type[_T]
+    ) -> Callable[Concatenate[_T, _P], _R]: ...
 
     def __get__(
-        self, obj: T | None, objtype: type[T]
-    ) -> Callable[P, R] | Callable[Concatenate[T, P], R]:
+        self, obj: _T | None, objtype: type[_T]
+    ) -> Callable[_P, _R] | Callable[Concatenate[_T, _P], _R]:
         return self.desc.func if obj is None else self.__make_wrapper(obj)
 
-    def __set__(self, obj: T, value: Callable[Concatenate[T, P], R]) -> NoReturn:
+    def __set__(self, obj: _T, value: Callable[Concatenate[_T, _P], _R]) -> NoReturn:
         raise AttributeError(f"attribute {self.name!r} of {obj!r} is readonly")
 
-    def __delete__(self, obj: T) -> NoReturn:
+    def __delete__(self, obj: _T) -> NoReturn:
         raise AttributeError(f"attribute {self.name!r} of {obj!r} cannot be deleted")
 
     def __getattr__(self, __name: str) -> Any:
@@ -154,12 +154,12 @@ def descript(
     result: str | None = None,
     *,
     ignore: set[str] | None = None,
-) -> Callable[[Callable[Concatenate[T, P], R]], _MethodDescriptor[T, P, R]]:
+) -> Callable[[Callable[Concatenate[_T, _P], _R]], _MethodDescriptor[_T, _P, _R]]:
     ignore = {"self", *(ignore or set())}
 
     def decorator(
-        call: Callable[Concatenate[T, P], R],
-    ) -> _MethodDescriptor[T, P, R]:
+        call: Callable[Concatenate[_T, _P], _R],
+    ) -> _MethodDescriptor[_T, _P, _R]:
         nonlocal result
 
         sig = inspect.signature(call)
