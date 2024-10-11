@@ -6,7 +6,7 @@ from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage
 from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from ..constant import INTERFACE_METHOD_DESCRIPTION
 from ..typings import T_ConstVar, T_Context, T_Message
@@ -147,7 +147,6 @@ class API(Generic[_B, _E], Interface):
             message=msg,
         )
 
-    @export
     @descript(
         description="向当前会话发送消息",
         parameters=dict(
@@ -155,6 +154,7 @@ class API(Generic[_B, _E], Interface):
             fwd="传入的是否为合并转发消息列表",
         ),
     )
+    @export
     @debug_log
     @strict
     async def feedback(self, msg: Any) -> Receipt:
@@ -167,24 +167,24 @@ class API(Generic[_B, _E], Interface):
             message=msg,
         )
 
-    @export
     @descript(
         description="获取用户对象",
         parameters=dict(uid="用户ID"),
         result="User对象",
     )
+    @export
     @strict
-    def user(self, uid: int | str) -> "User[API]":
+    def user(self, uid: int | str) -> User[Self]:
         return User(self, str(uid))
 
-    @export
     @descript(
         description="获取群聊对象",
         parameters=dict(gid="群组ID"),
         result="Group对象",
     )
+    @export
     @strict
-    def group(self, gid: int | str) -> "Group[API]":
+    def group(self, gid: int | str) -> Group[Self]:
         return Group(self, str(gid))
 
     @descript(
@@ -236,35 +236,35 @@ class API(Generic[_B, _E], Interface):
             return await UniMessage.generate(message=result)
         raise TimeoutError("input 超时")
 
-    @export
     @descript(
         description="向当前会话发送 API 说明",
         parameters=dict(method="需要获取帮助的函数"),
     )
+    @export
     @debug_log
     @strict
-    async def help(self, method: Callable) -> None:
+    async def help(self, method: Callable[..., Any]) -> None:
         desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
-        text = desc.format(method)
+        text = desc.format()
         if not is_export_method(method):
-            text = f"{self.__inst_name__}.{text}"
+            text = f"{desc.inst_name}.{text}"
         await self.feedback(UniMessage.text(text))
 
-    @export
     @descript(
         description="在执行代码时等待",
         parameters=dict(seconds="等待的时间，单位秒"),
     )
+    @export
     @debug_log
     @strict
     async def sleep(self, seconds: float) -> None:
         await asyncio.sleep(seconds)
 
-    @export
     @descript(
         description="重置环境",
         parameters=None,
     )
+    @export
     @debug_log
     def reset(self) -> None:
         from ..context import Context

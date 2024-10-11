@@ -16,14 +16,13 @@ from nonebot.adapters.onebot.v11.message import Message
 from nonebot.utils import escape_tag
 from typing_extensions import override
 
-from ...constant import INTERFACE_METHOD_DESCRIPTION
 from ...typings import T_ForwardMsg, T_Message, UserStr
 from ..api import API as BaseAPI
 from ..api import register_api
 from ..group import Group as BaseGroup
-from ..help_doc import FuncDescription, descript
+from ..help_doc import descript
 from ..user import User as BaseUser
-from ..utils import Result, as_msg, debug_log, export, is_export_method, strict
+from ..utils import Result, as_msg, debug_log, export, strict
 from ._send_ark import SendArk
 
 if TYPE_CHECKING:
@@ -256,11 +255,11 @@ with contextlib.suppress(ImportError):
                 messages=await convert_forward(msgs),
             )
 
-        @export
         @descript(
             description="向当前会话发送合并转发消息",
             parameters=dict(msgs="发送的消息列表"),
         )
+        @export
         @debug_log
         @strict
         async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
@@ -270,21 +269,19 @@ with contextlib.suppress(ImportError):
                 return await self.send_grp_fwd(self.gid, msgs)
             raise ValueError("获取消息上下文失败")
 
-        @export
-        @override
         @descript(
             description="向当前会话发送API说明",
             parameters=dict(method="需要获取帮助的函数，留空则为合并转发的完整文档"),
         )
+        @export
+        @override
         @debug_log
         @strict
-        async def help(self, method: Callable | None = None) -> None:
+        async def help(  # pyright:ignore[reportIncompatibleVariableOverride]
+            self, method: Callable[..., Any] | None = None
+        ) -> None:
             if method is not None:
-                desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
-                text = desc.format(method)
-                if not is_export_method(method):
-                    text = f"{self.__inst_name__}.{text}"
-                await self.feedback(text)
+                await super().help(method)
                 return
 
             content, description = self.get_all_description()
@@ -295,11 +292,11 @@ with contextlib.suppress(ImportError):
             ]
             await self.send_fwd(msgs)
 
-        @export
         @descript(
             description="撤回指定消息",
             parameters=dict(msg_id="需要撤回的消息ID，可通过Result/getmid获取"),
         )
+        @export
         @debug_log
         @strict
         async def recall(self, msg_id: int) -> Result:
@@ -310,12 +307,12 @@ with contextlib.suppress(ImportError):
                 raise_text="撤回消息失败",
             )
 
-        @export
         @descript(
             description="通过消息ID获取指定消息",
             parameters=dict(msg_id="需要获取的消息ID，可通过getmid获取"),
             result="获取到的消息",
         )
+        @export
         @debug_log
         @strict
         async def get_msg(self, msg_id: int) -> Message:
@@ -327,12 +324,12 @@ with contextlib.suppress(ImportError):
             )
             return Message(res["raw_message"])
 
-        @export
         @descript(
             description="通过合并转发ID获取合并转发消息",
             parameters=dict(msg_id="需要获取的合并转发ID，可通过getcqcode获取"),
             result="获取到的合并转发消息列表",
         )
+        @export
         @debug_log
         @strict
         async def get_fwd(self, msg_id: int) -> list[Message]:
@@ -553,36 +550,36 @@ with contextlib.suppress(ImportError):
             card = Message(await create_ark_card(self, ark))
             return await self.native_send(card)
 
-        @export
         @descript(
             description="获取用户对象",
             parameters=dict(uid="用户QQ号"),
             result="User对象",
         )
+        @export
         @strict
-        def user(  # pyright: ignore[reportIncompatibleMethodOverride]
+        def user(  # pyright: ignore[reportIncompatibleVariableOverride]
             self, uid: int | str
         ) -> "User":
             return User(self, str(uid))
 
-        @export
         @descript(
             description="获取群聊对象",
             parameters=dict(gid="群号"),
             result="Group对象",
         )
+        @export
         @strict
-        def group(  # pyright: ignore[reportIncompatibleMethodOverride]
+        def group(  # pyright: ignore[reportIncompatibleVariableOverride]
             self, gid: int | str
         ) -> "Group":
             return Group(self, str(gid))
 
     class User(BaseUser[API]):
-        @override
         @descript(
             description="向用户发送私聊合并转发消息",
             parameters=dict(msgs="需要发送的消息列表"),
         )
+        @override
         @debug_log
         @strict
         async def send_fwd(self, msgs: T_ForwardMsg) -> Result:

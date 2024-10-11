@@ -1,9 +1,10 @@
 # ruff: noqa: S101
 
+import functools
 import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, ParamSpec, TypeVar
+from typing import Any, Concatenate, Generic, ParamSpec, TypeVar, overload
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt
@@ -15,9 +16,10 @@ from ..constant import (
     INTERFACE_METHOD_DESCRIPTION,
 )
 from ..typings import T_ConstVar, T_ForwardMsg, T_Message
-from .utils import Result
+from .utils import WRAPPER_ASSIGNMENTS, Result
 
 EMPTY = inspect.Signature.empty
+T = TypeVar("T")
 P = ParamSpec("P")
 R = TypeVar("R")
 
@@ -58,14 +60,16 @@ def func_declaration(func: Callable[..., Any], ignore: set[str]) -> str:
 
 @dataclass
 class FuncDescription:
+    inst_name: str
     description: str
     parameters: dict[str, str] | None
     result: str | None
     ignore: set[str]
+    func: Callable
 
-    def format(self, func: Callable[..., Any]) -> str:
+    def format(self) -> str:
         return DESCRIPTION_FORMAT.format(
-            decl=func_declaration(func, self.ignore),
+            decl=func_declaration(self.func, self.ignore),
             desc=self.description,
             params=(
                 "\n".join(f" - {k}: {v}" for k, v in self.parameters.items())
@@ -76,16 +80,61 @@ class FuncDescription:
         )
 
 
+class _FuncDescriptor(Generic[T, P, R]):
+    wrapped: Callable[Concatenate[T, P], R]
+    description: FuncDescription
+    __method_description__: FuncDescription
+
+    def __init__(
+        self, call: Callable[Concatenate[T, P], R], desc: FuncDescription
+    ) -> None:
+        self.wrapped = call
+        self.description = desc
+        setattr(call, INTERFACE_METHOD_DESCRIPTION, desc)
+
+    @overload
+    def __get__(self, obj: T, objtype: type[T]) -> Callable[P, R]: ...
+    @overload
+    def __get__(
+        self, obj: None, objtype: type[T]
+    ) -> Callable[Concatenate[T, P], R]: ...
+
+    def __get__(
+        self, obj: T | None, objtype: type[T]
+    ) -> Callable[P, R] | Callable[Concatenate[T, P], R]:
+        inst_name = getattr(objtype, "__inst_name__", objtype.__name__.lower())
+        self.description.inst_name = inst_name
+        setattr(
+            self.wrapped,
+            INTERFACE_METHOD_DESCRIPTION,
+            self.description,
+        )
+
+        if obj is None:
+            return self.wrapped
+
+        return functools.update_wrapper(
+            functools.partial(self.wrapped, obj),
+            self.wrapped,
+            assigned=WRAPPER_ASSIGNMENTS,
+        )
+
+    def __getattr__(self, __name: str) -> Any:
+        return getattr(self.wrapped, __name)
+
+
 def descript(
     description: str,
     parameters: dict[str, str] | None,
     result: str | None = None,
     *,
     ignore: set[str] | None = None,
-) -> Callable[[Callable[P, R]], Callable[P, R]]:
+) -> Callable[[Callable[Concatenate[T, P], R]], _FuncDescriptor[T, P, R]]:
     ignore = {"self", *(ignore or set())}
 
-    def decorator(call: Callable[P, R]) -> Callable[P, R]:
+    def decorator(
+        call: Callable[Concatenate[T, P], R],
+    ) -> _FuncDescriptor[T, P, R]:
         nonlocal result
 
         sig = inspect.signature(call)
@@ -109,11 +158,14 @@ def descript(
             elif "return" not in ignore:
                 assert ret is None, f"{text} 未添加描述"
 
-        setattr(
-            call,
-            INTERFACE_METHOD_DESCRIPTION,
-            FuncDescription(description, parameters, result, ignore),
+        desc = FuncDescription(
+            inst_name="unkown",
+            description=description,
+            parameters=parameters,
+            result=result,
+            ignore=ignore,
+            func=call,
         )
-        return call
+        return _FuncDescriptor(call, desc)
 
     return decorator

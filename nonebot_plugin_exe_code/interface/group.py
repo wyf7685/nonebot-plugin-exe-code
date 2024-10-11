@@ -28,8 +28,8 @@ class Group(Generic[_A], Interface):
         description="向群聊发送消息",
         parameters=dict(msg="需要发送的消息"),
     )
-    @debug_log
     @strict
+    @debug_log
     async def send(self, msg: T_Message) -> Receipt:
         return await self.api.send_grp(self.uid, msg)
 

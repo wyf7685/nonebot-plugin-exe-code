@@ -84,7 +84,7 @@ class Interface:
                 inst_name=cls.__inst_name__,
                 func_name=func_name,
                 is_export=is_export,
-                description=desc.format(func),
+                description=desc.format(),
             )
 
     @classmethod

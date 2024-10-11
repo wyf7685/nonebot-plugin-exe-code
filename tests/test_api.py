@@ -37,7 +37,7 @@ async def test_help_method(app: App) -> None:
         help_desc: FuncDescription = getattr(
             API.set_const, INTERFACE_METHOD_DESCRIPTION
         )
-        expected = Message(f"api.{help_desc.format(API.set_const)}")
+        expected = Message(f"api.{help_desc.format()}")
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help(api.set_const)")
@@ -49,6 +49,7 @@ async def test_help(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.adapters.onebot11 import API as OB11API
     from nonebot_plugin_exe_code.interface.api import API
+    from nonebot_plugin_exe_code.interface.user import User
 
     content, description = OB11API.get_all_description()
     expected = [
@@ -76,15 +77,22 @@ async def test_help(app: App) -> None:
             await Context.execute(bot, event, "await help()")
 
     desc: FuncDescription = getattr(API.set_const, INTERFACE_METHOD_DESCRIPTION)
-    expected = SatoriMessage(
-        SatoriMessageSegment.text(f"api.{desc.format(API.set_const)}")
-    )
+    expected = SatoriMessage(SatoriMessageSegment.text(f"api.{desc.format()}"))
     async with app.test_api() as ctx:
         bot = fake_satori_bot(ctx)
         event, _ = fake_satori_event_session(bot)
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help(api.set_const)")
+
+    desc: FuncDescription = getattr(User.send, INTERFACE_METHOD_DESCRIPTION)
+    expected = SatoriMessage(SatoriMessageSegment.text(f"usr.{desc.format()}"))
+    async with app.test_api() as ctx:
+        bot = fake_satori_bot(ctx)
+        event, _ = fake_satori_event_session(bot)
+        ctx.should_call_send(event, expected)
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, "await help(user('').send)")
 
 
 @pytest.mark.asyncio

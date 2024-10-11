@@ -27,8 +27,8 @@ class User(Generic[_A], Interface):
         description="向用户发送私聊消息",
         parameters=dict(msg="需要发送的消息"),
     )
-    @debug_log
     @strict
+    @debug_log
     async def send(self, msg: T_Message) -> Receipt:
         return await self.api.send_prv(self.uid, msg)
 
