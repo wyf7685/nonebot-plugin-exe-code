@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 import nonebot
 from nonebot import on_fullmatch, on_message
 from nonebot.adapters import Event
-from nonebot.adapters.onebot.v11.message import Message
 from nonebot.utils import escape_tag
 from typing_extensions import override
 
