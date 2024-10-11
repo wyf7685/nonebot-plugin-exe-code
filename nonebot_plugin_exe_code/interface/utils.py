@@ -316,4 +316,4 @@ async def _on_driver_startup() -> None:
 
 def export_message(adapter: Adapter) -> dict[str, Any]:
     m, ms = _get_msg_cls(adapter)
-    return {"Messae": m, "MessageSegment": ms}
+    return {"Message": m, "MessageSegment": ms}
