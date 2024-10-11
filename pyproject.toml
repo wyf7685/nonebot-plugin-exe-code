@@ -41,6 +41,7 @@ dev-dependencies = [
   "pytest-mock>=3.14.0",
   "uvicorn[standard]>=0.30.6",
   "websockets>=13.0.1",
+  "ipykernel>=6.29.5",
 ]
 
 [tool.black]
