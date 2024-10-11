@@ -11,7 +11,7 @@ from typing_extensions import Self, override
 from ..constant import INTERFACE_METHOD_DESCRIPTION
 from ..typings import T_ConstVar, T_Context, T_Message
 from .group import Group
-from .help_doc import FuncDescription, descript, message_alia
+from .help_doc import MethodDescription, descript, message_alia
 from .interface import Interface
 from .user import User
 from .user_const_var import default_context, load_const, set_const
@@ -244,7 +244,7 @@ class API(Generic[_B, _E], Interface):
     @debug_log
     @strict
     async def help(self, method: Callable[..., Any]) -> None:
-        desc: FuncDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
+        desc: MethodDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
         text = desc.format()
         if not is_export_method(method):
             text = f"{desc.inst_name}.{text}"

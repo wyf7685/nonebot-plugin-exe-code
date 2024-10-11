@@ -5,7 +5,7 @@ from typing_extensions import Self
 
 from ..constant import INTERFACE_METHOD_DESCRIPTION
 from ..typings import T_Context
-from .help_doc import FuncDescription
+from .help_doc import MethodDescription
 from .utils import is_export_method
 
 
@@ -19,7 +19,7 @@ class _Desc(NamedTuple):
 class Interface:
     __inst_name__: ClassVar[str] = "interface"
     __export_method__: ClassVar[list[str]] = []
-    __method_description__: ClassVar[dict[str, FuncDescription]] = {}
+    __method_description__: ClassVar[dict[str, MethodDescription]] = {}
 
     __context: T_Context | None
     __exported: set[str]

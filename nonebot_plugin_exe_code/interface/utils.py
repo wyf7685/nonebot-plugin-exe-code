@@ -44,20 +44,18 @@ def debug_log(
     call: Callable[P, Coro[R]] | Callable[P, R],
 ) -> Callable[P, Coro[R]] | Callable[P, R]:
     if is_coroutine_callable(call):
-        call = cast(Callable[P, Coro[R]], call)
 
         async def wrapper(  # pyright: ignore[reportRedeclaration]
             *args: P.args, **kwargs: P.kwargs
         ) -> R:
             nonebot.logger.debug(f"{call.__name__}: args={args!r}, kwargs={kwargs!r}")
-            return await call(*args, **kwargs)
+            return await cast(Callable[P, Coro[R]], call)(*args, **kwargs)
 
     else:
-        call = cast(Callable[P, R], call)
 
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             nonebot.logger.debug(f"{call.__name__}: args={args!r}, kwargs={kwargs!r}")
-            return call(*args, **kwargs)
+            return cast(Callable[P, R], call)(*args, **kwargs)
 
     return cast(
         Callable[P, Coro[R]] | Callable[P, R],
