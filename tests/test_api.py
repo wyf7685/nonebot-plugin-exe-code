@@ -70,25 +70,26 @@ async def test_help(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help()")
 
-    desc = get_method_description(API.set_const)
-    assert desc is not None
-    expected = SatoriMessage(SatoriMessageSegment.text(f"api.{desc.format()}"))
     async with app.test_api() as ctx:
         bot = fake_satori_bot(ctx)
         event, _ = fake_satori_event_session(bot)
+
+        desc = get_method_description(API.set_const)
+        assert desc is not None
+        expected = SatoriMessage(SatoriMessageSegment.text(f"api.{desc.format()}"))
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help(api.set_const)")
 
-    desc = get_method_description(User.send)
-    assert desc is not None
-    expected = SatoriMessage(SatoriMessageSegment.text(f"usr.{desc.format()}"))
-    async with app.test_api() as ctx:
-        bot = fake_satori_bot(ctx)
-        event, _ = fake_satori_event_session(bot)
+        desc = get_method_description(User.send)
+        assert desc is not None
+        expected = SatoriMessage(SatoriMessageSegment.text(f"usr.{desc.format()}"))
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help(user('').send)")
+
+        with ensure_context(bot, event), pytest.raises(TypeError, match="没有方法描述"):
+            await Context.execute(bot, event, "await help(api.export)")
 
 
 @pytest.mark.asyncio
