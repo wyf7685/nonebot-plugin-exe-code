@@ -121,6 +121,15 @@ async def test_satori_set_reaction(app: App) -> None:
             {
                 "channel_id": str(exe_code_group),
                 "message_id": "10000",
+                "emoji": "123",
+            },
+            result=None,
+        )
+        ctx.should_call_api(
+            "reaction_create",
+            {
+                "channel_id": str(exe_code_group),
+                "message_id": "10000",
                 "emoji": "face:123",
             },
             result=None,
