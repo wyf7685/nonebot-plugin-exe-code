@@ -100,6 +100,15 @@ class API(Generic[_B, _E], Interface):
         return True
 
     @descript(
+        description="获取当前平台类型",
+        parameters=None,
+        result="当前平台类型",
+    )
+    @debug_log
+    async def get_platform(self) -> str:
+        return self.bot.type
+
+    @descript(
         description="调用 bot.send 向当前会话发送平台消息",
         parameters=dict(
             msg="要发送的消息",

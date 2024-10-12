@@ -170,6 +170,17 @@ with contextlib.suppress(ImportError):
             return isinstance(bot, Bot) and isinstance(event, MessageEvent)
 
         @descript(
+            description="获取当前平台类型",
+            parameters=None,
+            result="当前平台类型",
+        )
+        @debug_log
+        @override
+        async def get_platform(self) -> str:
+            data = await self.bot.get_version_info()
+            return f"[{self.bot.type}] {data['app_name']} {data['app_version']}"
+
+        @descript(
             description="调用 OneBot V11 接口",
             parameters=dict(
                 api=(

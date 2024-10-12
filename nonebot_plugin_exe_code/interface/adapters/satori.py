@@ -22,6 +22,18 @@ with contextlib.suppress(ImportError):
             return isinstance(bot, Bot) and isinstance(event, MessageEvent)
 
         @descript(
+            description="获取当前平台类型",
+            parameters=None,
+            result="当前平台类型",
+        )
+        @debug_log
+        @override
+        async def get_platform(self) -> str:
+            login = await self.bot.login_get()
+            platform = login.platform or "Unkown"
+            return f"[{self.bot.type}] {platform}"
+
+        @descript(
             description="设置群禁言",
             parameters=dict(
                 duration="禁言时间, 单位秒, 填0为解除禁言",
