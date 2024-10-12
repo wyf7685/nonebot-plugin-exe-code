@@ -3,12 +3,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, overload
 
-from nonebot.adapters.satori import (
-    Adapter,
-    Bot,
-    Message,
-    MessageSegment,
-)
+from nonebot.adapters.satori import Adapter, Bot, Message, MessageSegment
 from nonebot.adapters.satori.config import ClientInfo
 from nonebot.adapters.satori.event import (
     EventType,

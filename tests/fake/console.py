@@ -3,13 +3,7 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from nonebot.adapters.console import (
-    Adapter,
-    Bot,
-    Message,
-    MessageEvent,
-    User,
-)
+from nonebot.adapters.console import Adapter, Bot, Message, MessageEvent, User
 from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pydantic import create_model

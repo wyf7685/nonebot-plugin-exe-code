@@ -3,12 +3,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from nonebot.adapters.qq import (
-    Adapter,
-    Bot,
-    C2CMessageCreateEvent,
-    MessageCreateEvent,
-)
+from nonebot.adapters.qq import Adapter, Bot, C2CMessageCreateEvent, MessageCreateEvent
 from nonebot.adapters.qq.config import BotInfo
 from nonebot.adapters.qq.models.common import (
     MessageArk,
