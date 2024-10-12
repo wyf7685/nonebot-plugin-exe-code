@@ -634,3 +634,27 @@ async def test_ob11_send_fwd(app: App) -> None:
                 event,
                 'await api.send_fwd([UserStr("123") @ "1" @ "test", "2"])',
             )
+
+
+code_test_ob11_get_platform = """\
+print(await api.get_platform())
+"""
+
+
+@pytest.mark.asyncio
+async def test_ob11_get_platform(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    expected = Message(MessageSegment.text("[OneBot V11] app_name app_version"))
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, _ = fake_v11_event_session(bot)
+        ctx.should_call_api(
+            "get_version_info",
+            {},
+            {"app_name": "app_name", "app_version": "app_version"},
+        )
+        ctx.should_call_send(event, expected)
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, code_test_ob11_get_platform)

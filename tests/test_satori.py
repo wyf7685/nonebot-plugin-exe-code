@@ -1,5 +1,6 @@
 import pytest
 from nonebot.adapters.satori import Message
+from nonebot.adapters.satori.models import Login, LoginStatus
 from nonebug import App
 
 from .conftest import exe_code_group, exe_code_user, superuser
@@ -143,3 +144,27 @@ async def test_satori_set_reaction(app: App) -> None:
             pytest.raises(ValueError, match="未指定群组ID"),
         ):
             await Context.execute(bot, event, code_test_satori_set_reaction)
+
+
+code_test_satori_get_platform = """\
+print(await api.get_platform())
+"""
+
+
+@pytest.mark.asyncio
+async def test_satori_get_platform(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    expected = Message("[Satori] platform")
+
+    async with app.test_api() as ctx:
+        bot = fake_satori_bot(ctx)
+        event, _ = fake_satori_event_session(bot)
+        ctx.should_call_api(
+            "login_get",
+            {},
+            Login(platform="platform", status=LoginStatus.ONLINE),
+        )
+        ctx.should_call_send(event, expected)
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, code_test_satori_get_platform)
