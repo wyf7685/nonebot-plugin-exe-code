@@ -8,10 +8,9 @@ from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
 from typing_extensions import Self, override
 
-from ..constant import INTERFACE_METHOD_DESCRIPTION
 from ..typings import T_ConstVar, T_Context, T_Message
 from .group import Group
-from .help_doc import MethodDescription, descript, message_alia
+from .help_doc import descript, message_alia
 from .interface import Interface
 from .user import User
 from .user_const_var import default_context, load_const, set_const
@@ -23,6 +22,7 @@ from .utils import (
     export,
     export_message,
     export_superuser,
+    get_method_description,
     is_export_method,
     is_message_t,
     is_super_user,
@@ -245,7 +245,9 @@ class API(Generic[_B, _E], Interface):
     @debug_log
     @strict
     async def help(self, method: Callable[..., Any]) -> None:
-        desc: MethodDescription = getattr(method, INTERFACE_METHOD_DESCRIPTION)
+        desc = get_method_description(method)
+        if desc is None:
+            raise TypeError(f"{method!r} 没有方法描述")
         text = desc.format()
         if not is_export_method(method):
             text = f"{desc.inst_name}.{text}"

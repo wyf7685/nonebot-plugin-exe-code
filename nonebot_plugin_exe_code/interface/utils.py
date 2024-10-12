@@ -2,7 +2,16 @@ import asyncio
 import functools
 import inspect
 from collections.abc import Callable, Coroutine
-from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Generic,
+    ParamSpec,
+    TypeVar,
+    cast,
+    overload,
+)
 
 import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
@@ -11,9 +20,13 @@ from nonebot_plugin_alconna.uniseg import Receipt, Segment, Target, UniMessage
 from nonebot_plugin_session import Session
 from typing_extensions import Self, TypeIs
 
-from ..constant import INTERFACE_EXPORT_METHOD, INTERFACE_METHOD_DESCRIPTION
 from ..typings import T_API_Result, T_Context, T_Message, generic_check_isinstance
 
+if TYPE_CHECKING:
+    from .help_doc import MethodDescription
+
+INTERFACE_EXPORT_METHOD = "__export_method__"
+INTERFACE_METHOD_DESCRIPTION = "__method_description__"
 WRAPPER_ASSIGNMENTS = (
     *functools.WRAPPER_ASSIGNMENTS,
     INTERFACE_EXPORT_METHOD,
@@ -29,6 +42,10 @@ def export(call: Callable[_P, _R]) -> Callable[_P, _R]:
     """将一个方法标记为导出函数"""
     setattr(call, INTERFACE_EXPORT_METHOD, True)
     return call
+
+
+def get_method_description(call: Callable[..., Any]) -> "MethodDescription | None":
+    return getattr(call, INTERFACE_METHOD_DESCRIPTION, None)
 
 
 class Coro(Coroutine[None, None, _T], Generic[_T]): ...

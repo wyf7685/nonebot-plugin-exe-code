@@ -19,23 +19,21 @@ from typing import (
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt
 
-from ..constant import (
-    DESCRIPTION_FORMAT,
-    DESCRIPTION_RECEIPT_TYPE,
-    DESCRIPTION_RESULT_TYPE,
-    INTERFACE_METHOD_DESCRIPTION,
-)
 from ..typings import T_ConstVar, T_ForwardMsg, T_Message
-from .utils import WRAPPER_ASSIGNMENTS, Result
+from .utils import INTERFACE_METHOD_DESCRIPTION, WRAPPER_ASSIGNMENTS, Result
 
 if TYPE_CHECKING:
     from .interface import Interface
 
-EMPTY = inspect.Signature.empty
 _T = TypeVar("_T", bound="Interface")
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
 
+DESCRIPTION_FORMAT = "{decl}\n* 描述: {desc}\n* 参数:\n{params}\n* 返回值:\n  {res}\n"
+DESCRIPTION_RESULT_TYPE = "Result 对象，可通过属性名获取接口响应"
+DESCRIPTION_RECEIPT_TYPE = "UniMessage 发送后返回的 Receipt 对象，用于操作对应消息"
+
+EMPTY = inspect.Signature.empty
 type_alias: dict[Any, str] = {
     Receipt: "Receipt",
     Result: "Result",

@@ -3,10 +3,9 @@ from typing import Any, ClassVar, NamedTuple, cast
 
 from typing_extensions import Self
 
-from ..constant import INTERFACE_METHOD_DESCRIPTION
 from ..typings import T_Context
 from .help_doc import MethodDescription
-from .utils import is_export_method
+from .utils import get_method_description, is_export_method
 
 
 class _Desc(NamedTuple):
@@ -39,7 +38,7 @@ class Interface:
         cls.__method_description__ = {
             name: desc
             for name, value in cls.__dict__.items()
-            if (desc := getattr(value, INTERFACE_METHOD_DESCRIPTION, None))
+            if (desc := get_method_description(value))
         }
 
     def _export(self, key: str, val: Any) -> None:

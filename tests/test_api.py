@@ -1,7 +1,6 @@
 # ruff: noqa: S101
 
 import asyncio
-from typing import TYPE_CHECKING
 
 import pytest
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
@@ -21,22 +20,18 @@ from tests.fake import (
     fake_v11_group_message_event,
 )
 
-if TYPE_CHECKING:
-    from nonebot_plugin_exe_code.interface.help_doc import MethodDescription
-
 
 @pytest.mark.asyncio
 async def test_help_method(app: App) -> None:
-    from nonebot_plugin_exe_code.constant import INTERFACE_METHOD_DESCRIPTION
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.api import API
+    from nonebot_plugin_exe_code.interface.utils import get_method_description
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event, _ = fake_v11_event_session(bot)
-        help_desc: MethodDescription = getattr(
-            API.set_const, INTERFACE_METHOD_DESCRIPTION
-        )
+        help_desc = get_method_description(API.set_const)
+        assert help_desc is not None
         expected = Message(f"api.{help_desc.format()}")
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
@@ -45,10 +40,10 @@ async def test_help_method(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_help(app: App) -> None:
-    from nonebot_plugin_exe_code.constant import INTERFACE_METHOD_DESCRIPTION
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.adapters.onebot11 import API
     from nonebot_plugin_exe_code.interface.user import User
+    from nonebot_plugin_exe_code.interface.utils import get_method_description
 
     content, description = API.get_all_description()
     expected = [
@@ -75,7 +70,8 @@ async def test_help(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help()")
 
-    desc: MethodDescription = getattr(API.set_const, INTERFACE_METHOD_DESCRIPTION)
+    desc = get_method_description(API.set_const)
+    assert desc is not None
     expected = SatoriMessage(SatoriMessageSegment.text(f"api.{desc.format()}"))
     async with app.test_api() as ctx:
         bot = fake_satori_bot(ctx)
@@ -84,7 +80,8 @@ async def test_help(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help(api.set_const)")
 
-    desc: MethodDescription = getattr(User.send, INTERFACE_METHOD_DESCRIPTION)
+    desc = get_method_description(User.send)
+    assert desc is not None
     expected = SatoriMessage(SatoriMessageSegment.text(f"usr.{desc.format()}"))
     async with app.test_api() as ctx:
         bot = fake_satori_bot(ctx)
