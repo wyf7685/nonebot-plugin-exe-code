@@ -50,6 +50,7 @@ def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
 
 class API(Generic[_B, _E], Interface):
     __inst_name__: ClassVar[str] = "api"
+    __slots__ = ("__bot", "__event", "__session")
 
     def __init__(
         self,

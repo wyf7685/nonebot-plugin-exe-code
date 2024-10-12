@@ -17,6 +17,8 @@ with contextlib.suppress(ImportError):
 
     @register_api(Adapter)
     class API(SendArk, BaseAPI[Bot, MessageEvent]):
+        __slots__ = ()
+
         @classmethod
         @override
         def _validate(cls, bot: Bot, event: Event) -> bool:

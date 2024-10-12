@@ -15,6 +15,8 @@ _A = TypeVar("_A", bound="API")
 
 class User(Generic[_A], Interface):
     __inst_name__: ClassVar[str] = "usr"
+    __slots__ = ("api", "uid")
+
     api: _A
     uid: str
 

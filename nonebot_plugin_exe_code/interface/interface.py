@@ -21,6 +21,8 @@ class Interface:
     __export_method__: ClassVar[list[str]] = []
     __method_description__: ClassVar[dict[str, MethodDescription]] = {}
 
+    __slots__ = ("__context", "__exported")
+
     __context: T_Context | None
     __exported: set[str]
 

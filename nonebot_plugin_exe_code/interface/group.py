@@ -16,6 +16,8 @@ _A = TypeVar("_A", bound="API")
 
 class Group(Generic[_A], Interface):
     __inst_name__: ClassVar[str] = "grp"
+    __slots__ = ("api", "uid")
+
     api: _A
     uid: str
 

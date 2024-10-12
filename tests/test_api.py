@@ -107,6 +107,9 @@ async def test_descriptor(app: App) -> None:
         with ensure_context(bot, event), pytest.raises(AttributeError):
             await Context.execute(bot, event, "del group('').send")
 
+        with ensure_context(bot, event), pytest.raises(AttributeError):
+            await Context.execute(bot, event, "api.abcd = None")
+
 
 @pytest.mark.asyncio
 async def test_superuser(app: App) -> None:
