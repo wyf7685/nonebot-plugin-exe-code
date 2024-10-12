@@ -8,16 +8,14 @@ from nonebot.adapters.qq.models import MessageArk, MessageArkKv
 from nonebug import App
 from pytest_mock import MockerFixture
 
-from tests.conftest import exe_code_group, exe_code_qbot_id
-from tests.fake import (
-    ensure_context,
-    fake_group_id,
-    fake_qq_bot,
-    fake_qq_c2c_message_create_event,
+from .conftest import exe_code_group, exe_code_qbot_id
+from .fake.common import ensure_context, fake_group_id
+from .fake.onebot11 import (
     fake_v11_bot,
     fake_v11_event_session,
     fake_v11_private_message_event,
 )
+from .fake.qq import fake_qq_bot, fake_qq_c2c_message_create_event
 
 code_test_ob11_img_summary = """\
 await api.img_summary("test")

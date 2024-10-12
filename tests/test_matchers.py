@@ -8,11 +8,9 @@ from nonebot.adapters.onebot.v11.event import Reply, Sender
 from nonebot.exception import FinishedException
 from nonebug import App
 
-from tests.conftest import exe_code_group, superuser
-from tests.fake import (
-    ensure_context,
-    fake_img_bytes,
-    fake_user_id,
+from .conftest import exe_code_group, superuser
+from .fake.common import ensure_context, fake_img_bytes, fake_user_id
+from .fake.onebot11 import (
     fake_v11_bot,
     fake_v11_event_session,
     fake_v11_group_message_event,

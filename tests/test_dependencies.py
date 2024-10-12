@@ -13,13 +13,8 @@ from nonebot.internal.matcher import Matcher
 from nonebot.internal.params import DependsInner
 from nonebug import App
 
-from tests.fake import (
-    ensure_context,
-    fake_img_bytes,
-    fake_user_id,
-    fake_v11_bot,
-    fake_v11_group_message_event,
-)
+from .fake.common import ensure_context, fake_img_bytes, fake_user_id
+from .fake.onebot11 import fake_v11_bot, fake_v11_group_message_event
 
 
 def parse_handler_dependent(depends: DependsInner) -> Dependent[Any]:
@@ -314,9 +309,7 @@ async def test_event_reply_message_2(app: App) -> None:
             ),
             message=reply_msg,
         )
-        event.reply.message = (
-            reply_msg.extract_plain_text()
-        )  # pyright:ignore[reportAttributeAccessIssue]
+        event.reply.message = reply_msg.extract_plain_text()  # pyright:ignore[reportAttributeAccessIssue]
         state = {}
         stack = AsyncExitStack()
         with ensure_context(bot, event):

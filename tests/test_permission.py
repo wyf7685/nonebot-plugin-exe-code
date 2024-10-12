@@ -1,10 +1,9 @@
 import pytest
 from nonebug import App
 
-from tests.conftest import exe_code_group, exe_code_user, superuser
-from tests.fake import (
-    fake_group_id,
-    fake_user_id,
+from .conftest import exe_code_group, exe_code_user, superuser
+from .fake.common import fake_group_id, fake_user_id
+from .fake.onebot11 import (
     fake_v11_bot,
     fake_v11_group_exe_code,
     fake_v11_private_exe_code,

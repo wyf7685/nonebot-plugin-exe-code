@@ -2,7 +2,7 @@ import pytest
 from nonebot.adapters.console import Message
 from nonebug import App
 
-from tests.fake import fake_console_bot, fake_console_message_event
+from .fake.console import fake_console_bot, fake_console_message_event
 
 
 @pytest.mark.asyncio

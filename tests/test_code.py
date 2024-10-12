@@ -2,8 +2,9 @@ import pytest
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebug import App
 
-from tests.conftest import exe_code_group
-from tests.fake import fake_user_id, fake_v11_bot, fake_v11_group_exe_code
+from .conftest import exe_code_group
+from .fake.common import fake_user_id
+from .fake.onebot11 import fake_v11_bot, fake_v11_group_exe_code
 
 code_test_api_message = """\
 await feedback(1)

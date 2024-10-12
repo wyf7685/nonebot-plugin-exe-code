@@ -10,14 +10,9 @@ from nonebot.adapters.qq.models import (
 )
 from nonebug import App
 
-from tests.conftest import exe_code_group
-from tests.fake import (
-    ensure_context,
-    fake_qq_bot,
-    fake_qq_event_session,
-    fake_qq_guild_exe_code,
-    fake_user_id,
-)
+from .conftest import exe_code_group
+from .fake.common import ensure_context, fake_user_id
+from .fake.qq import fake_qq_bot, fake_qq_event_session, fake_qq_guild_exe_code
 
 
 @pytest.mark.asyncio

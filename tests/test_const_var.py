@@ -4,12 +4,8 @@ import pytest
 from nonebot.adapters.onebot.v11 import Message
 from nonebug import App
 
-from tests.fake import (
-    ensure_context,
-    fake_user_id,
-    fake_v11_bot,
-    fake_v11_event_session,
-)
+from .fake.common import ensure_context, fake_user_id
+from .fake.onebot11 import fake_v11_bot, fake_v11_event_session
 
 code_test_const_var_1 = """\
 api.set_const("test_var", {"a":[1, "2"]})

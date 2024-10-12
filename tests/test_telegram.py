@@ -2,14 +2,13 @@ import pytest
 from nonebot.adapters.telegram import Message
 from nonebug import App
 
-from tests.conftest import exe_code_group, superuser
-from tests.fake import (
-    ensure_context,
+from .conftest import exe_code_group, superuser
+from .fake.common import ensure_context, fake_user_id
+from .fake.telegram import (
     fake_telegram_bot,
     fake_telegram_event_session,
     fake_telegram_group_message_event,
     fake_telegram_private_message_event,
-    fake_user_id,
 )
 
 

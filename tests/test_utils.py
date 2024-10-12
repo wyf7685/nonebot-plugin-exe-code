@@ -5,7 +5,8 @@ import pytest
 from nonebot.utils import run_sync
 from nonebug import App
 
-from .fake import ensure_context, fake_v11_bot, fake_v11_event_session
+from .fake.common import ensure_context
+from .fake.onebot11 import fake_v11_bot, fake_v11_event_session
 
 
 @pytest.mark.usefixtures("app")

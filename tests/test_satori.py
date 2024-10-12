@@ -2,15 +2,13 @@ import pytest
 from nonebot.adapters.satori import Message
 from nonebug import App
 
-from tests.conftest import exe_code_group, exe_code_user, superuser
-from tests.fake import (
-    ensure_context,
-    fake_group_id,
+from .conftest import exe_code_group, exe_code_user, superuser
+from .fake.common import ensure_context, fake_group_id, fake_user_id
+from .fake.satori import (
     fake_satori_bot,
     fake_satori_event_session,
     fake_satori_private_message_created_event,
     fake_satori_public_message_created_event,
-    fake_user_id,
 )
 
 

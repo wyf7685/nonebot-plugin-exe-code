@@ -8,17 +8,14 @@ from nonebot.adapters.satori import Message as SatoriMessage
 from nonebot.adapters.satori import MessageSegment as SatoriMessageSegment
 from nonebug import App
 
-from tests.conftest import exe_code_group, superuser
-from tests.fake import (
-    ensure_context,
-    fake_group_id,
-    fake_satori_bot,
-    fake_satori_event_session,
-    fake_user_id,
+from .conftest import exe_code_group, superuser
+from .fake.common import ensure_context, fake_group_id, fake_user_id
+from .fake.onebot11 import (
     fake_v11_bot,
     fake_v11_event_session,
     fake_v11_group_message_event,
 )
+from .fake.satori import fake_satori_bot, fake_satori_event_session
 
 
 @pytest.mark.asyncio
