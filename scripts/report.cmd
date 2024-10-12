@@ -1,3 +1,2 @@
-@ECHO OFF
-coverage xml
-coverage html
+uv run coverage xml
+uv run coverage html

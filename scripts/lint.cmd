@@ -1,5 +1,4 @@
-@ECHO OFF
-uv run isort .
-uv run black .
-uv run pyright .
-uv run ruff check .
+uvx isort .
+uvx black .
+uvx pyright --pythonpath .venv\Scripts\python.exe
+uvx ruff check .
