@@ -188,7 +188,10 @@ with contextlib.suppress(ImportError):
         ) -> Result:
             res: dict[str, Any] | list[Any] | None = None
             try:
-                res = await self.bot.call_api(api, **data)
+                res = await self.bot.call_api(
+                    api,
+                    **{k: v for k, v in data.items() if v is not None},
+                )
             except ActionFailed as e:
                 res = {"error": e}
             except BaseException as e:
@@ -466,6 +469,7 @@ with contextlib.suppress(ImportError):
                 file="需要发送的文件，可以是url/base64/bytes/Path",
                 name="上传的文件名",
                 gid="目标群号，默认为当前群聊，私聊时必填",
+                timeout="上传文件超时时长，单位秒",
             ),
         )
         @debug_log
@@ -475,6 +479,7 @@ with contextlib.suppress(ImportError):
             file: str | bytes | BytesIO | Path,
             name: str,
             gid: str | int | None = None,
+            timeout: float | None = None,
         ) -> None:
             file = file2str(file)
             gid = gid or self.gid
@@ -489,6 +494,7 @@ with contextlib.suppress(ImportError):
                 group_id=int(gid),
                 file=file,
                 name=name,
+                _timeout=timeout,
             )
 
         @descript(
@@ -497,6 +503,7 @@ with contextlib.suppress(ImportError):
                 file="需要发送的文件，可以是url/base64/bytes/Path",
                 name="上传的文件名",
                 qid="目标QQ号，默认为当前用户",
+                timeout="上传文件超时时长，单位秒",
             ),
         )
         @debug_log
@@ -506,6 +513,7 @@ with contextlib.suppress(ImportError):
             file: str | bytes | BytesIO | Path,
             name: str,
             qid: str | int | None = None,
+            timeout: float | None = None,
         ) -> None:
             file = file2str(file)
             qid = qid or self.qid
@@ -518,6 +526,7 @@ with contextlib.suppress(ImportError):
                 user_id=int(qid),
                 file=file,
                 name=name,
+                _timeout=timeout,
             )
 
         @descript(
@@ -525,6 +534,7 @@ with contextlib.suppress(ImportError):
             parameters=dict(
                 file="需要发送的文件，可以是url/base64/bytes/Path",
                 name="上传的文件名",
+                timeout="上传文件超时时长，单位秒",
             ),
         )
         @debug_log
@@ -533,11 +543,12 @@ with contextlib.suppress(ImportError):
             self,
             file: str | bytes | BytesIO | Path,
             name: str,
+            timeout: float | None = None,
         ) -> None:
             if self.is_group():
-                await self.send_group_file(file, name, self.gid)
+                await self.send_group_file(file, name, self.gid, timeout)
             else:
-                await self.send_private_file(file, name, self.qid)
+                await self.send_private_file(file, name, self.qid, timeout)
 
         @override
         async def _send_ark(self, ark: "MessageArk") -> Any:
