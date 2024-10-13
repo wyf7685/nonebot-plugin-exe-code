@@ -273,10 +273,14 @@ async def test_terminate(app: App) -> None:
             user_id=superuser,
             message=Message("terminate"),
         )
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, "")
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_finished(matcher)
 
+    async with app.test_matcher(matcher) as ctx:
+        bot = fake_v11_bot(ctx)
         target_id = fake_user_id()
         event = fake_v11_group_message_event(
             group_id=exe_code_group,

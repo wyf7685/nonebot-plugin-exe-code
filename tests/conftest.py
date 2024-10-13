@@ -15,7 +15,7 @@ exe_code_qbot_id = 10007685
 def pytest_configure(config: pytest.Config) -> None:
     config.stash[NONEBOT_INIT_KWARGS] = {
         "driver": "~fastapi+~httpx+~websockets",
-        "log_level": "DEBUG",
+        "log_level": "TRACE",
         "host": "127.0.0.1",
         "port": "8080",
         "superusers": [str(superuser)],
