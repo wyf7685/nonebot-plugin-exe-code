@@ -925,10 +925,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "nonebot-plugin-alconna", specifier = ">=0.51.2" },
+    { name = "nonebot-plugin-alconna", specifier = ">=0.53.0" },
     { name = "nonebot-plugin-localstore", specifier = ">=0.6.0" },
-    { name = "nonebot-plugin-session", specifier = ">=0.3.1" },
-    { name = "nonebot-plugin-waiter", specifier = ">=0.7.1" },
+    { name = "nonebot-plugin-session", specifier = ">=0.3.2" },
+    { name = "nonebot-plugin-waiter", specifier = ">=0.8.0" },
     { name = "nonebot2", specifier = ">=2.3.3" },
     { name = "pillow", specifier = ">=10.4.0" },
     { name = "tarina", specifier = ">=0.6.1" },
