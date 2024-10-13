@@ -26,7 +26,10 @@ if TYPE_CHECKING:
     from .help_doc import MethodDescription
 
 INTERFACE_EXPORT_METHOD = "__export_method__"
+"""接口方法上的 bool 类型变量，标识该方法是否为导出函数"""
 INTERFACE_METHOD_DESCRIPTION = "__method_description__"
+"""接口方法上的 weakref.RefrenceType 类型变量，弱引用该方法的描述"""
+
 WRAPPER_ASSIGNMENTS = (
     *functools.WRAPPER_ASSIGNMENTS,
     INTERFACE_EXPORT_METHOD,
@@ -44,8 +47,17 @@ def export(call: Callable[_P, _R]) -> Callable[_P, _R]:
     return call
 
 
+def is_export_method(call: Callable[..., Any]) -> bool:
+    """判断一个方法是否为导出函数"""
+    return getattr(call, INTERFACE_EXPORT_METHOD, False)
+
+
 def get_method_description(call: Callable[..., Any]) -> "MethodDescription | None":
-    return getattr(call, INTERFACE_METHOD_DESCRIPTION, None)
+    if (ref := getattr(call, INTERFACE_METHOD_DESCRIPTION, None)) is None:
+        return None
+    if (desc := ref()) is None:
+        raise RuntimeError("Fail to solve weak refrence")
+    return desc
 
 
 class Coro(Coroutine[None, None, _T], Generic[_T]): ...
@@ -130,10 +142,6 @@ def strict(
         Callable[_P, Coro[_R]] | Callable[_P, _R],
         functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS),
     )
-
-
-def is_export_method(call: Callable[..., Any]) -> bool:
-    return getattr(call, INTERFACE_EXPORT_METHOD, False)
 
 
 def is_super_user(bot: Bot, uin: str) -> bool:
