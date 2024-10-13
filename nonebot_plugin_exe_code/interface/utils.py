@@ -44,13 +44,23 @@ _T = TypeVar("_T")
 
 
 def export(call: Callable[_P, _R]) -> Callable[_P, _R]:
-    """将一个方法标记为导出函数"""
+    """将一个方法标记为导出方法
+    Args:
+        call (Callable[P, R]): 待标记的方法
+    Returns:
+        Callable[P, R]: 标记为导出方法的方法
+    """
     setattr(call, INTERFACE_EXPORT_METHOD, True)
     return call
 
 
 def is_export_method(call: Callable[..., Any]) -> bool:
-    """判断一个方法是否为导出函数"""
+    """判断一个方法是否为导出函数
+    Args:
+        call (Callable[..., Any]): 待判断的方法
+    Returns:
+        bool: 该方法是否为导出函数
+    """
     return getattr(call, INTERFACE_EXPORT_METHOD, False)
 
 
@@ -74,6 +84,13 @@ def debug_log(call: Callable[_P, _R]) -> Callable[_P, _R]: ...
 def debug_log(
     call: Callable[_P, Coro[_R]] | Callable[_P, _R],
 ) -> Callable[_P, Coro[_R]] | Callable[_P, _R]:
+    """装饰一个函数，使其在被调用时输出 DEBUG 日志
+    Args:
+        call (Callable[P, R]): 被装饰的函数
+    Returns:
+        Callable[P, R]: 装饰后的函数
+    """
+
     if is_coroutine_callable(call):
 
         async def wrapper(  # pyright: ignore[reportRedeclaration]
@@ -94,6 +111,42 @@ def debug_log(
     )
 
 
+def _check_args(
+    call: Callable[..., Any],
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+) -> None:
+    """检查函数调用是否符合类型注解
+
+    Args:
+        call (Callable[..., Any]): 待调用的函数
+        args (tuple[Any, ...]): 调用函数的参数 *args
+        kwargs (dict[str, Any]): 调用函数的参数 **kwargs
+
+    Raises:
+        TypeError: 传入的参数无法正确调用函数
+            / 无法解析函数类型注解
+            / 函数参数不符合类型注解
+    """
+    arguments = inspect.signature(call).bind(*args, **kwargs).arguments
+    arguments.pop("cls", None)
+    arguments.pop("self", None)
+    if not arguments:
+        return
+
+    annotations = get_type_hints(call)
+    for name, value in arguments.items():
+        annotation = annotations[name]
+        if not generic_isinstance(value, annotation):
+            from .help_doc import format_annotation
+
+            raise TypeError(
+                f"Invalid argument for param {name!r} of {call.__name__!r}: "
+                f"expected {format_annotation(annotation)}, "
+                f"got {format_annotation(type(value))}"
+            )
+
+
 @overload
 def strict(call: Callable[_P, Coro[_R]]) -> Callable[_P, Coro[_R]]: ...
 @overload
@@ -103,6 +156,15 @@ def strict(call: Callable[_P, _R]) -> Callable[_P, _R]: ...
 def strict(
     call: Callable[_P, Coro[_R]] | Callable[_P, _R],
 ) -> Callable[_P, Coro[_R]] | Callable[_P, _R]:
+    """装饰一个函数，使其在被调用时的传参严格符合参数类型注解
+    Args:
+        call (Callable[P, R]): 被装饰的函数
+    Raises:
+        TypeError: 参数没有添加必要的类型注解
+    Returns:
+        Callable[P, R]: 装饰后的函数。若没有需要检查的参数则返回原函数。
+    """
+
     signature = inspect.signature(call)
 
     if not (set(signature.parameters.keys()) - {"cls", "self"}):
@@ -117,37 +179,18 @@ def strict(
                 f"strict callable {call.__name__!r} is not typed"
             )
 
-    def check_args(*args: _P.args, **kwargs: _P.kwargs) -> None:
-        arguments = signature.bind(*args, **kwargs).arguments
-        arguments.pop("cls", None)
-        arguments.pop("self", None)
-        if not arguments:
-            return
-
-        annotations = get_type_hints(call)
-        for name, value in arguments.items():
-            annotation = annotations[name]
-            if not generic_isinstance(value, annotation):
-                from .help_doc import format_annotation
-
-                raise TypeError(
-                    f"Invalid argument for param {name!r} of {call.__name__!r}: "
-                    f"expected {format_annotation(annotation)}, "
-                    f"got {format_annotation(type(value))}"
-                )
-
     if is_coroutine_callable(call):
 
         async def wrapper(  # pyright: ignore[reportRedeclaration]
             *args: _P.args, **kwargs: _P.kwargs
         ) -> _R:
-            check_args(*args, **kwargs)
+            _check_args(call, args, kwargs)
             return await cast(Callable[_P, Coro[_R]], call)(*args, **kwargs)
 
     else:
 
         def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
-            check_args(*args, **kwargs)
+            _check_args(call, args, kwargs)
             return cast(Callable[_P, _R], call)(*args, **kwargs)
 
     return cast(
