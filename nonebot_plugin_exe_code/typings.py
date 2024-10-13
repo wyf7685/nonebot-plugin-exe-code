@@ -6,6 +6,7 @@ from nonebot.adapters import Message, MessageSegment
 from nonebot.typing import origin_is_union
 from nonebot.utils import generic_check_issubclass
 from nonebot_plugin_alconna.uniseg import Segment, UniMessage
+from typing_extensions import Self
 
 
 def generic_check_isinstance(value: Any, annotation: Any) -> bool:
@@ -41,10 +42,10 @@ class UserStr(str):
     __slots__ = ("__user_str_args__",)
     __user_str_args__: list[T_Message]
 
-    def __matmul__(self, msg: T_Message) -> "UserStr":
+    def put_arg(self, msg: T_Message) -> Self:
         if not generic_check_isinstance(msg, T_Message):
             raise TypeError(
-                "unsupported operand type(s) for @: "
+                "unsupported operand type(s): "
                 f"'UserStr' and {type(msg).__name__!r}"
             )
 
@@ -53,6 +54,9 @@ class UserStr(str):
 
         self.__user_str_args__.append(msg)
         return self
+
+    __and__ = put_arg
+    __matmul__ = put_arg
 
     def extract_args(self) -> list[T_Message]:
         return self.__user_str_args__.copy()

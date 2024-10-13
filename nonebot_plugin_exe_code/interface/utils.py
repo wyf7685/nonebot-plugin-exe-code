@@ -195,7 +195,7 @@ def is_message_t(message: Any) -> TypeIs[T_Message]:
     return isinstance(message, T_Message)
 
 
-async def as_unimsg(message: Any) -> UniMessage:
+async def as_unimsg(message: Any) -> UniMessage[Any]:
     if not is_message_t(message):
         message = str(message)
     if isinstance(message, MessageSegment):
@@ -210,7 +210,7 @@ async def as_unimsg(message: Any) -> UniMessage:
     return message
 
 
-def as_unimsg_sync(message: Any) -> UniMessage:
+def as_unimsg_sync(message: Any) -> UniMessage[Any]:
     if not is_message_t(message):
         message = str(message)
     if isinstance(message, MessageSegment):

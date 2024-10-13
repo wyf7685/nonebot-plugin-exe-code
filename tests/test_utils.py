@@ -104,6 +104,6 @@ async def test_driver_startup() -> None:
 def test_user_str() -> None:
     from nonebot_plugin_exe_code.typings import UserStr
 
-    assert (UserStr("some string") @ "123").extract_args() == ["123"]
+    assert (UserStr("some string") @ "123" & "456").extract_args() == ["123", "456"]
     with pytest.raises(TypeError):
         _ = UserStr("some string") @ 123  # pyright: ignore[reportOperatorIssue]

@@ -77,7 +77,7 @@ class Interface:
                 yield from c.__export_method__
 
     @classmethod
-    def _get_method_description(cls) -> Generator[_Desc, None, None]:
+    def _iter_method_description(cls) -> Generator[_Desc, None, None]:
         for func_name, desc in cls.__method_description__.items():
             func = cast(Callable[..., Any], getattr(cls, func_name))
             is_export = is_export_method(func)
@@ -93,7 +93,7 @@ class Interface:
         method_dict: dict[str, _Desc] = {}
         for c in cls.mro():
             if issubclass(c, Interface):
-                for desc in c._get_method_description():  # noqa: SLF001
+                for desc in c._iter_method_description():  # noqa: SLF001
                     method_dict.setdefault(desc.func_name, desc)
         methods = sorted(
             method_dict.values(),
