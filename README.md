@@ -14,13 +14,9 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 [![pypi](https://img.shields.io/pypi/v/nonebot-plugin-exe-code?logo=python&logoColor=edb641)](https://pypi.python.org/pypi/nonebot-plugin-exe-code)
 [![python](https://img.shields.io/badge/python-3.10+-blue?logo=python&logoColor=edb641)](https://www.python.org/)
 
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-[![isort](https://img.shields.io/badge/%20imports-isort-%231674b1)](https://pycqa.github.io/isort/)
-[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![pyright](https://img.shields.io/badge/types-pyright-797952.svg?logo=python&logoColor=edb641)](https://github.com/Microsoft/pyright)
-[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-
+[![wakatime](https://wakatime.com/badge/user/b097681b-c224-44ec-8e04-e1cf71744655/project/38f0d17d-4b07-4677-8848-fb98d923b8cc.svg)](https://wakatime.com/badge/user/b097681b-c224-44ec-8e04-e1cf71744655/project/38f0d17d-4b07-4677-8848-fb98d923b8cc)
 [![commits](https://img.shields.io/github/commit-activity/w/wyf7685/nonebot-plugin-exe-code)](https://github.com/wyf7685/nonebot-plugin-exe-code/commits)
+
 [![codecov](https://codecov.io/gh/wyf7685/nonebot-plugin-exe-code/graph/badge.svg?token=5T85DTD4FG)](https://codecov.io/gh/wyf7685/nonebot-plugin-exe-code)
 [![pre-commit](https://results.pre-commit.ci/badge/github/wyf7685/nonebot-plugin-exe-code/master.svg)](https://results.pre-commit.ci/latest/github/wyf7685/nonebot-plugin-exe-code/master)
 [![pyright](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pyright.yml/badge.svg?branch=master&event=push)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pyright.yml)
