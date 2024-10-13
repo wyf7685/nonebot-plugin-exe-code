@@ -20,12 +20,7 @@ from nonebot_plugin_alconna.uniseg import Receipt, Segment, Target, UniMessage
 from nonebot_plugin_session import Session
 from typing_extensions import Self, TypeIs
 
-from ..typings import (
-    T_API_Result,
-    T_Context,
-    T_Message,
-    generic_check_isinstance,
-)
+from ..typings import T_API_Result, T_Context, T_Message, generic_check_isinstance
 
 if TYPE_CHECKING:
     from .help_doc import MethodDescription
