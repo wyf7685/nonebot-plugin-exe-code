@@ -8,7 +8,7 @@ from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
 from typing_extensions import Self, override
 
-from ..typings import T_ConstVar, T_Context, T_Message
+from ..typings import T_ConstVar, T_Context, T_Message, is_message_t
 from .group import Group
 from .help_doc import descript, message_alia
 from .interface import Interface
@@ -24,7 +24,6 @@ from .utils import (
     export_superuser,
     get_method_description,
     is_export_method,
-    is_message_t,
     is_super_user,
     send_message,
     strict,
@@ -269,7 +268,7 @@ class API(Generic[_B, _E], Interface):
     @export
     @debug_log
     @strict
-    async def sleep(self, seconds: float) -> None:
+    async def sleep(self, seconds: int | float) -> None:  # noqa: PYI041
         await asyncio.sleep(seconds)
 
     @descript(

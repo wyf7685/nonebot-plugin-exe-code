@@ -10,6 +10,7 @@ from typing import (
     ParamSpec,
     TypeVar,
     cast,
+    get_type_hints,
     overload,
 )
 
@@ -18,9 +19,10 @@ from nonebot.adapters import Adapter, Bot, Message, MessageSegment
 from nonebot.utils import is_coroutine_callable
 from nonebot_plugin_alconna.uniseg import Receipt, Segment, Target, UniMessage
 from nonebot_plugin_session import Session
-from typing_extensions import Self, TypeIs
+from tarina import generic_isinstance
+from typing_extensions import Self
 
-from ..typings import T_API_Result, T_Context, T_Message, generic_check_isinstance
+from ..typings import T_API_Result, T_Context, T_Message, is_message_t
 
 if TYPE_CHECKING:
     from .help_doc import MethodDescription
@@ -56,7 +58,7 @@ def get_method_description(call: Callable[..., Any]) -> "MethodDescription | Non
     if (ref := getattr(call, INTERFACE_METHOD_DESCRIPTION, None)) is None:
         return None
     if (desc := ref()) is None:
-        raise RuntimeError("Fail to solve weak refrence")
+        raise RuntimeError("Fail to solve weak refrence")  # pragma: no cover
     return desc
 
 
@@ -101,26 +103,36 @@ def strict(call: Callable[_P, _R]) -> Callable[_P, _R]: ...
 def strict(
     call: Callable[_P, Coro[_R]] | Callable[_P, _R],
 ) -> Callable[_P, Coro[_R]] | Callable[_P, _R]:
-    sig = inspect.signature(call)
-    params = sig.parameters.copy()
-    params.pop("cls", None)
-    params.pop("self", None)
+    signature = inspect.signature(call)
 
-    if any(param.annotation is sig.empty for param in params.values()):
-        raise TypeError(f"Strict callable {call.__name__!r} is not fully typed")
+    if not (set(signature.parameters.keys()) - {"cls", "self"}):
+        # 没有需要检查的参数
+        return call
 
-    def check_args(args: tuple, kwargs: dict) -> None:
-        arguments = sig.bind(*args, **kwargs).arguments
+    for name, param in signature.parameters.items():
+        if name not in {"cls", "self"} and param.annotation is signature.empty:
+            # 参数 {name} 未添加类型注解
+            raise TypeError(
+                f"Parameter {name!r} of "
+                f"strict callable {call.__name__!r} is not typed"
+            )
+
+    def check_args(*args: _P.args, **kwargs: _P.kwargs) -> None:
+        arguments = signature.bind(*args, **kwargs).arguments
+        arguments.pop("cls", None)
+        arguments.pop("self", None)
+        if not arguments:
+            return
+
+        annotations = get_type_hints(call)
         for name, value in arguments.items():
-            if name in {"cls", "self"}:
-                continue
-            annotation = sig.parameters[name].annotation
-            if not generic_check_isinstance(value, annotation):
+            annotation = annotations[name]
+            if not generic_isinstance(value, annotation):
                 from .help_doc import format_annotation
 
                 raise TypeError(
                     f"Invalid argument for param {name!r} of {call.__name__!r}: "
-                    f"expect {format_annotation(annotation)}, "
+                    f"expected {format_annotation(annotation)}, "
                     f"got {format_annotation(type(value))}"
                 )
 
@@ -129,13 +141,13 @@ def strict(
         async def wrapper(  # pyright: ignore[reportRedeclaration]
             *args: _P.args, **kwargs: _P.kwargs
         ) -> _R:
-            check_args(args, kwargs)
+            check_args(*args, **kwargs)
             return await cast(Callable[_P, Coro[_R]], call)(*args, **kwargs)
 
     else:
 
         def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
-            check_args(args, kwargs)
+            check_args(*args, **kwargs)
             return cast(Callable[_P, _R], call)(*args, **kwargs)
 
     return cast(
@@ -197,10 +209,6 @@ class Result:
         if self.error is not None:
             return f"<Result error={self.error!r}>"
         return f"<Result data={self._data!r}>"
-
-
-def is_message_t(message: Any) -> TypeIs[T_Message]:
-    return isinstance(message, T_Message)
 
 
 async def as_unimsg(message: Any) -> UniMessage[Any]:

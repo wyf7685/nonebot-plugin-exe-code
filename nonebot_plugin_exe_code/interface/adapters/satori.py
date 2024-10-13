@@ -45,7 +45,7 @@ with contextlib.suppress(ImportError):
         @strict
         async def set_mute(
             self,
-            duration: float,
+            duration: int | float,  # noqa: PYI041
             qid: str | int | None = None,
             gid: str | int | None = None,
         ) -> None:

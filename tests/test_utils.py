@@ -13,7 +13,7 @@ from .fake.onebot11 import fake_v11_bot, fake_v11_event_session
 def test_strict() -> None:
     from nonebot_plugin_exe_code.interface.utils import strict
 
-    with pytest.raises(TypeError, match="not fully typed"):
+    with pytest.raises(TypeError, match="not typed"):
 
         @strict
         def _test_no_annotation(arg) -> None: ...  # noqa: ANN001
@@ -41,6 +41,20 @@ def test_strict() -> None:
     assert _test_3("123") is None
     with pytest.raises(TypeError):
         _test_3(123)  # pyright: ignore[reportArgumentType]
+
+    class _Test:
+        @strict
+        def method(self) -> None: ...
+        @classmethod
+        @strict
+        def classmethod_(cls) -> None: ...
+        @staticmethod
+        @strict
+        def staticmethod_() -> None: ...
+
+    assert not hasattr(_Test.method, "__wrapped__")
+    assert not hasattr(_Test.classmethod_, "__wrapped__")
+    assert not hasattr(_Test.staticmethod_, "__wrapped__")
 
 
 @pytest.mark.asyncio

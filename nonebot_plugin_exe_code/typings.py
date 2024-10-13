@@ -1,35 +1,10 @@
-import contextlib
 from collections.abc import Callable, Coroutine
-from typing import Any, get_args, get_origin
+from typing import Any, TypeGuard
 
 from nonebot.adapters import Message, MessageSegment
-from nonebot.typing import origin_is_union
-from nonebot.utils import generic_check_issubclass
 from nonebot_plugin_alconna.uniseg import Segment, UniMessage
+from tarina import generic_isinstance
 from typing_extensions import Self
-
-
-def generic_check_isinstance(value: Any, annotation: Any) -> bool:
-    if annotation is Any:
-        return True
-    if annotation is float:
-        return isinstance(value, int | float)
-    if generic_check_issubclass(type(value), annotation):
-        return True
-
-    origin = get_origin(annotation)
-
-    with contextlib.suppress(TypeError):
-        if isinstance(value, (origin, annotation)):  # noqa: UP038
-            return True
-
-    if origin_is_union(origin):
-        for type_ in get_args(annotation):
-            if generic_check_isinstance(value, type_):
-                return True
-
-    return False
-
 
 T_Context = dict[str, Any]
 T_Executor = Callable[[], Coroutine[None, None, Any]]
@@ -43,7 +18,7 @@ class UserStr(str):
     __user_str_args__: list[T_Message]
 
     def put_arg(self, msg: T_Message) -> Self:
-        if not generic_check_isinstance(msg, T_Message):
+        if not generic_isinstance(msg, T_Message):
             raise TypeError(
                 f"unsupported operand type(s): 'UserStr' and {type(msg).__name__!r}"
             )
@@ -62,3 +37,7 @@ class UserStr(str):
 
 
 T_ForwardMsg = list[T_Message | UserStr]
+
+
+def is_message_t(message: Any) -> TypeGuard[T_Message]:
+    return isinstance(message, T_Message)

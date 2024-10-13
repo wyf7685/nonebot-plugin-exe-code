@@ -10,6 +10,7 @@ dependencies = [
   "nonebot-plugin-session>=0.3.1",
   "nonebot-plugin-waiter>=0.7.1",
   "Pillow>=10.4.0",
+  "tarina>=0.5.8",
 ]
 requires-python = ">=3.10"
 readme = "README.md"

@@ -886,6 +886,7 @@ dependencies = [
     { name = "nonebot-plugin-waiter" },
     { name = "nonebot2" },
     { name = "pillow" },
+    { name = "tarina" },
 ]
 
 [package.dev-dependencies]
@@ -915,6 +916,7 @@ requires-dist = [
     { name = "nonebot-plugin-waiter", specifier = ">=0.7.1" },
     { name = "nonebot2", specifier = ">=2.3.3" },
     { name = "pillow", specifier = ">=10.4.0" },
+    { name = "tarina", specifier = ">=0.5.8" },
 ]
 
 [package.metadata.requires-dev]

@@ -160,6 +160,26 @@ with contextlib.suppress(ImportError):
             logger.debug("API 调用结束, 获得 card_json")
             return MessageSegment.json(card_json)
 
+    class User(BaseUser["API"]):
+        @descript(
+            description="向用户发送私聊合并转发消息",
+            parameters=dict(msgs="需要发送的消息列表"),
+        )
+        @debug_log
+        @strict
+        async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
+            return await self.api.send_prv_fwd(self.uid, msgs)
+
+    class Group(BaseGroup["API"]):
+        @descript(
+            description="向群聊发送合并转发消息",
+            parameters=dict(msgs="需要发送的消息列表"),
+        )
+        @debug_log
+        @strict
+        async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
+            return await self.api.send_grp_fwd(self.uid, msgs)
+
     @register_api(Adapter)
     class API(SendArk, BaseAPI[Bot, MessageEvent]):
         __slots__ = ()
@@ -411,7 +431,7 @@ with contextlib.suppress(ImportError):
         @strict
         async def set_mute(
             self,
-            duration: float,
+            duration: int | float,  # noqa: PYI041
             qid: str | int,
             gid: str | int | None = None,
         ) -> None:
@@ -577,7 +597,7 @@ with contextlib.suppress(ImportError):
         @strict
         def user(  # pyright: ignore[reportIncompatibleVariableOverride]
             self, uid: int | str
-        ) -> "User":
+        ) -> User:
             return User(self, str(uid))
 
         @descript(
@@ -589,25 +609,5 @@ with contextlib.suppress(ImportError):
         @strict
         def group(  # pyright: ignore[reportIncompatibleVariableOverride]
             self, gid: int | str
-        ) -> "Group":
+        ) -> Group:
             return Group(self, str(gid))
-
-    class User(BaseUser[API]):
-        @descript(
-            description="向用户发送私聊合并转发消息",
-            parameters=dict(msgs="需要发送的消息列表"),
-        )
-        @debug_log
-        @strict
-        async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
-            return await self.api.send_prv_fwd(self.uid, msgs)
-
-    class Group(BaseGroup[API]):
-        @descript(
-            description="向群聊发送合并转发消息",
-            parameters=dict(msgs="需要发送的消息列表"),
-        )
-        @debug_log
-        @strict
-        async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
-            return await self.api.send_grp_fwd(self.uid, msgs)
