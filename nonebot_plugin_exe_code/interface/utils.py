@@ -1,7 +1,7 @@
 import asyncio
 import functools
 import inspect
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable, Coroutine, Generator
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -20,7 +20,12 @@ from nonebot_plugin_alconna.uniseg import Receipt, Segment, Target, UniMessage
 from nonebot_plugin_session import Session
 from typing_extensions import Self, TypeIs
 
-from ..typings import T_API_Result, T_Context, T_Message, generic_check_isinstance
+from ..typings import (
+    T_API_Result,
+    T_Context,
+    T_Message,
+    generic_check_isinstance,
+)
 
 if TYPE_CHECKING:
     from .help_doc import MethodDescription
@@ -313,14 +318,20 @@ class _Sudo:
         )()
 
 
-def export_superuser() -> dict[str, Any]:
-    return {"sudo": _Sudo()}
+def export_superuser() -> Generator[tuple[str, Any], Any, None]:
+    yield from {"sudo": _Sudo()}.items()
 
 
-@functools.cache
+_msg_cls_cache: dict[str, tuple[type[Message], type[MessageSegment]]] = {}
+
+
 def _get_msg_cls(adapter: Adapter) -> tuple[type[Message], type[MessageSegment]]:
-    msg = UniMessage.text("text").export_sync(adapter=adapter.get_name())
-    return type(msg), msg.get_segment_class()
+    adapter_name = adapter.get_name()
+    if adapter_name in _msg_cls_cache:
+        return _msg_cls_cache[adapter_name]
+
+    msg = UniMessage.text("text").export_sync(adapter=adapter_name)
+    return _msg_cls_cache.setdefault(adapter_name, (type(msg), msg.get_segment_class()))
 
 
 @nonebot.get_driver().on_startup
@@ -331,6 +342,6 @@ async def _on_driver_startup() -> None:
         message_alia(*_get_msg_cls(a))
 
 
-def export_message(adapter: Adapter) -> dict[str, Any]:
+def export_message(adapter: Adapter) -> Generator[tuple[str, Any], Any, None]:
     m, ms = _get_msg_cls(adapter)
-    return {"Message": m, "MessageSegment": ms}
+    yield from {"Message": m, "MessageSegment": ms}.items()

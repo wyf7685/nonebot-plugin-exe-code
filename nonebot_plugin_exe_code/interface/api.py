@@ -294,11 +294,11 @@ class API(Generic[_B, _E], Interface):
             self._export(k, v)
         self._export("qid", self.qid)
         self._export("gid", self.gid)
-        for k, v in export_message(self.bot.adapter).items():
+        for k, v in export_message(self.bot.adapter):
             self._export(k, v)
 
         if is_super_user(self.bot, self.qid):
-            for k, v in export_superuser().items():
+            for k, v in export_superuser():
                 self._export(k, v)
 
     def __repr__(self) -> str:

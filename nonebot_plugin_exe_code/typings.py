@@ -45,8 +45,7 @@ class UserStr(str):
     def put_arg(self, msg: T_Message) -> Self:
         if not generic_check_isinstance(msg, T_Message):
             raise TypeError(
-                "unsupported operand type(s): "
-                f"'UserStr' and {type(msg).__name__!r}"
+                f"unsupported operand type(s): 'UserStr' and {type(msg).__name__!r}"
             )
 
         if not hasattr(self, "__user_str_args__"):
