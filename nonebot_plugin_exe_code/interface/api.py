@@ -173,10 +173,7 @@ class API(Generic[_B, _E], Interface):
 
     @descript(
         description="向当前会话发送消息",
-        parameters=dict(
-            msg="需要发送的消息",
-            fwd="传入的是否为合并转发消息列表",
-        ),
+        parameters=dict(msg="需要发送的消息"),
     )
     @export
     @debug_log

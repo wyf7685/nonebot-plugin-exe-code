@@ -27,9 +27,9 @@ from .utils import INTERFACE_METHOD_DESCRIPTION, WRAPPER_ASSIGNMENTS, Result
 if TYPE_CHECKING:
     from .interface import Interface
 
-_T = TypeVar("_T", bound="Interface")
-_P = ParamSpec("_P")
-_R = TypeVar("_R")
+TI = TypeVar("TI", bound="Interface")
+TP = ParamSpec("TP")
+TR = TypeVar("TR")
 
 DESCRIPTION_FORMAT = "{decl}\n* 描述: {desc}\n* 参数:\n{params}\n* 返回值:\n  {res}\n"
 DESCRIPTION_RESULT_TYPE = "Result 对象，可通过属性名获取接口响应"
@@ -72,9 +72,9 @@ def func_declaration(func: Callable[..., Any], ignore: set[str]) -> str:
 
 
 @dataclass
-class MethodDescription(Generic[_T, _P, _R]):
+class MethodDescription(Generic[TI, TP, TR]):
     inst_name: str
-    call: Callable[Concatenate[_T, _P], _R]
+    call: Callable[Concatenate[TI, TP], TR]
     description: str
     parameters: dict[str, str] | None
     result: str | None
@@ -93,33 +93,33 @@ class MethodDescription(Generic[_T, _P, _R]):
         )
 
 
-class MethodDescriptor(Generic[_T, _P, _R]):
+class MethodDescriptor(Generic[TI, TP, TR]):
     __name: str
-    __desc: MethodDescription[_T, _P, _R]
+    __desc: MethodDescription[TI, TP, TR]
 
-    def __init__(self, desc: MethodDescription[_T, _P, _R]) -> None:
+    def __init__(self, desc: MethodDescription[TI, TP, TR]) -> None:
         self.__name = desc.call.__name__
         self.__desc = desc
         setattr(desc.call, INTERFACE_METHOD_DESCRIPTION, weakref.ref(desc))
 
-    def __set_name__(self, owner: type[_T], name: str) -> None:
+    def __set_name__(self, owner: type[TI], name: str) -> None:
         self.__name = name
         self.__desc.inst_name = owner.__inst_name__
 
-    def __make_wrapper(self, obj: _T) -> Callable[_P, _R]:
+    def __make_wrapper(self, obj: TI) -> Callable[TP, TR]:
         if is_coroutine_callable(self.__desc.call):
             call = cast(
-                Callable[Concatenate[_T, _P], Coroutine[None, None, _R]],
+                Callable[Concatenate[TI, TP], Coroutine[None, None, TR]],
                 self.__desc.call,
             )
 
-            async def wrapper_async(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+            async def wrapper_async(*args: TP.args, **kwargs: TP.kwargs) -> TR:
                 return await call(obj, *args, **kwargs)
 
-            wrapper = cast(Callable[_P, _R], wrapper_async)
+            wrapper = cast(Callable[TP, TR], wrapper_async)
         else:
 
-            def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+            def wrapper(*args: TP.args, **kwargs: TP.kwargs) -> TR:
                 return self.__desc.call(obj, *args, **kwargs)
 
         return functools.update_wrapper(
@@ -129,21 +129,21 @@ class MethodDescriptor(Generic[_T, _P, _R]):
         )
 
     @overload
-    def __get__(self, obj: _T, objtype: type[_T]) -> Callable[_P, _R]: ...
+    def __get__(self, obj: TI, objtype: type[TI]) -> Callable[TP, TR]: ...
     @overload
     def __get__(
-        self, obj: None, objtype: type[_T]
-    ) -> Callable[Concatenate[_T, _P], _R]: ...
+        self, obj: None, objtype: type[TI]
+    ) -> Callable[Concatenate[TI, TP], TR]: ...
 
     def __get__(
-        self, obj: _T | None, objtype: type[_T]
-    ) -> Callable[_P, _R] | Callable[Concatenate[_T, _P], _R]:
+        self, obj: TI | None, objtype: type[TI]
+    ) -> Callable[TP, TR] | Callable[Concatenate[TI, TP], TR]:
         return self.__desc.call if obj is None else self.__make_wrapper(obj)
 
-    def __set__(self, obj: _T, value: Callable[Concatenate[_T, _P], _R]) -> NoReturn:
+    def __set__(self, obj: TI, value: Callable[Concatenate[TI, TP], TR]) -> NoReturn:
         raise AttributeError(f"attribute {self.__name!r} of {obj!r} is readonly")
 
-    def __delete__(self, obj: _T) -> NoReturn:
+    def __delete__(self, obj: TI) -> NoReturn:
         raise AttributeError(f"attribute {self.__name!r} of {obj!r} cannot be deleted")
 
     def __getattr__(self, __name: str) -> Any:
@@ -156,16 +156,18 @@ def descript(
     result: str | None = None,
     *,
     ignore: set[str] | None = None,
-) -> Callable[[Callable[Concatenate[_T, _P], _R]], MethodDescriptor[_T, _P, _R]]:
+) -> Callable[[Callable[Concatenate[TI, TP], TR]], MethodDescriptor[TI, TP, TR]]:
     ignore = {"self", *(ignore or set())}
 
     def decorator(
-        call: Callable[Concatenate[_T, _P], _R],
-    ) -> MethodDescriptor[_T, _P, _R]:
+        call: Callable[Concatenate[TI, TP], TR],
+    ) -> MethodDescriptor[TI, TP, TR]:
         nonlocal result
 
         sig = inspect.signature(call)
         if parameters is not None:
+            unused = set(parameters) - set(sig.parameters)
+            assert not unused, f"方法 {call.__name__!r} 存在多余的描述: {unused!r}"
             for name, param in sig.parameters.items():
                 if name in ignore:
                     continue
