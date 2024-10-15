@@ -3,7 +3,7 @@ from collections.abc import Callable
 from typing import Any, ClassVar, Generic, TypeVar
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
-from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage
+from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage, reply_fetch
 from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
 from typing_extensions import Self, override
@@ -95,8 +95,8 @@ class API(Generic[_B, _E], Interface):
         return UniMessage.get_message_id(self.event, self.bot)
 
     @classmethod
-    def _validate(cls, bot: _B, event: _E) -> bool:  # noqa: ARG003
-        return True
+    def _validate(cls, bot: _B, event: _E) -> bool:
+        return isinstance(bot, Bot) and isinstance(event, Event)
 
     @descript(
         description="获取当前平台类型",
@@ -106,6 +106,17 @@ class API(Generic[_B, _E], Interface):
     @debug_log
     async def get_platform(self) -> str:
         return self.bot.type
+
+    @descript(
+        description="获取当前消息的引用消息 ID",
+        parameters=None,
+        result="引用消息的 ID",
+    )
+    @export
+    @debug_log
+    async def reply_id(self) -> str | None:
+        reply = await reply_fetch(self.event, self.bot)
+        return reply and reply.id
 
     @descript(
         description="调用 bot.send 向当前会话发送平台消息",
@@ -122,7 +133,11 @@ class API(Generic[_B, _E], Interface):
         msg: Any,
         **kwds: Any,
     ) -> Any:
-        return await self.bot.send(self.event, await as_msg(msg), **kwds)
+        return await self.bot.send(
+            event=self.event,
+            message=await as_msg(msg),
+            **kwds,
+        )
 
     @descript(
         description="向QQ号为qid的用户发送私聊消息",
