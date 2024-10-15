@@ -235,11 +235,6 @@ async def test_send_group_forward(app: App) -> None:
             )
 
 
-code_test_api_input = """\
-print(await api.input("test-prompt"))
-"""
-
-
 @pytest.mark.asyncio
 async def test_api_input(app: App) -> None:
     from nonebot.message import handle_event
@@ -263,18 +258,17 @@ async def test_api_input(app: App) -> None:
 
         async def _test1() -> None:
             with ensure_context(bot, event, matcher()):
-                await Context.execute(bot, event, code_test_api_input)
+                await Context.execute(
+                    bot,
+                    event,
+                    'print(await api.input("test-prompt"))',
+                )
 
         async def _test2() -> None:
             await asyncio.sleep(0.1)
             await handle_event(bot, input_event)
 
         await asyncio.gather(_test1(), _test2())
-
-
-code_test_api_input_timeout = """\
-print(await api.input("test-prompt", timeout=0.01))
-"""
 
 
 @pytest.mark.asyncio
@@ -290,7 +284,11 @@ async def test_api_input_timeout(app: App) -> None:
         ctx.should_call_send(event, prompt)
 
         with ensure_context(bot, event, matcher()), pytest.raises(TimeoutError):
-            await Context.execute(bot, event, code_test_api_input_timeout)
+            await Context.execute(
+                bot,
+                event,
+                'print(await api.input("test-prompt", timeout=0.01))',
+            )
 
 
 @pytest.mark.asyncio
@@ -305,11 +303,6 @@ async def test_api_type_mismatch(app: App) -> None:
             API(bot, event, session, {})  # pyright: ignore[reportArgumentType]
 
 
-code_test_api_get_platform = """\
-print(await api.get_platform())
-"""
-
-
 @pytest.mark.asyncio
 async def test_api_get_platform(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
@@ -320,4 +313,17 @@ async def test_api_get_platform(app: App) -> None:
 
         ctx.should_call_send(event, ConsoleMessage("Console"))
         with ensure_context(bot, event):
-            await Context.execute(bot, event, code_test_api_get_platform)
+            await Context.execute(bot, event, "print(await api.get_platform())")
+
+
+@pytest.mark.asyncio
+async def test_api_reply_id(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, _ = fake_v11_event_session(bot)
+
+        ctx.should_call_send(event, V11Message("1"))
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, "print(await reply_id())")
