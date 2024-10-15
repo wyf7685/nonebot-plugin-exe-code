@@ -1,4 +1,4 @@
-uvx isort .
-uvx black .
-uvx pyright --pythonpath .venv\Scripts\python.exe
-uvx ruff check .
+isort .
+black .
+pyright .
+ruff check .
