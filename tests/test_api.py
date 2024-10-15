@@ -6,6 +6,7 @@ import pytest
 from nonebot.adapters.console import Message as ConsoleMessage
 from nonebot.adapters.onebot.v11 import Message as V11Message
 from nonebot.adapters.onebot.v11 import MessageSegment as V11MS
+from nonebot.adapters.onebot.v11.event import Reply, Sender
 from nonebot.adapters.satori import Message as SatoriMessage
 from nonebot.adapters.satori import MessageSegment as SatoriMessageSegment
 from nonebug import App
@@ -323,7 +324,19 @@ async def test_api_reply_id(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event, _ = fake_v11_event_session(bot)
+        event.reply = Reply(
+            time=1000000,
+            message_type="test",
+            message_id=123,
+            real_id=1,
+            sender=Sender(
+                card="",
+                nickname="test",
+                role="member",
+            ),
+            message=V11Message(),
+        )
 
-        ctx.should_call_send(event, V11Message("1"))
+        ctx.should_call_send(event, V11Message("123"))
         with ensure_context(bot, event):
             await Context.execute(bot, event, "print(await reply_id())")
