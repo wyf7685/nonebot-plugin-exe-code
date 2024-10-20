@@ -1,9 +1,8 @@
 # ruff: noqa: S101
 
-import functools
 import inspect
 import weakref
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
@@ -18,11 +17,10 @@ from typing import (
 )
 
 from nonebot.adapters import Message, MessageSegment
-from nonebot.utils import is_coroutine_callable
 from nonebot_plugin_alconna.uniseg import Receipt
 
 from ..typings import T_ConstVar, T_ForwardMsg, T_Message
-from .utils import INTERFACE_METHOD_DESCRIPTION, WRAPPER_ASSIGNMENTS, Result
+from .utils import INTERFACE_METHOD_DESCRIPTION, Result, make_wrapper
 
 if TYPE_CHECKING:
     from .interface import Interface
@@ -107,26 +105,10 @@ class MethodDescriptor(Generic[TI, TP, TR]):
         self.__desc.inst_name = owner.__inst_name__
 
     def __make_wrapper(self, obj: TI) -> Callable[TP, TR]:
-        if is_coroutine_callable(self.__desc.call):
-            call = cast(
-                Callable[Concatenate[TI, TP], Coroutine[None, None, TR]],
-                self.__desc.call,
-            )
+        def before(args: tuple, kwargs: dict) -> tuple[tuple, dict]:
+            return (obj, *args), kwargs
 
-            async def wrapper_async(*args: TP.args, **kwargs: TP.kwargs) -> TR:
-                return await call(obj, *args, **kwargs)
-
-            wrapper = cast(Callable[TP, TR], wrapper_async)
-        else:
-
-            def wrapper(*args: TP.args, **kwargs: TP.kwargs) -> TR:
-                return self.__desc.call(obj, *args, **kwargs)
-
-        return functools.update_wrapper(
-            wrapper=wrapper,
-            wrapped=self.__desc.call,
-            assigned=WRAPPER_ASSIGNMENTS,
-        )
+        return cast(Callable[TP, TR], make_wrapper(self.__desc.call, before))
 
     @overload
     def __get__(self, obj: TI, objtype: type[TI]) -> Callable[TP, TR]: ...
