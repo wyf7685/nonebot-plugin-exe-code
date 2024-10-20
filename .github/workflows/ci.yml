@@ -33,9 +33,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: |
-          uv python install 3.10
-          uv sync --python 3.10
+        run: uv sync --python 3.10
 
       - name: Configure venv
         run: echo "$PWD/.venv/bin" >> $GITHUB_PATH
@@ -64,9 +62,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: |
-          uv python install ${{ matrix.python-version }}
-          uv sync --python ${{ matrix.python-version }}
+        run: uv sync --python ${{ matrix.python-version }}
 
       - name: Run Pytest
         run: |
