@@ -145,7 +145,11 @@ def make_wrapper(
     # 使用 functools.update_wrapper 更新 wrapper 上的各属性
     wrapper = functools.update_wrapper(wrapper, wrapped, assigned=WRAPPER_ASSIGNMENTS)
     # 保存本次包装的参数
-    setattr(wrapper, "__exe_code_wrapped__", (call, before_calls, after_calls))  # noqa: B010
+    setattr(  # noqa: B010
+        wrapper,
+        "__exe_code_wrapped__",
+        (call, before_calls, after_calls),
+    )
 
     return wrapper
 
