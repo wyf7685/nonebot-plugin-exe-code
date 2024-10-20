@@ -10,6 +10,37 @@ from .fake.onebot11 import fake_v11_bot, fake_v11_event_session
 
 
 @pytest.mark.usefixtures("app")
+def test_make_wrapper() -> None:
+    from nonebot_plugin_exe_code.interface.utils import T_Args, T_Kwargs, make_wrapper
+
+    before_called = after_called = False
+
+    def func(*args: Any, **kwargs: Any) -> tuple[T_Args, T_Kwargs]:
+        return args, kwargs
+
+    def before(args: T_Args, kwargs: T_Kwargs) -> tuple[T_Args, T_Kwargs]:
+        nonlocal before_called
+        before_called = True
+        return ((111, *args), {"aaa": 222, **kwargs})
+
+    def after(args: T_Args, kwargs: T_Kwargs, result: Any) -> tuple[bool, Any]:
+        nonlocal after_called
+        after_called = True
+        return True, (args, kwargs, result)
+
+    result = make_wrapper(func, before, after)(333, bbb=444)
+    expected = (
+        (111, 333),
+        {"aaa": 222, "bbb": 444},
+        ((111, 333), {"aaa": 222, "bbb": 444}),
+    )
+
+    assert before_called
+    assert after_called
+    assert result == expected
+
+
+@pytest.mark.usefixtures("app")
 def test_strict() -> None:
     from nonebot_plugin_exe_code.interface.utils import strict
 
