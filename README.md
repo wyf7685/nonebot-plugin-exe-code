@@ -19,7 +19,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 [![codecov](https://codecov.io/gh/wyf7685/nonebot-plugin-exe-code/graph/badge.svg?token=5T85DTD4FG)](https://codecov.io/gh/wyf7685/nonebot-plugin-exe-code)
 [![pre-commit](https://results.pre-commit.ci/badge/github/wyf7685/nonebot-plugin-exe-code/master.svg)](https://results.pre-commit.ci/latest/github/wyf7685/nonebot-plugin-exe-code/master)
-[![pyright](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pyright.yml/badge.svg?branch=master&event=push)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pyright.yml)
+[![CI](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/ci.yml/badge.svg?branch=master&event=push)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/ci.yml)
 [![publish](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/wyf7685/nonebot-plugin-exe-code/actions/workflows/pypi-publish.yml)
 
 [![NoneBot Registry](https://img.shields.io/endpoint?url=https%3A%2F%2Fnbbdg.lgc2333.top%2Fplugin%2Fnonebot-plugin-exe-code)](https://registry.nonebot.dev/plugin/nonebot-plugin-exe-code:nonebot_plugin_exe_code)
