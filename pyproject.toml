@@ -137,7 +137,7 @@ disableBytesTypePromotions = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 filterwarnings = ["ignore::DeprecationWarning", "ignore::RuntimeWarning"]
-asyncio_default_fixture_loop_scope = "function"
+asyncio_default_fixture_loop_scope = "session"
 
 # https://github.com/he0119/nonebot-plugin-wordcloud/blob/5fa48dc5/pyproject.toml#L104-L117
 [tool.coverage.report]
