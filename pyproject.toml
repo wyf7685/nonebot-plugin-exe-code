@@ -12,7 +12,7 @@ dependencies = [
   "Pillow>=10.4.0",
   "tarina>=0.6.1",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "MIT" }
 classifiers = [
@@ -47,7 +47,7 @@ dev-dependencies = [
 
 [tool.black]
 line-length = 88
-target-version = ["py310"]
+target-version = ["py311"]
 include = '\.pyi?$'
 extend-exclude = '''
 '''
@@ -60,7 +60,7 @@ src_paths = ["nonebot_plugin_exe_code", "tests"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
@@ -128,7 +128,7 @@ ignore = [
 ]
 
 [tool.pyright]
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 pythonPlatform = "All"
 typeCheckingMode = "standard"
 reportShadowedImports = false

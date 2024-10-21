@@ -1,10 +1,9 @@
 from collections.abc import Callable, Coroutine
-from typing import Any, TypeGuard
+from typing import Any, Self, TypeGuard
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Segment, UniMessage
 from tarina import generic_isinstance
-from typing_extensions import Self
 
 T_Context = dict[str, Any]
 T_Executor = Callable[[], Coroutine[None, None, Any]]

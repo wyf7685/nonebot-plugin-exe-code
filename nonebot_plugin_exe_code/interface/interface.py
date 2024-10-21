@@ -1,7 +1,5 @@
 from collections.abc import Callable, Generator
-from typing import Any, ClassVar, NamedTuple, cast
-
-from typing_extensions import Self
+from typing import Any, ClassVar, NamedTuple, Self, cast
 
 from ..typings import T_Context
 from .help_doc import MethodDescription

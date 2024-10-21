@@ -3,7 +3,7 @@ import inspect
 from asyncio import Future, Queue, Task, get_event_loop
 from collections.abc import AsyncGenerator
 from copy import deepcopy
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar, Self, cast
 
 import nonebot
 from nonebot.adapters import Bot, Event, Message
@@ -11,7 +11,6 @@ from nonebot.internal.matcher import current_bot, current_event
 from nonebot.utils import escape_tag
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
 from nonebot_plugin_session import Session, SessionIdType, extract_session
-from typing_extensions import Self
 
 from .interface import API, Buffer, default_context, get_api_class
 from .typings import T_Context, T_Executor

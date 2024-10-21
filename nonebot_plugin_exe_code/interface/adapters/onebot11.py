@@ -7,7 +7,7 @@ from collections.abc import Callable
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast, overload
 
 import nonebot
 from nonebot import on_fullmatch, on_message
@@ -18,7 +18,7 @@ from typing_extensions import override
 from ...typings import T_ForwardMsg, T_Message, UserStr
 from ..api import API as BaseAPI
 from ..api import register_api
-from ..decorators import debug_log, export, strict
+from ..decorators import Overload, debug_log, export, strict
 from ..group import Group as BaseGroup
 from ..help_doc import descript
 from ..user import User as BaseUser
@@ -300,21 +300,12 @@ with contextlib.suppress(ImportError):
                 return await self.send_grp_fwd(self.gid, msgs)
             raise ValueError("获取消息上下文失败")  # pragma: no cover
 
-        @descript(
-            description="向当前会话发送API说明",
-            parameters=dict(method="需要获取帮助的函数，留空则为合并转发的完整文档"),
-        )
-        @export
-        @override
-        @debug_log
-        @strict
-        async def help(  # pyright: ignore[reportIncompatibleVariableOverride]
-            self, method: Callable[..., Any] | None = None
-        ) -> None:
-            if method is not None:
-                await super().help(method)
-                return
+        @overload
+        async def help(self, method: Callable[..., Any]) -> None:
+            await super().help(method)
 
+        @overload
+        async def help(self) -> None:
             content, description = self.get_all_description()
             msgs: list[T_Message] = [
                 "   ===== API说明 =====   ",
@@ -322,6 +313,18 @@ with contextlib.suppress(ImportError):
                 *description,
             ]
             await self.send_fwd(msgs)
+
+        @Overload
+        @descript(
+            description="向当前会话发送API说明",
+            parameters=dict(method="需要获取帮助的函数，留空则为合并转发的完整文档"),
+        )
+        @override
+        @export
+        @debug_log
+        async def help(  # pyright: ignore[reportIncompatibleVariableOverride]
+            self, method: Callable[..., Any] | None = None
+        ) -> None: ...
 
         @descript(
             description="撤回指定消息",
@@ -514,7 +517,7 @@ with contextlib.suppress(ImportError):
             file: str | bytes | BytesIO | Path,
             name: str,
             gid: str | int | None = None,
-            timeout: float | None = None,
+            timeout: float | None = None,  # noqa: ASYNC109
         ) -> None:
             file = file2str(file)
             gid = gid or self.gid
@@ -548,7 +551,7 @@ with contextlib.suppress(ImportError):
             file: str | bytes | BytesIO | Path,
             name: str,
             qid: str | int | None = None,
-            timeout: float | None = None,
+            timeout: float | None = None,  # noqa: ASYNC109
         ) -> None:
             file = file2str(file)
             qid = qid or self.qid
@@ -578,7 +581,7 @@ with contextlib.suppress(ImportError):
             self,
             file: str | bytes | BytesIO | Path,
             name: str,
-            timeout: float | None = None,
+            timeout: float | None = None,  # noqa: ASYNC109
         ) -> None:
             if self.is_group():
                 await self.send_group_file(file, name, self.gid, timeout)

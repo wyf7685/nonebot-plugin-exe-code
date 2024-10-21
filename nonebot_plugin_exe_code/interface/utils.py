@@ -1,12 +1,11 @@
 import asyncio
 from collections.abc import Callable, Generator
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 
 import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Segment, Target, UniMessage
 from nonebot_plugin_session import Session
-from typing_extensions import Self
 
 from ..typings import T_API_Result, T_Context, T_Message, is_message_t
 from .decorators import INTERFACE_EXPORT_METHOD, INTERFACE_METHOD_DESCRIPTION, strict

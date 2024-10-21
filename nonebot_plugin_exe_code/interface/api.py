@@ -1,12 +1,12 @@
 import asyncio
 from collections.abc import Callable
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Any, ClassVar, Generic, Self, TypeVar
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage, reply_fetch
 from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
-from typing_extensions import Self, override
+from typing_extensions import override
 
 from ..typings import T_ConstVar, T_Context, T_Message, is_message_t
 from .decorators import debug_log, export, strict
@@ -244,7 +244,7 @@ class API(Generic[_B, _E], Interface):
     async def input(
         self,
         prompt: T_Message | None = None,
-        timeout: float = 30,
+        timeout: float = 30,  # noqa: ASYNC109
     ) -> UniMessage:
         prompt = (
             await (await as_unimsg(prompt)).export(self.bot)

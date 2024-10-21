@@ -1,7 +1,19 @@
+import contextlib
 import functools
 import inspect
 from collections.abc import Callable, Coroutine
-from typing import Any, Generic, ParamSpec, TypeVar, cast, get_type_hints, overload
+from typing import (
+    Any,
+    Generic,
+    ParamSpec,
+    Protocol,
+    TypeVar,
+    cast,
+    get_overloads,
+    get_type_hints,
+    overload,
+    runtime_checkable,
+)
 
 import nonebot
 from nonebot.utils import is_coroutine_callable
@@ -21,6 +33,16 @@ WRAPPER_ASSIGNMENTS = (
 _P = ParamSpec("_P")
 _R = TypeVar("_R", contravariant=True)
 _T = TypeVar("_T")
+_T_Contra = TypeVar("_T_Contra", contravariant=True)
+
+
+@runtime_checkable
+class _DescriptorType(Protocol[_T_Contra]):
+    @overload
+    def __get__(self, obj: _T_Contra, objtype: type[_T_Contra]) -> Any: ...
+    @overload
+    def __get__(self, obj: None, objtype: type[_T_Contra]) -> Any: ...
+    def __set_name__(self, owner: type[_T_Contra], name: str) -> None: ...
 
 
 def export(call: Callable[_P, _R]) -> Callable[_P, _R]:
@@ -210,3 +232,37 @@ def strict(
         _check_args(call, args, kwargs)
 
     return make_wrapper(call, before)
+
+
+
+class Overload(Generic[_T]):
+    def __init__(self, call: Callable[..., Any] | _DescriptorType[_T]) -> None:
+        self.__origin = call
+
+    def __set_name__(self, owner: type[_T], name: str) -> None:
+        if isinstance(self.__origin, _DescriptorType):
+            self.__origin.__set_name__(owner, name)
+
+    def __find_overload(self, args: T_Args, kwargs: T_Kwargs) -> Any:
+        for call in self.__overloads__:
+            with contextlib.suppress(TypeError):
+                _check_args(call, args, kwargs)
+                return call
+        raise TypeError(f"No matched overload found: {args=}, {kwargs=}")
+
+    def __get__(self, obj: _T | None, objtype: type[_T]) -> Callable[..., Any]:
+        call = self.__origin
+        if isinstance(call, _DescriptorType):
+            call = call.__get__(obj, objtype)
+        self.__overloads__ = get_overloads(call)
+        assert self.__overloads__, "应提供至少一个函数重载"
+
+        @functools.wraps(call, assigned=WRAPPER_ASSIGNMENTS)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            args = (obj if obj is not None else objtype, *args)
+            return self.__find_overload(args, kwargs)(*args, **kwargs)
+
+        return wrapper
+
+    def __getattr__(self, __name: str) -> Any:
+        return getattr(self.__origin, __name)
