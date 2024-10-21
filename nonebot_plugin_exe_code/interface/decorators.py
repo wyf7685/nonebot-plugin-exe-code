@@ -3,6 +3,7 @@ import functools
 import inspect
 from collections.abc import Callable, Coroutine
 from typing import (
+    TYPE_CHECKING,
     Any,
     Concatenate,
     Generic,
@@ -245,8 +246,8 @@ class Overload(Generic[_T, _P, _R]):
 
     def __set_name__(self, owner: type[_T], name: str) -> None:
         self.__name = name
-        if isinstance(self.__origin, _DescriptorType):
-            self.__origin.__set_name__(owner, name)
+        if _set_name := getattr(self.__origin, "__set_name__", None):
+            _set_name(owner, name)
 
     def __find_overload(self, args: T_Args, kwargs: T_Kwargs) -> Any:
         for call in self.__overloads:
@@ -266,8 +267,11 @@ class Overload(Generic[_T, _P, _R]):
         self, obj: _T | None, objtype: type[_T]
     ) -> Callable[_P, _R] | Callable[Concatenate[_T, _P], _R]:
         call = self.__origin
-        if isinstance(call, _DescriptorType):
-            call = cast(Callable[Concatenate[_T, _P], _R], call.__get__(obj, objtype))
+        if _get := getattr(self.__origin, "__get__", None):
+            call = _get(obj, objtype)
+
+        if TYPE_CHECKING:
+            call = cast(Callable[Concatenate[_T, _P], _R], call)
 
         if not hasattr(self, "__overloads__"):
             self.__overloads = get_overloads(call)
