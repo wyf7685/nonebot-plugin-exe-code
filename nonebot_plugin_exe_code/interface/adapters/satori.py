@@ -1,8 +1,8 @@
 import contextlib
+from typing import override
 
 from nonebot.adapters import Event
 from nonebot.exception import ActionFailed
-from typing_extensions import override
 
 from ..api import API as BaseAPI
 from ..api import register_api

@@ -1,8 +1,7 @@
 import contextlib
-from typing import Any
+from typing import Any, override
 
 from nonebot.adapters import Event
-from typing_extensions import override
 
 from ..api import API as BaseAPI
 from ..api import register_api

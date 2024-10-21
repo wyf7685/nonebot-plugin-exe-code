@@ -1,15 +1,13 @@
 import contextlib
 import itertools
 from collections.abc import Generator
-from typing import Any, TypeVar
+from typing import Any
 
 import nonebot
 from nonebot.adapters import Adapter, Bot, Event
 from nonebot.matcher import Matcher
 from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
-
-B = TypeVar("B", bound=Bot)
 
 fake_user_id = (lambda: (g := itertools.count(100000)) and (lambda: next(g)))()
 fake_group_id = (lambda: (g := itertools.count(200000)) and (lambda: next(g)))()
@@ -42,7 +40,7 @@ def ensure_context(
             current_matcher.reset(m)
 
 
-def fake_bot(
+def fake_bot[B: Bot](
     ctx: ApiContext | MatcherContext,
     adapter_base: type[Adapter],
     bot_base: type[B],

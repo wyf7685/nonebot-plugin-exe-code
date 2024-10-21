@@ -1,12 +1,11 @@
 import asyncio
 from collections.abc import Callable
-from typing import Any, ClassVar, Generic, Self, TypeVar
+from typing import Any, ClassVar, Generic, Self, TypeVar, override
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage, reply_fetch
 from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
-from typing_extensions import override
 
 from ..typings import T_ConstVar, T_Context, T_Message, is_message_t
 from .decorators import debug_log, export, strict
@@ -27,15 +26,14 @@ from .utils import (
     send_message,
 )
 
-_A = TypeVar("_A", bound=type["API"])
 _B = TypeVar("_B", bound=Bot)
 _E = TypeVar("_E", bound=Event)
 api_registry: dict[type[Adapter], type["API"]] = {}
 message_alia(Message, MessageSegment)
 
 
-def register_api(adapter: type[Adapter]) -> Callable[[_A], _A]:
-    def decorator(api: _A) -> _A:
+def register_api[A: type["API"]](adapter: type[Adapter]) -> Callable[[A], A]:
+    def decorator(api: A) -> A:
         api_registry[adapter] = api
         adapter_name = adapter.get_name()
         for desc in api.__method_description__.values():

@@ -8,10 +8,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Concatenate,
-    Generic,
     NoReturn,
-    ParamSpec,
-    TypeVar,
     cast,
     overload,
 )
@@ -26,9 +23,6 @@ from .utils import Result
 if TYPE_CHECKING:
     from .interface import Interface
 
-TI = TypeVar("TI", bound="Interface")
-TP = ParamSpec("TP")
-TR = TypeVar("TR")
 
 DESCRIPTION_FORMAT = "{decl}\n* 描述: {desc}\n* 参数:\n{params}\n* 返回值:\n  {res}\n"
 DESCRIPTION_RESULT_TYPE = "Result 对象，可通过属性名获取接口响应"
@@ -71,9 +65,9 @@ def func_declaration(func: Callable[..., Any], ignore: set[str]) -> str:
 
 
 @dataclass
-class MethodDescription(Generic[TI, TP, TR]):
+class MethodDescription[T: "Interface", **P, R]:
     inst_name: str
-    call: Callable[Concatenate[TI, TP], TR]
+    call: Callable[Concatenate[T, P], R]
     description: str
     parameters: dict[str, str] | None
     result: str | None
@@ -92,59 +86,57 @@ class MethodDescription(Generic[TI, TP, TR]):
         )
 
 
-class MethodDescriptor(Generic[TI, TP, TR]):
+class MethodDescriptor[T: "Interface", **P, R]:
     __name: str
-    __desc: MethodDescription[TI, TP, TR]
+    __desc: MethodDescription[T, P, R]
 
-    def __init__(self, desc: MethodDescription[TI, TP, TR]) -> None:
+    def __init__(self, desc: MethodDescription[T, P, R]) -> None:
         self.__name = desc.call.__name__
         self.__desc = desc
         setattr(desc.call, INTERFACE_METHOD_DESCRIPTION, weakref.ref(desc))
 
-    def __set_name__(self, owner: type[TI], name: str) -> None:
+    def __set_name__(self, owner: type[T], name: str) -> None:
         self.__name = name
         self.__desc.inst_name = owner.__inst_name__
 
-    def __make_wrapper(self, obj: TI) -> Callable[TP, TR]:
+    def __make_wrapper(self, obj: T) -> Callable[P, R]:
         def before(args: tuple, kwargs: dict) -> tuple[tuple, dict]:
             return (obj, *args), kwargs
 
-        return cast(Callable[TP, TR], make_wrapper(self.__desc.call, before))
+        return cast(Callable[P, R], make_wrapper(self.__desc.call, before))
 
     @overload
-    def __get__(self, obj: TI, objtype: type[TI]) -> Callable[TP, TR]: ...
+    def __get__(self, obj: T, objtype: type[T]) -> Callable[P, R]: ...
     @overload
     def __get__(
-        self, obj: None, objtype: type[TI]
-    ) -> Callable[Concatenate[TI, TP], TR]: ...
+        self, obj: None, objtype: type[T]
+    ) -> Callable[Concatenate[T, P], R]: ...
 
     def __get__(
-        self, obj: TI | None, objtype: type[TI]
-    ) -> Callable[TP, TR] | Callable[Concatenate[TI, TP], TR]:
+        self, obj: T | None, objtype: type[T]
+    ) -> Callable[P, R] | Callable[Concatenate[T, P], R]:
         return self.__desc.call if obj is None else self.__make_wrapper(obj)
 
-    def __set__(self, obj: TI, value: Callable[Concatenate[TI, TP], TR]) -> NoReturn:
+    def __set__(self, obj: T, value: Callable[Concatenate[T, P], R]) -> NoReturn:
         raise AttributeError(f"attribute {self.__name!r} of {obj!r} is readonly")
 
-    def __delete__(self, obj: TI) -> NoReturn:
+    def __delete__(self, obj: T) -> NoReturn:
         raise AttributeError(f"attribute {self.__name!r} of {obj!r} cannot be deleted")
 
     def __getattr__(self, __name: str) -> Any:
         return getattr(self.__desc.call, __name)
 
 
-def descript(
+def descript[T: "Interface", **P, R](
     description: str,
     parameters: dict[str, str] | None,
     result: str | None = None,
     *,
     ignore: set[str] | None = None,
-) -> Callable[[Callable[Concatenate[TI, TP], TR]], MethodDescriptor[TI, TP, TR]]:
+) -> Callable[[Callable[Concatenate[T, P], R]], MethodDescriptor[T, P, R]]:
     ignore = {"self", *(ignore or set())}
 
-    def decorator(
-        call: Callable[Concatenate[TI, TP], TR],
-    ) -> MethodDescriptor[TI, TP, TR]:
+    def decorator(call: Callable[Concatenate[T, P], R]) -> MethodDescriptor[T, P, R]:
         nonlocal result
 
         sig = inspect.signature(call)

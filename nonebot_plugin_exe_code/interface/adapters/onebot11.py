@@ -7,13 +7,12 @@ from collections.abc import Callable
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol, cast, overload
+from typing import TYPE_CHECKING, Any, Protocol, cast, overload, override
 
 import nonebot
 from nonebot import on_fullmatch, on_message
 from nonebot.adapters import Event
 from nonebot.utils import escape_tag
-from typing_extensions import override
 
 from ...typings import T_ForwardMsg, T_Message, UserStr
 from ..api import API as BaseAPI

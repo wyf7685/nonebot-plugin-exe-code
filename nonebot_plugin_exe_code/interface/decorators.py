@@ -6,11 +6,8 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Concatenate,
-    Generic,
     NoReturn,
-    ParamSpec,
     Protocol,
-    TypeVar,
     cast,
     get_overloads,
     get_type_hints,
@@ -33,27 +30,19 @@ WRAPPER_ASSIGNMENTS = (
     INTERFACE_METHOD_DESCRIPTION,
 )
 
-_P = ParamSpec("_P")
-_R = TypeVar("_R")
-_T = TypeVar("_T")
-_T_Contra = TypeVar("_T_Contra", contravariant=True)
-_R_Co = TypeVar("_R_Co", covariant=True)
-
 
 @runtime_checkable
-class _DescriptorType(Protocol[_T_Contra, _P, _R_Co]):
+class _DescriptorType[T, **P, R](Protocol):
+    @overload
+    def __get__(self, obj: T, objtype: type[T]) -> Callable[P, R]: ...
     @overload
     def __get__(
-        self, obj: _T_Contra, objtype: type[_T_Contra]
-    ) -> Callable[_P, _R_Co]: ...
-    @overload
-    def __get__(
-        self, obj: None, objtype: type[_T_Contra]
-    ) -> Callable[Concatenate[_T_Contra, _P], _R_Co]: ...
-    def __set_name__(self, owner: type[_T_Contra], name: str) -> None: ...
+        self, obj: None, objtype: type[T]
+    ) -> Callable[Concatenate[T, P], R]: ...
+    def __set_name__(self, owner: type[T], name: str) -> None: ...
 
 
-def export(call: Callable[_P, _R]) -> Callable[_P, _R]:
+def export[**P, R](call: Callable[P, R]) -> Callable[P, R]:
     """将一个方法标记为导出方法
     Args:
         call (Callable[P, R]): 待标记的方法
@@ -64,20 +53,18 @@ def export(call: Callable[_P, _R]) -> Callable[_P, _R]:
     return call
 
 
-class Coro(Coroutine[None, None, _T], Generic[_T]): ...
+type Coro[T] = Coroutine[None, None, T]
+type T_Args = tuple[Any, ...]
+type T_Kwargs = dict[str, Any]
+type BeforeWrapped = Callable[[T_Args, T_Kwargs], tuple[T_Args, T_Kwargs] | None]
+type AfterWrapped = Callable[[T_Args, T_Kwargs, Any], tuple[bool, Any]]
 
 
-T_Args = tuple[Any, ...]
-T_Kwargs = dict[str, Any]
-BeforeWrapped = Callable[[T_Args, T_Kwargs], tuple[T_Args, T_Kwargs] | None]
-AfterWrapped = Callable[[T_Args, T_Kwargs, Any], tuple[bool, Any]]
-
-
-def make_wrapper(
-    wrapped: Callable[_P, Coro[_R]] | Callable[_P, _R],
+def make_wrapper[**P, R](
+    wrapped: Callable[P, Coro[R]] | Callable[P, R],
     before: BeforeWrapped | None = None,
     after: AfterWrapped | None = None,
-) -> Callable[_P, Coro[_R]] | Callable[_P, _R]:
+) -> Callable[P, Coro[R]] | Callable[P, R]:
     """包装函数 `wrapped`, 在调用前执行 `before`, 在调用后执行 `after`
 
     Args:
@@ -122,16 +109,16 @@ def make_wrapper(
 
         async def wrapper_async(*args: Any, **kwargs: Any) -> Any:
             args, kwargs = call_before(args, kwargs)
-            result = await cast(Callable[_P, Coro[_R]], call)(*args, **kwargs)
+            result = await cast(Callable[P, Coro[R]], call)(*args, **kwargs)
             return call_after(args, kwargs, result)
 
-        wrapper = cast(Callable[_P, _R], wrapper_async)
+        wrapper = cast(Callable[P, R], wrapper_async)
 
     else:
 
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             args, kwargs = call_before(args, kwargs)
-            result = cast(Callable[_P, _R], call)(*args, **kwargs)
+            result = cast(Callable[P, R], call)(*args, **kwargs)
             return call_after(args, kwargs, result)
 
     # 使用 functools.update_wrapper 更新 wrapper 上的各属性
@@ -147,14 +134,14 @@ def make_wrapper(
 
 
 @overload
-def debug_log(call: Callable[_P, Coro[_R]]) -> Callable[_P, Coro[_R]]: ...
+def debug_log[**P, R](call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
 @overload
-def debug_log(call: Callable[_P, _R]) -> Callable[_P, _R]: ...
+def debug_log[**P, R](call: Callable[P, R]) -> Callable[P, R]: ...
 
 
-def debug_log(
-    call: Callable[_P, Coro[_R]] | Callable[_P, _R],
-) -> Callable[_P, Coro[_R]] | Callable[_P, _R]:
+def debug_log[**P, R](
+    call: Callable[P, Coro[R]] | Callable[P, R],
+) -> Callable[P, Coro[R]] | Callable[P, R]:
     """装饰一个函数，使其在被调用时输出 DEBUG 日志
     Args:
         call (Callable[P, R]): 被装饰的函数
@@ -201,14 +188,14 @@ def _check_args(call: Callable[..., Any], args: T_Args, kwargs: T_Kwargs) -> Non
 
 
 @overload
-def strict(call: Callable[_P, Coro[_R]]) -> Callable[_P, Coro[_R]]: ...
+def strict[**P, R](call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
 @overload
-def strict(call: Callable[_P, _R]) -> Callable[_P, _R]: ...
+def strict[**P, R](call: Callable[P, R]) -> Callable[P, R]: ...
 
 
-def strict(
-    call: Callable[_P, Coro[_R]] | Callable[_P, _R],
-) -> Callable[_P, Coro[_R]] | Callable[_P, _R]:
+def strict[**P, R](
+    call: Callable[P, Coro[R]] | Callable[P, R],
+) -> Callable[P, Coro[R]] | Callable[P, R]:
     """装饰一个函数，使其在被调用时的传参严格符合参数类型注解
     Args:
         call (Callable[P, R]): 被装饰的函数
@@ -238,13 +225,13 @@ def strict(
     return make_wrapper(call, before)
 
 
-class Overload(Generic[_T, _P, _R]):
+class Overload[T, **P, R]:
     def __init__(
-        self, call: Callable[Concatenate[_T, _P], _R] | _DescriptorType[_T, _P, _R]
+        self, call: Callable[Concatenate[T, P], R] | _DescriptorType[T, P, R]
     ) -> None:
         self.__origin = call
 
-    def __set_name__(self, owner: type[_T], name: str) -> None:
+    def __set_name__(self, owner: type[T], name: str) -> None:
         self.__name = name
         if _set_name := getattr(self.__origin, "__set_name__", None):
             _set_name(owner, name)
@@ -257,21 +244,21 @@ class Overload(Generic[_T, _P, _R]):
         raise TypeError(f"未找到匹配的重载: {args=}, {kwargs=}")
 
     @overload
-    def __get__(self, obj: _T, objtype: type[_T]) -> Callable[_P, _R]: ...
+    def __get__(self, obj: T, objtype: type[T]) -> Callable[P, R]: ...
     @overload
     def __get__(
-        self, obj: None, objtype: type[_T]
-    ) -> Callable[Concatenate[_T, _P], _R]: ...
+        self, obj: None, objtype: type[T]
+    ) -> Callable[Concatenate[T, P], R]: ...
 
     def __get__(
-        self, obj: _T | None, objtype: type[_T]
-    ) -> Callable[_P, _R] | Callable[Concatenate[_T, _P], _R]:
+        self, obj: T | None, objtype: type[T]
+    ) -> Callable[P, R] | Callable[Concatenate[T, P], R]:
         call = self.__origin
         if _get := getattr(self.__origin, "__get__", None):
             call = _get(obj, objtype)
 
         if TYPE_CHECKING:
-            call = cast(Callable[Concatenate[_T, _P], _R], call)
+            call = cast(Callable[Concatenate[T, P], R], call)
 
         if not hasattr(self, "__overloads__"):
             self.__overloads = get_overloads(call)
@@ -294,10 +281,10 @@ class Overload(Generic[_T, _P, _R]):
 
         return functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS)
 
-    def __set__(self, obj: _T, value: Any) -> Any:
+    def __set__(self, obj: T, value: Any) -> Any:
         raise AttributeError(f"attribute {self.__name!r} of {obj!r} is readonly")
 
-    def __delete__(self, obj: _T) -> NoReturn:
+    def __delete__(self, obj: T) -> NoReturn:
         raise AttributeError(f"attribute {self.__name!r} of {obj!r} cannot be deleted")
 
     def __getattr__(self, __name: str) -> Any:
