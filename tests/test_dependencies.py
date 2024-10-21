@@ -309,9 +309,7 @@ async def test_event_reply_message_2(app: App) -> None:
             ),
             message=reply_msg,
         )
-        event.reply.message = (
-            reply_msg.extract_plain_text()
-        )  # pyright:ignore[reportAttributeAccessIssue]
+        event.reply.message = reply_msg.extract_plain_text()  # pyright:ignore[reportAttributeAccessIssue]
         state = {}
         stack = AsyncExitStack()
         with ensure_context(bot, event):

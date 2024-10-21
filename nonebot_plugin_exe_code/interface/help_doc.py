@@ -4,14 +4,7 @@ import inspect
 import weakref
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Concatenate,
-    NoReturn,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Concatenate, NoReturn, cast, overload
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt

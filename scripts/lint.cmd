@@ -1,4 +1,4 @@
 isort .
-black .
+ruff format .
 pyright .
 ruff check .

@@ -10,7 +10,6 @@ from .interface import Interface
 if TYPE_CHECKING:
     from .api import API
 
-
 _A = TypeVar("_A", bound="API")
 
 

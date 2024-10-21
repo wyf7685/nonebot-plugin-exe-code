@@ -125,6 +125,7 @@ ignore = [
   "ANN401", # any-type
   "N811",   # constant-imported-as-non-constant
   "S101",   # assert
+  "ISC001", # single-line-implicit-string-concatenation
 ]
 
 [tool.pyright]
