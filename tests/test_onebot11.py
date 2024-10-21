@@ -544,51 +544,6 @@ async def test_ob11_mid(app: App) -> None:
             await Context.execute(bot, event, "print(api.mid)")
 
 
-code_test_ob11_set_reaction = """\
-await api.set_reaction(123, api.mid, 456)
-"""
-
-
-@pytest.mark.asyncio
-async def test_ob11_set_reaction(app: App) -> None:
-    from nonebot_plugin_exe_code.context import Context
-
-    async with app.test_api() as ctx:
-        bot = fake_v11_bot(ctx)
-        event, _ = fake_v11_event_session(bot)
-
-        ctx.should_call_api(
-            "set_msg_emoji_like",
-            {"message_id": 1, "emoji_id": 123},
-            result=None,
-        )
-        ctx.should_call_api(
-            "set_msg_emoji_like",
-            {"message_id": 1, "emoji_id": 123},
-            exception=ActionFailed(),
-        )
-        ctx.should_call_api(
-            "set_group_reaction",
-            {"group_id": 456, "message_id": 1, "code": "123"},
-            result=None,
-        )
-        ctx.should_call_api(
-            "set_msg_emoji_like",
-            {"message_id": 1, "emoji_id": 123},
-            exception=ActionFailed(),
-        )
-        ctx.should_call_api(
-            "set_group_reaction",
-            {"group_id": 456, "message_id": 1, "code": "123"},
-            exception=ActionFailed(),
-        )
-        with ensure_context(bot, event):
-            await Context.execute(bot, event, code_test_ob11_set_reaction)
-            await Context.execute(bot, event, code_test_ob11_set_reaction)
-            with pytest.raises(RuntimeError, match="发送消息回应失败"):
-                await Context.execute(bot, event, code_test_ob11_set_reaction)
-
-
 @pytest.mark.asyncio
 async def test_ob11_send_fwd(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
@@ -658,3 +613,78 @@ async def test_ob11_get_platform(app: App) -> None:
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
             await Context.execute(bot, event, code_test_ob11_get_platform)
+
+
+@pytest.mark.asyncio
+async def test_ob11_set_reaction(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    code_test_ob11_set_reaction_1 = "await api.set_reaction(123, api.mid, 456)"
+    code_test_ob11_set_reaction_2 = "await api.set_reaction(123, api.mid)"
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, _ = fake_v11_event_session(bot)
+
+        # 1. NapCat
+        ctx.should_call_api(
+            "get_version_info",
+            {},
+            {"app_name": "NapCat", "app_version": "app_version"},
+        )
+        ctx.should_call_api(
+            "set_msg_emoji_like",
+            {"message_id": 1, "emoji_id": 123},
+            result=None,
+        )
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, code_test_ob11_set_reaction_1)
+
+        # 2. LLOneBot
+        ctx.should_call_api(
+            "get_version_info",
+            {},
+            {"app_name": "LLOneBot", "app_version": "app_version"},
+        )
+        ctx.should_call_api(
+            "set_msg_emoji_like",
+            {"message_id": 1, "emoji_id": 123},
+            result=None,
+        )
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, code_test_ob11_set_reaction_1)
+
+        # 3. Lagrange with gid
+        ctx.should_call_api(
+            "get_version_info",
+            {},
+            {"app_name": "Lagrange", "app_version": "app_version"},
+        )
+        ctx.should_call_api(
+            "set_group_reaction",
+            {"group_id": 456, "message_id": 1, "code": "123"},
+            result=None,
+        )
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, code_test_ob11_set_reaction_1)
+
+        # 3. Lagrange without gid
+        ctx.should_call_api(
+            "get_version_info",
+            {},
+            {"app_name": "Lagrange", "app_version": "app_version"},
+        )
+        with ensure_context(bot, event), pytest.raises(TypeError, match="Lagrange"):
+            await Context.execute(bot, event, code_test_ob11_set_reaction_2)
+
+        # 4. Unkown platform
+        ctx.should_call_api(
+            "get_version_info",
+            {},
+            {"app_name": "Unkown Platform", "app_version": "app_version"},
+        )
+        with (
+            ensure_context(bot, event),
+            pytest.raises(RuntimeError, match="unkown platform"),
+        ):
+            await Context.execute(bot, event, code_test_ob11_set_reaction_1)

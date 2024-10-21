@@ -471,30 +471,31 @@ with contextlib.suppress(ImportError):
             emoji_id: str | int,
             message_id: str | int,
             gid: str | int | None = None,
-        ) -> None:
-            with contextlib.suppress(ActionFailed):
+        ) -> Result:
+            platform = (await self.get_platform()).lower()
+            if "napcat" in platform or "llonebot" in platform:
                 # NapCat/LLOneBot
-                await self.call_api(
+                return await self.call_api(
                     "set_msg_emoji_like",
                     message_id=int(message_id),
                     emoji_id=int(emoji_id),
                     raise_text="调用 NapCat/LLOneBot 接口 set_msg_emoji_like 出错",
                 )
-                return
 
-            if (gid := gid or self.gid) is not None:
-                with contextlib.suppress(ActionFailed):
-                    # Lagrange
-                    await self.call_api(
-                        "set_group_reaction",
-                        group_id=int(gid),
-                        message_id=int(message_id),
-                        code=str(emoji_id),
-                        raise_text="调用 Lagrange 接口 set_group_reaction 出错",
-                    )
-                    return
+            if "lagrange" in platform:
+                if (gid := gid or self.gid) is None:
+                    raise TypeError("在 Lagrange 下进行表情回应需要指定群号")
 
-            raise RuntimeError("发送消息回应失败")
+                # Lagrange
+                return await self.call_api(
+                    "set_group_reaction",
+                    group_id=int(gid),
+                    message_id=int(message_id),
+                    code=str(emoji_id),
+                    raise_text="调用 Lagrange 接口 set_group_reaction 出错",
+                )
+
+            raise RuntimeError(f"发送消息回应失败: 未知平台 {platform}")
 
         @descript(
             description="发送群文件",
