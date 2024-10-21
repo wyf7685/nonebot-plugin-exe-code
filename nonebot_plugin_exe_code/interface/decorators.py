@@ -4,6 +4,7 @@ import inspect
 from collections.abc import Callable, Coroutine
 from typing import (
     Any,
+    Concatenate,
     Generic,
     NoReturn,
     ParamSpec,
@@ -32,19 +33,22 @@ WRAPPER_ASSIGNMENTS = (
 )
 
 _P = ParamSpec("_P")
-_R = TypeVar("_R", contravariant=True)
+_R = TypeVar("_R")
 _T = TypeVar("_T")
 _T_Contra = TypeVar("_T_Contra", contravariant=True)
+_R_Co = TypeVar("_R_Co", covariant=True)
 
 
 @runtime_checkable
-class _DescriptorType(Protocol[_T_Contra]):
+class _DescriptorType(Protocol[_T_Contra, _P, _R_Co]):
     @overload
     def __get__(
         self, obj: _T_Contra, objtype: type[_T_Contra]
-    ) -> Callable[..., Any]: ...
+    ) -> Callable[_P, _R_Co]: ...
     @overload
-    def __get__(self, obj: None, objtype: type[_T_Contra]) -> Callable[..., Any]: ...
+    def __get__(
+        self, obj: None, objtype: type[_T_Contra]
+    ) -> Callable[Concatenate[_T_Contra, _P], _R_Co]: ...
     def __set_name__(self, owner: type[_T_Contra], name: str) -> None: ...
 
 
@@ -233,8 +237,10 @@ def strict(
     return make_wrapper(call, before)
 
 
-class Overload(Generic[_T]):
-    def __init__(self, call: Callable[..., Any] | _DescriptorType[_T]) -> None:
+class Overload(Generic[_T, _P, _R]):
+    def __init__(
+        self, call: Callable[Concatenate[_T, _P], _R] | _DescriptorType[_T, _P, _R]
+    ) -> None:
         self.__origin = call
 
     def __set_name__(self, owner: type[_T], name: str) -> None:
@@ -249,10 +255,19 @@ class Overload(Generic[_T]):
                 return call
         raise TypeError(f"未找到匹配的重载: {args=}, {kwargs=}")
 
-    def __get__(self, obj: _T | None, objtype: type[_T]) -> Callable[..., Any]:
+    @overload
+    def __get__(self, obj: _T, objtype: type[_T]) -> Callable[_P, _R]: ...
+    @overload
+    def __get__(
+        self, obj: None, objtype: type[_T]
+    ) -> Callable[Concatenate[_T, _P], _R]: ...
+
+    def __get__(
+        self, obj: _T | None, objtype: type[_T]
+    ) -> Callable[_P, _R] | Callable[Concatenate[_T, _P], _R]:
         call = self.__origin
         if isinstance(call, _DescriptorType):
-            call = call.__get__(obj, objtype)
+            call = cast(Callable[Concatenate[_T, _P], _R], call.__get__(obj, objtype))
 
         if not hasattr(self, "__overloads__"):
             self.__overloads = get_overloads(call)
