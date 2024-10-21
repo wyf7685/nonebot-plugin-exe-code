@@ -11,7 +11,11 @@ from .fake.onebot11 import fake_v11_bot, fake_v11_event_session
 
 @pytest.mark.usefixtures("app")
 def test_make_wrapper() -> None:
-    from nonebot_plugin_exe_code.interface.utils import T_Args, T_Kwargs, make_wrapper
+    from nonebot_plugin_exe_code.interface.decorators import (
+        T_Args,
+        T_Kwargs,
+        make_wrapper,
+    )
 
     before_called = after_called = False
 

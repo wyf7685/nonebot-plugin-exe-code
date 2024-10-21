@@ -20,7 +20,8 @@ from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt
 
 from ..typings import T_ConstVar, T_ForwardMsg, T_Message
-from .utils import INTERFACE_METHOD_DESCRIPTION, Result, make_wrapper
+from .decorators import INTERFACE_METHOD_DESCRIPTION, make_wrapper
+from .utils import Result
 
 if TYPE_CHECKING:
     from .interface import Interface

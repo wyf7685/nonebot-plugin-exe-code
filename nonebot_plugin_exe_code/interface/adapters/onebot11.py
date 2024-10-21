@@ -18,10 +18,11 @@ from typing_extensions import override
 from ...typings import T_ForwardMsg, T_Message, UserStr
 from ..api import API as BaseAPI
 from ..api import register_api
+from ..decorators import debug_log, export, strict
 from ..group import Group as BaseGroup
 from ..help_doc import descript
 from ..user import User as BaseUser
-from ..utils import Result, as_msg, debug_log, export, strict
+from ..utils import Result, as_msg
 from ._send_ark import SendArk
 
 if TYPE_CHECKING:
@@ -307,7 +308,7 @@ with contextlib.suppress(ImportError):
         @override
         @debug_log
         @strict
-        async def help(  # pyright:ignore[reportIncompatibleVariableOverride]
+        async def help(  # pyright: ignore[reportIncompatibleVariableOverride]
             self, method: Callable[..., Any] | None = None
         ) -> None:
             if method is not None:

@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 from nonebot_plugin_alconna.uniseg import Receipt
 
 from ..typings import T_Message
+from .decorators import debug_log, strict
 from .help_doc import descript
 from .interface import Interface
-from .utils import debug_log, strict
 
 if TYPE_CHECKING:
     from .api import API

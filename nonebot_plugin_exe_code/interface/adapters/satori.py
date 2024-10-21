@@ -6,8 +6,8 @@ from typing_extensions import override
 
 from ..api import API as BaseAPI
 from ..api import register_api
+from ..decorators import debug_log, strict
 from ..help_doc import descript
-from ..utils import debug_log, strict
 
 with contextlib.suppress(ImportError):
     from nonebot.adapters.satori import Adapter, Bot, MessageEvent

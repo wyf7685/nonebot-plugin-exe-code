@@ -6,8 +6,8 @@ from typing_extensions import override
 
 from ..api import API as BaseAPI
 from ..api import register_api
+from ..decorators import debug_log, strict
 from ..help_doc import descript
-from ..utils import debug_log, strict
 from ._send_ark import SendArk
 
 with contextlib.suppress(ImportError):

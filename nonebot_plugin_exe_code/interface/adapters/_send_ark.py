@@ -3,9 +3,9 @@ from typing import Any, ClassVar
 
 import nonebot
 
+from ..decorators import debug_log
 from ..help_doc import descript
 from ..interface import Interface
-from ..utils import debug_log
 
 logger = nonebot.logger.opt(colors=True)
 
