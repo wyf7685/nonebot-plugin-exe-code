@@ -217,7 +217,7 @@ await receipt.recall()  # 撤回消息
 
   - 重构 descript 装饰器
   - OneBot V11 上传文件接口指定超时时间
-  - Interface 及其子类添加 __slots__
+  - Interface 及其子类添加 \_\_slots\_\_
 
 - 2024.10.10 v1.1.3
 
