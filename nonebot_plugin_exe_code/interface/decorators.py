@@ -5,6 +5,7 @@ from collections.abc import Callable, Coroutine
 from typing import (
     Any,
     Generic,
+    NoReturn,
     ParamSpec,
     Protocol,
     TypeVar,
@@ -39,9 +40,11 @@ _T_Contra = TypeVar("_T_Contra", contravariant=True)
 @runtime_checkable
 class _DescriptorType(Protocol[_T_Contra]):
     @overload
-    def __get__(self, obj: _T_Contra, objtype: type[_T_Contra]) -> Any: ...
+    def __get__(
+        self, obj: _T_Contra, objtype: type[_T_Contra]
+    ) -> Callable[..., Any]: ...
     @overload
-    def __get__(self, obj: None, objtype: type[_T_Contra]) -> Any: ...
+    def __get__(self, obj: None, objtype: type[_T_Contra]) -> Callable[..., Any]: ...
     def __set_name__(self, owner: type[_T_Contra], name: str) -> None: ...
 
 
@@ -160,11 +163,7 @@ def debug_log(
     return make_wrapper(call, before)
 
 
-def _check_args(
-    call: Callable[..., Any],
-    args: tuple[Any, ...],
-    kwargs: dict[str, Any],
-) -> None:
+def _check_args(call: Callable[..., Any], args: T_Args, kwargs: T_Kwargs) -> None:
     """检查函数调用是否符合类型注解
 
     Args:
@@ -234,35 +233,53 @@ def strict(
     return make_wrapper(call, before)
 
 
-
 class Overload(Generic[_T]):
     def __init__(self, call: Callable[..., Any] | _DescriptorType[_T]) -> None:
         self.__origin = call
 
     def __set_name__(self, owner: type[_T], name: str) -> None:
+        self.__name = name
         if isinstance(self.__origin, _DescriptorType):
             self.__origin.__set_name__(owner, name)
 
     def __find_overload(self, args: T_Args, kwargs: T_Kwargs) -> Any:
-        for call in self.__overloads__:
+        for call in self.__overloads:
             with contextlib.suppress(TypeError):
                 _check_args(call, args, kwargs)
                 return call
-        raise TypeError(f"No matched overload found: {args=}, {kwargs=}")
+        raise TypeError(f"未找到匹配的重载: {args=}, {kwargs=}")
 
     def __get__(self, obj: _T | None, objtype: type[_T]) -> Callable[..., Any]:
         call = self.__origin
         if isinstance(call, _DescriptorType):
             call = call.__get__(obj, objtype)
-        self.__overloads__ = get_overloads(call)
-        assert self.__overloads__, "应提供至少一个函数重载"
 
-        @functools.wraps(call, assigned=WRAPPER_ASSIGNMENTS)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            args = (obj if obj is not None else objtype, *args)
-            return self.__find_overload(args, kwargs)(*args, **kwargs)
+        if not hasattr(self, "__overloads__"):
+            self.__overloads = get_overloads(call)
+            assert self.__overloads, "应提供至少一个函数重载"
 
-        return wrapper
+        bound = obj if obj is not None else objtype
+
+        if is_coroutine_callable(call):
+
+            async def wrapper_async(*args: Any, **kwargs: Any) -> Any:
+                args = (bound, *args)
+                return await self.__find_overload(args, kwargs)(*args, **kwargs)
+
+            wrapper = cast(Callable[..., Any], wrapper_async)
+        else:
+
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
+                args = (bound, *args)
+                return self.__find_overload(args, kwargs)(*args, **kwargs)
+
+        return functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS)
+
+    def __set__(self, obj: _T, value: Any) -> Any:
+        raise AttributeError(f"attribute {self.__name!r} of {obj!r} is readonly")
+
+    def __delete__(self, obj: _T) -> NoReturn:
+        raise AttributeError(f"attribute {self.__name!r} of {obj!r} cannot be deleted")
 
     def __getattr__(self, __name: str) -> Any:
         return getattr(self.__origin, __name)

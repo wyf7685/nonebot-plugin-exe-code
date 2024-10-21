@@ -319,9 +319,9 @@ with contextlib.suppress(ImportError):
             description="向当前会话发送API说明",
             parameters=dict(method="需要获取帮助的函数，留空则为合并转发的完整文档"),
         )
-        @override
         @export
         @debug_log
+        @override
         async def help(  # pyright: ignore[reportIncompatibleVariableOverride]
             self, method: Callable[..., Any] | None = None
         ) -> None: ...
