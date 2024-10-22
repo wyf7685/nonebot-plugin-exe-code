@@ -58,6 +58,7 @@ type T_Args = tuple[Any, ...]
 type T_Kwargs = dict[str, Any]
 type BeforeWrapped = Callable[[T_Args, T_Kwargs], tuple[T_Args, T_Kwargs] | None]
 type AfterWrapped = Callable[[T_Args, T_Kwargs, Any], tuple[bool, Any]]
+type AnyCallable[**P, R] = Callable[P, Coro[R]] | Callable[P, R]
 
 
 def make_wrapper[**P, R](
@@ -139,9 +140,7 @@ def debug_log[**P, R](call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
 def debug_log[**P, R](call: Callable[P, R]) -> Callable[P, R]: ...
 
 
-def debug_log[**P, R](
-    call: Callable[P, Coro[R]] | Callable[P, R],
-) -> Callable[P, Coro[R]] | Callable[P, R]:
+def debug_log[**P, R](call: AnyCallable[P, R]) -> AnyCallable[P, R]:
     """装饰一个函数，使其在被调用时输出 DEBUG 日志
     Args:
         call (Callable[P, R]): 被装饰的函数
@@ -193,9 +192,7 @@ def strict[**P, R](call: Callable[P, Coro[R]]) -> Callable[P, Coro[R]]: ...
 def strict[**P, R](call: Callable[P, R]) -> Callable[P, R]: ...
 
 
-def strict[**P, R](
-    call: Callable[P, Coro[R]] | Callable[P, R],
-) -> Callable[P, Coro[R]] | Callable[P, R]:
+def strict[**P, R](call: AnyCallable[P, R]) -> AnyCallable[P, R]:
     """装饰一个函数，使其在被调用时的传参严格符合参数类型注解
     Args:
         call (Callable[P, R]): 被装饰的函数
