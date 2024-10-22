@@ -135,8 +135,8 @@ async def test_superuser(app: App) -> None:
                 event,
                 f"sudo.set_usr({user_id})\n"
                 f"sudo.set_grp({group_id})\n"
-                "sudo.ctx(qid).var = 123\n"
-                "await user(qid).send(str(var))\n",
+                "sudo.ctx(uid).var = 123\n"
+                "await user(uid).send(str(var))\n",
             )
 
         assert str(user_id) in config.user
@@ -205,7 +205,7 @@ async def test_send_private_forward(app: App) -> None:
             await Context.execute(
                 bot,
                 event,
-                'await user(qid).send_fwd(["1", "2"])',
+                'await user(uid).send_fwd(["1", "2"])',
             )
 
 

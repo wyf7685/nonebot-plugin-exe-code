@@ -37,7 +37,7 @@ with contextlib.suppress(ImportError):
             description="设置群禁言",
             parameters=dict(
                 duration="禁言时间, 单位秒, 填0为解除禁言",
-                qid="被禁言者ID",
+                uid="被禁言者ID",
                 gid="所在群组ID, 默认为当前群聊, 私聊时必填",
             ),
         )
@@ -46,7 +46,7 @@ with contextlib.suppress(ImportError):
         async def set_mute(
             self,
             duration: int | float,  # noqa: PYI041
-            qid: str | int | None = None,
+            uid: str | int | None = None,
             gid: str | int | None = None,
         ) -> None:
             if gid is None:
@@ -55,7 +55,7 @@ with contextlib.suppress(ImportError):
                 raise ValueError("未指定群组ID")
             await self.bot.guild_member_mute(
                 guild_id=str(gid),
-                user_id=str(qid or self.qid),
+                user_id=str(uid or self.uid),
                 duration=float(duration) * 1000,
             )
 

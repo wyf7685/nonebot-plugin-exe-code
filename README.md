@@ -178,7 +178,7 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 用户执行环境由 [`初始环境`](./nonebot_plugin_exe_code/interface/user_const_var.py) 深拷贝生成，包含 `UniMessage` 及一些常用消息段。
 
-在传入代码开始执行前，用户执行环境将获得一个 [`API`](./nonebot_plugin_exe_code/interface/api.py) 实例，变量名固定为 `api`。同时，`qid` 变量将被设置为执行者的 `用户ID`，`gid` 变量将被设置为当前 `群组ID` (私聊则为 `None`)
+在传入代码开始执行前，用户执行环境将获得一个 [`API`](./nonebot_plugin_exe_code/interface/api.py) 实例，变量名固定为 `api`。同时，`uid` 变量将被设置为执行者的 `用户ID`，`gid` 变量将被设置为当前 `群组ID` (私聊则为 `None`)
 
 `api` 中被 `@export` 装饰的方法将被导出到用户执行环境。例： `print`，`feedback`，`help`，`input`，...
 
@@ -186,13 +186,13 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 对于供用户使用的接口方法，插件中使用 `@descript` 装饰器添加了描述。在执行代码时，可以通过 `await help(api.method)` 获取函数信息。
 
-对于部分协议，插件提供了额外的接口，便于执行一些平台特化的操作。目前提供适配的协议：[`OneBot V11`](./nonebot_plugin_exe_code/interface/adapter_api/onebot11.py)、[`QQ`](./nonebot_plugin_exe_code/interface/adapter_api/qq.py)。
+对于部分协议，插件提供了额外的接口，便于执行一些平台特化的操作。目前提供适配的协议：[`OneBot V11`](./nonebot_plugin_exe_code/interface/adapters/onebot11.py)、[`Satori`](./nonebot_plugin_exe_code/interface/adapters/satori.py)。
 
 ### 示例
 
 ```python
-await feedback(At(qid) + " Hi there")  # 向当前会话发送消息
-await user(qid).send(f"Hello {qid}")   # 向指定用户发送消息
+await feedback(At(uid) + " Hi there")  # 向当前会话发送消息
+await user(uid).send(f"Hello {uid}")   # 向指定用户发送消息
 await group(gid).send(f"Hello {gid}")  # 向指定群组发送消息
 
 # 插件重写的 print 函数，用法同原 print

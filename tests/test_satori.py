@@ -21,7 +21,7 @@ async def test_satori_private(app: App) -> None:
         bot = fake_satori_bot(ctx)
         event = fake_satori_private_message_created_event(
             user_id=str(superuser),
-            content="code print(qid, gid)",
+            content="code print(uid, gid)",
         )
         expected = Message(f"{superuser} private:{superuser}")
         ctx.receive_event(bot, event)
@@ -40,7 +40,7 @@ async def test_satori_public(app: App) -> None:
         event = fake_satori_public_message_created_event(
             user_id=user_id,
             channel_id=str(exe_code_group),
-            content="code print(qid, gid)",
+            content="code print(uid, gid)",
         )
         expected = Message(f"{user_id} {exe_code_group}")
         ctx.receive_event(bot, event)
@@ -52,7 +52,7 @@ async def test_satori_public(app: App) -> None:
         event = fake_satori_public_message_created_event(
             user_id=str(exe_code_user),
             channel_id=channel_id,
-            content="code print(qid, gid)",
+            content="code print(uid, gid)",
         )
         expected = Message(f"{exe_code_user} {channel_id}")
         ctx.receive_event(bot, event)

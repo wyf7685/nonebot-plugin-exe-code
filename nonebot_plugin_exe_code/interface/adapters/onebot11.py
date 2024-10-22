@@ -230,7 +230,7 @@ with contextlib.suppress(ImportError):
             except BaseException as e:
                 res = {"error": e}
                 msg = (
-                    f"用户(<c>{escape_tag(self.qid)}<c>) "
+                    f"用户(<c>{escape_tag(self.uid)}<c>) "
                     f"调用 api <y>{escape_tag(api)}</y> 时发生错误: "
                     f"<r>{escape_tag(repr(e))}</r>"
                 )
@@ -254,18 +254,18 @@ with contextlib.suppress(ImportError):
             return functools.partial(self.call_api, name)
 
         @descript(
-            description="向QQ号为qid的用户发送合并转发消息",
+            description="向用户ID为uid的用户发送合并转发消息",
             parameters=dict(
-                qid="需要发送消息的QQ号",
+                uid="需要发送消息的用户ID",
                 msgs="发送的消息列表",
             ),
         )
         @debug_log
         @strict
-        async def send_prv_fwd(self, qid: int | str, msgs: T_ForwardMsg) -> Result:
+        async def send_prv_fwd(self, uid: int | str, msgs: T_ForwardMsg) -> Result:
             return await self.call_api(
                 "send_private_forward_msg",
-                user_id=int(qid),
+                user_id=int(uid),
                 messages=await convert_forward(msgs),
             )
 
@@ -294,7 +294,7 @@ with contextlib.suppress(ImportError):
         @strict
         async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
             if not self.is_group():
-                return await self.send_prv_fwd(self.qid, msgs)
+                return await self.send_prv_fwd(self.uid, msgs)
             if self.gid is not None:
                 return await self.send_grp_fwd(self.gid, msgs)
             raise ValueError("获取消息上下文失败")  # pragma: no cover
@@ -401,7 +401,7 @@ with contextlib.suppress(ImportError):
             description="设置群名片",
             parameters=dict(
                 card="新的群名片",
-                qid="被设置者QQ号, 默认为当前用户",
+                uid="被设置者用户ID, 默认为当前用户",
                 gid="所在群号, 默认为当前群聊, 私聊时必填",
             ),
         )
@@ -410,7 +410,7 @@ with contextlib.suppress(ImportError):
         async def set_card(
             self,
             card: str,
-            qid: str | int | None = None,
+            uid: str | int | None = None,
             gid: str | int | None = None,
         ) -> None:
             if gid is None and self.gid is None:
@@ -418,7 +418,7 @@ with contextlib.suppress(ImportError):
             await self.call_api(
                 "set_group_card",
                 group_id=int(gid or self.gid or 0),
-                user_id=int(qid or self.qid),
+                user_id=int(uid or self.uid),
                 card=str(card),
             )
 
@@ -426,7 +426,7 @@ with contextlib.suppress(ImportError):
             description="设置群禁言",
             parameters=dict(
                 duration="禁言时间, 单位秒, 填0为解除禁言",
-                qid="被禁言者QQ号",
+                uid="被禁言者用户ID",
                 gid="所在群号, 默认为当前群聊, 私聊时必填",
             ),
         )
@@ -435,7 +435,7 @@ with contextlib.suppress(ImportError):
         async def set_mute(
             self,
             duration: int | float,  # noqa: PYI041
-            qid: str | int,
+            uid: str | int,
             gid: str | int | None = None,
         ) -> None:
             if gid is None and self.gid is None:
@@ -443,7 +443,7 @@ with contextlib.suppress(ImportError):
             await self.call_api(
                 "set_group_ban",
                 group_id=int(gid or self.gid or 0),
-                user_id=int(qid),
+                user_id=int(uid),
                 duration=float(duration),
             )
 
@@ -451,13 +451,13 @@ with contextlib.suppress(ImportError):
             description="资料卡点赞，需要机器人好友",
             parameters=dict(
                 times="点赞次数，非vip机器人每天上限10次",
-                qid="点赞QQ号, 默认为当前用户",
+                uid="点赞用户ID, 默认为当前用户",
             ),
         )
         @debug_log
         @strict
-        async def send_like(self, times: int, qid: str | int | None = None) -> None:
-            await self.call_api("send_like", user_id=int(qid or self.qid), times=times)
+        async def send_like(self, times: int, uid: str | int | None = None) -> None:
+            await self.call_api("send_like", user_id=int(uid or self.uid), times=times)
 
         @descript(
             description="[NapCat/LLOneBot/Lagrange] 群聊消息回应",
@@ -539,7 +539,7 @@ with contextlib.suppress(ImportError):
             parameters=dict(
                 file="需要发送的文件，可以是url/base64/bytes/Path",
                 name="上传的文件名",
-                qid="目标QQ号，默认为当前用户",
+                uid="目标用户ID，默认为当前用户",
                 timeout="上传文件超时时长，单位秒",
             ),
         )
@@ -549,18 +549,18 @@ with contextlib.suppress(ImportError):
             self,
             file: str | bytes | BytesIO | Path,
             name: str,
-            qid: str | int | None = None,
+            uid: str | int | None = None,
             timeout: float | None = None,  # noqa: ASYNC109
         ) -> None:
             file = file2str(file)
-            qid = qid or self.qid
-            if not str(qid).isdigit():
-                raise ValueError(f"QQ号错误: {qid} 不是数字")
+            uid = uid or self.uid
+            if not str(uid).isdigit():
+                raise ValueError(f"用户ID错误: {uid} 不是数字")
 
             # https://docs.go-cqhttp.org/api/#%E4%B8%8A%E4%BC%A0%E7%A7%81%E8%81%8A%E6%96%87%E4%BB%B6
             await self.call_api(
                 "upload_private_file",
-                user_id=int(qid),
+                user_id=int(uid),
                 file=file,
                 name=name,
                 _timeout=timeout,
@@ -585,7 +585,7 @@ with contextlib.suppress(ImportError):
             if self.is_group():
                 await self.send_group_file(file, name, self.gid, timeout)
             else:
-                await self.send_private_file(file, name, self.qid, timeout)
+                await self.send_private_file(file, name, self.uid, timeout)
 
         @override
         async def _send_ark(self, ark: "MessageArk") -> Any:
@@ -594,7 +594,7 @@ with contextlib.suppress(ImportError):
 
         @descript(
             description="获取用户对象",
-            parameters=dict(uid="用户QQ号"),
+            parameters=dict(uid="用户ID"),
             result="User对象",
         )
         @export

@@ -376,7 +376,7 @@ async def test_ob11_send_ark_fail(app: App, mocker: MockerFixture) -> None:
 
 
 code_test_ob11_set_mute = """\
-await api.set_mute(114514, qid)
+await api.set_mute(114514, uid)
 """
 
 

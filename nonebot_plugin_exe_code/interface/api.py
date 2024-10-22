@@ -74,7 +74,7 @@ class API[B: Bot, E: Event](Interface):
         return self.__session
 
     @property
-    def qid(self) -> str:
+    def uid(self) -> str:
         return self.session.id1 or ""
 
     @property
@@ -135,25 +135,25 @@ class API[B: Bot, E: Event](Interface):
         )
 
     @descript(
-        description="向QQ号为qid的用户发送私聊消息",
+        description="向用户ID为uid的用户发送私聊消息",
         parameters=dict(
-            qid="需要发送私聊的QQ号",
+            uid="需要发送私聊的用户ID",
             msg="发送的内容",
         ),
     )
     @debug_log
     @strict
-    async def send_prv(self, qid: int | str, msg: T_Message) -> Receipt:
+    async def send_prv(self, uid: int | str, msg: T_Message) -> Receipt:
         return await send_message(
             session=self.session,
-            target=Target.user(str(qid)),
+            target=Target.user(str(uid)),
             message=msg,
         )
 
     @descript(
-        description="向群号为gid的群聊发送消息",
+        description="向群组ID为gid的群组发送消息",
         parameters=dict(
-            gid="需要发送消息的群号",
+            gid="需要发送消息的群组ID",
             msg="发送的内容",
         ),
     )
@@ -298,14 +298,14 @@ class API[B: Bot, E: Event](Interface):
 
         for k, v in load_const(self.session_id).items():
             self._export(k, v)
-        self._export("qid", self.qid)
+        self._export("uid", self.uid)
         self._export("gid", self.gid)
         for k, v in export_message(self.bot.adapter):
             self._export(k, v)
 
-        if is_super_user(self.bot, self.qid):
+        if is_super_user(self.bot, self.uid):
             for k, v in export_superuser():
                 self._export(k, v)
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} user_id={self.qid}>"
+        return f"<{self.__class__.__name__} user_id={self.uid}>"

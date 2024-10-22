@@ -8,7 +8,7 @@ from .fake.onebot11 import fake_v11_bot, fake_v11_group_exe_code
 
 code_test_api_message = """\
 await feedback(1)
-await user(qid).send(MessageSegment.text("2"))
+await user(uid).send(MessageSegment.text("2"))
 await group(gid).send(Text("3"))
 print("4")
 await sleep(0)
