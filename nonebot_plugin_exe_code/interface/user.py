@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
+from typing import TYPE_CHECKING, ClassVar
 
 from nonebot_plugin_alconna.uniseg import Receipt
 
@@ -10,17 +10,16 @@ from .interface import Interface
 if TYPE_CHECKING:
     from .api import API
 
-_A = TypeVar("_A", bound="API")
 
-
-class User(Generic[_A], Interface):
+class User[A: API](Interface):
+    __parameters__ = (A,)
     __inst_name__: ClassVar[str] = "usr"
     __slots__ = ("api", "uid")
 
-    api: _A
+    api: A
     uid: str
 
-    def __init__(self, api: _A, uid: str) -> None:
+    def __init__(self, api: A, uid: str) -> None:
         super().__init__()
         self.api = api
         self.uid = uid

@@ -1,6 +1,6 @@
 import asyncio
 from collections.abc import Callable
-from typing import Any, ClassVar, Generic, Self, TypeVar, override
+from typing import Any, ClassVar, Self, override
 
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage, reply_fetch
@@ -26,8 +26,6 @@ from .utils import (
     send_message,
 )
 
-_B = TypeVar("_B", bound=Bot)
-_E = TypeVar("_E", bound=Event)
 api_registry: dict[type[Adapter], type["API"]] = {}
 message_alia(Message, MessageSegment)
 
@@ -43,14 +41,15 @@ def register_api[A: type["API"]](adapter: type[Adapter]) -> Callable[[A], A]:
     return decorator
 
 
-class API(Generic[_B, _E], Interface):
+class API[B: Bot, E: Event](Interface):
+    __parameters__ = (B, E)
     __inst_name__: ClassVar[str] = "api"
     __slots__ = ("__bot", "__event", "__session")
 
     def __init__(
         self,
-        bot: _B,
-        event: _E,
+        bot: B,
+        event: E,
         session: Session,
         context: T_Context,
     ) -> None:
@@ -63,11 +62,11 @@ class API(Generic[_B, _E], Interface):
         self.__session = session
 
     @property
-    def bot(self) -> _B:
+    def bot(self) -> B:
         return self.__bot
 
     @property
-    def event(self) -> _E:
+    def event(self) -> E:
         return self.__event
 
     @property
@@ -91,7 +90,7 @@ class API(Generic[_B, _E], Interface):
         return UniMessage.get_message_id(self.event, self.bot)
 
     @classmethod
-    def _validate(cls, bot: _B, event: _E) -> bool:
+    def _validate(cls, bot: B, event: E) -> bool:
         return isinstance(bot, Bot) and isinstance(event, Event)
 
     @descript(
