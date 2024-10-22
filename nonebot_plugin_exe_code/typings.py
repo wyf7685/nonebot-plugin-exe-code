@@ -5,9 +5,9 @@ from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Segment, UniMessage
 from tarina import generic_isinstance
 
-T_Context = dict[str, Any]
-T_Executor = Callable[[], Coroutine[None, None, Any]]
-T_API_Result = dict[str, Any] | list[Any] | None
+type T_Context = dict[str, Any]
+type T_Executor = Callable[[], Coroutine[None, None, Any]]
+type T_API_Result = dict[str, Any] | list[Any] | None
 T_Message = str | Message | MessageSegment | UniMessage | Segment
 T_ConstVar = str | bool | int | float | dict | list | None
 
