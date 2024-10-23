@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 
 class Group[A: API](Interface):
-    __parameters__ = (A,)
     __inst_name__: ClassVar[str] = "grp"
     __slots__ = ("api", "uid")
 

@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 
 class User[A: API](Interface):
-    __parameters__ = (A,)
     __inst_name__: ClassVar[str] = "usr"
     __slots__ = ("api", "uid")
 

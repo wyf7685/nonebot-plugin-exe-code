@@ -28,6 +28,11 @@ class Interface:
         self.__exported = set()
 
     def __init_subclass__(cls) -> None:
+        # User[xxx]
+        #   --> AttributeError: type object 'User' has no attribute '__parameters__'
+        if type_params := getattr(cls, "__type_params__", None):
+            cls.__parameters__ = type_params  # type:ignore[reportAttributeAccessIssue]
+
         if cls.__inst_name__ == Interface.__inst_name__:
             cls.__inst_name__ = cls.__name__.lower()  # pragma: no cover
         cls.__export_method__ = [

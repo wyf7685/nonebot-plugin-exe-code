@@ -42,7 +42,6 @@ def register_api[A: type["API"]](adapter: type[Adapter]) -> Callable[[A], A]:
 
 
 class API[B: Bot, E: Event](Interface):
-    __parameters__ = (B, E)
     __inst_name__: ClassVar[str] = "api"
     __slots__ = ("__bot", "__event", "__session")
 
