@@ -298,6 +298,7 @@ class API[B: Bot, E: Event](Interface):
         for k, v in load_const(self.session_id).items():
             self._export(k, v)
         self._export("uid", self.uid)
+        self._export("qid", self.uid)
         self._export("gid", self.gid)
         for k, v in export_message(self.bot.adapter):
             self._export(k, v)
