@@ -634,7 +634,7 @@ with contextlib.suppress(ImportError):
             uid: int | str | None = None,
             gid: int | str | None = None,
             nick: str | None = None,
-        ) -> None:
+        ) -> None:  # pragma: no cover
             async def send(type_: str, data: dict[str, Any], /) -> Result:
                 node = {
                     "type": "node",
