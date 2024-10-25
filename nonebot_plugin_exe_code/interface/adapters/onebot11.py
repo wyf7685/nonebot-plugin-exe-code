@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import functools
+import re
 import uuid
 from base64 import b64encode
 from collections.abc import Callable
@@ -615,3 +616,50 @@ with contextlib.suppress(ImportError):
             self, gid: int | str
         ) -> Group:
             return Group(self, str(gid))
+
+        @descript(
+            description="发送 Markdown 消息",
+            parameters=dict(
+                md="Markdown 文本",
+                uid="发送时显示的用户 ID",
+                gid="发送时显示的群组 ID",
+                nick="发送时显示的用户名",
+            ),
+        )
+        @export
+        @strict
+        async def send_md(
+            self,
+            md: str,
+            uid: int | str | None = None,
+            gid: int | str | None = None,
+            nick: str | None = None,
+        ) -> None:
+            async def send(type_: str, data: dict[str, Any], /) -> Result:
+                node = {
+                    "type": "node",
+                    "data": {
+                        "nickname": nick or "fake",
+                        "user_id": int(uid or self.bot.self_id),
+                        "content": [{"type": type_, "data": data}],
+                    },
+                }
+                return await self.call_api(
+                    "send_group_forward_msg",
+                    group_id=int(gid or self.gid or 10086),
+                    messages=[node],
+                )
+
+            res = await send("markdown", {"content": md})
+            if not isinstance(res.error, ActionFailed):
+                raise RuntimeError(  # noqa: TRY004
+                    "Markdown 消息发送失败: 伪造合并转发失败"
+                )
+
+            m = re.search(r"res_id：(.+?)\s失败", res.error.info["message"])
+            if m is None:
+                raise RuntimeError("Markdown 消息发送失败: 无法提取 res_id")
+
+            res = await send("forward", {"id": m.group(1)})
+            if res.error:
+                raise RuntimeError("Markdown 消息发送失败") from res.error
