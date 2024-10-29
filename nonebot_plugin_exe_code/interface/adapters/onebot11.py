@@ -15,7 +15,8 @@ from nonebot import on_fullmatch, on_message
 from nonebot.adapters import Event
 from nonebot.utils import escape_tag
 
-from ...exception import APICallFailed, ParamMismatch, ParamMissing
+from ...exception import APICallFailed as BaseAPICallFailed
+from ...exception import ParamMismatch, ParamMissing
 from ...typings import T_ForwardMsg, UserStr
 from ..api import API as BaseAPI
 from ..api import register_api
@@ -85,6 +86,8 @@ with contextlib.suppress(ImportError):
         MessageSegment,
         PrivateMessageEvent,
     )
+
+    class APICallFailed(BaseAPICallFailed, ActionFailed): ...
 
     logger = nonebot.logger.opt(colors=True)
 
@@ -652,9 +655,7 @@ with contextlib.suppress(ImportError):
 
             res = await send("markdown", {"content": md})
             if not isinstance(res.error, ActionFailed):
-                raise APICallFailed(
-                    "Markdown 消息发送失败: 伪造合并转发失败"
-                )
+                raise APICallFailed("Markdown 消息发送失败: 伪造合并转发失败")
 
             m = re.search(r"res_id：(.+?)\s失败", res.error.info["message"])
             if m is None:
