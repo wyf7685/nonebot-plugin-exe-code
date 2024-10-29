@@ -7,7 +7,7 @@ from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage, reply_fet
 from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
 
-from ..exception import EventMismatch, NoMethodDescription
+from ..exception import BotEventMismatch, NoMethodDescription
 from ..typings import T_ConstVar, T_Context, T_Message, is_message_t
 from .decorators import debug_log, export, strict
 from .group import Group
@@ -54,7 +54,7 @@ class API[B: Bot, E: Event](Interface):
         context: T_Context,
     ) -> None:
         if not self._validate(bot, event):
-            raise EventMismatch("Bot/Event type mismatch")
+            raise BotEventMismatch("Bot/Event type mismatch")
 
         super().__init__(context)
         self.__bot = bot

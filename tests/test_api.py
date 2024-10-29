@@ -42,6 +42,7 @@ async def test_help_method(app: App) -> None:
 @pytest.mark.asyncio
 async def test_help(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.exception import NoMethodDescription
     from nonebot_plugin_exe_code.interface.adapters.onebot11 import API
     from nonebot_plugin_exe_code.interface.user import User
     from nonebot_plugin_exe_code.interface.utils import get_method_description
@@ -89,7 +90,10 @@ async def test_help(app: App) -> None:
         with ensure_context(bot, event):
             await Context.execute(bot, event, "await help(user('').send)")
 
-        with ensure_context(bot, event), pytest.raises(TypeError, match="没有方法描述"):
+        with (
+            ensure_context(bot, event),
+            pytest.raises(NoMethodDescription),
+        ):
             await Context.execute(bot, event, "await help(api.export)")
 
 
@@ -294,13 +298,14 @@ async def test_api_input_timeout(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_api_type_mismatch(app: App) -> None:
+    from nonebot_plugin_exe_code.exception import BotEventMismatch
     from nonebot_plugin_exe_code.interface.adapters.satori import API
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot, superuser, exe_code_group)
 
-        with pytest.raises(RuntimeError, match="Bot/Event type mismatch"):
+        with pytest.raises(BotEventMismatch, match="Bot/Event type mismatch"):
             API(bot, event, session, {})  # pyright: ignore[reportArgumentType]
 
 

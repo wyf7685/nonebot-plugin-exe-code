@@ -3,7 +3,7 @@
 Error
 ├── ContextError
 │   ├── SessionNotInitialized
-│   └── EventMismatch
+│   └── BotEventMismatch
 └── APIError
     ├── APICallFailed
     ├── ParamError
@@ -13,8 +13,6 @@ Error
 """
 
 from typing import Any
-
-from nonebot.exception import ActionFailed
 
 
 class Error(Exception):
@@ -35,13 +33,13 @@ class ContextError(Error): ...
 class SessionNotInitialized(ContextError): ...
 
 
-class EventMismatch(ContextError): ...
+class BotEventMismatch(ContextError): ...
 
 
 class APIError(Error): ...
 
 
-class APICallFailed(APIError, ActionFailed): ...
+class APICallFailed(APIError): ...
 
 
 class ParamError(APIError, TypeError): ...
