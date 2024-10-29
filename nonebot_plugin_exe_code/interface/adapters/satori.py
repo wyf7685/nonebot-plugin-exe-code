@@ -4,6 +4,7 @@ from typing import override
 from nonebot.adapters import Event
 from nonebot.exception import ActionFailed
 
+from ...exception import ParamMissing
 from ..api import API as BaseAPI
 from ..api import register_api
 from ..decorators import debug_log, strict
@@ -52,7 +53,7 @@ with contextlib.suppress(ImportError):
             if gid is None:
                 gid = self.gid
             if (gid := str(gid)).startswith("private:"):
-                raise ValueError("未指定群组ID")
+                raise ParamMissing("未指定群组ID")
             await self.bot.guild_member_mute(
                 guild_id=str(gid),
                 user_id=str(uid or self.uid),
@@ -78,7 +79,7 @@ with contextlib.suppress(ImportError):
             if channel_id is None:
                 channel_id = self.gid
             if (channel_id := str(channel_id)).startswith("private:"):
-                raise ValueError("未指定群组ID")
+                raise ParamMissing("未指定群组ID")
 
             with contextlib.suppress(ActionFailed):
                 await self.bot.reaction_create(

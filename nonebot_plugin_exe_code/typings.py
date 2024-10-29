@@ -35,7 +35,7 @@ class UserStr(str):
         return self.__user_str_args__.copy()
 
 
-T_ForwardMsg = list[T_Message] | list[UserStr] | list[T_Message | UserStr]
+T_ForwardMsg = list[str] | list[T_Message] | list[UserStr] | list[T_Message | UserStr]
 
 
 def is_message_t(message: Any) -> TypeGuard[T_Message]:
