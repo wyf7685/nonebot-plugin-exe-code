@@ -2,12 +2,8 @@ name: CI
 
 on:
   push:
-    paths:
-      - "nonebot_plugin_exe_code/**"
-      - "tests/**"
-      - ".github/workflows/ci.yml"
-      - "pyproject.toml"
-      - "uv.lock"
+    branches:
+      - master
   pull_request:
     paths:
       - "nonebot_plugin_exe_code/**"
