@@ -25,6 +25,7 @@ await api.img_summary("test")
 @pytest.mark.asyncio
 async def test_ob11_img_summary(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.exception import ParamMissing
 
     url = "http://localhost:8080/image.png"
     expected = Message(MessageSegment.image(url))
@@ -33,7 +34,7 @@ async def test_ob11_img_summary(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event, session = fake_v11_event_session(bot, group_id=exe_code_group)
-        with ensure_context(bot, event), pytest.raises(ValueError, match="无效 url"):
+        with ensure_context(bot, event), pytest.raises(ParamMissing, match="无效 url"):
             await Context.execute(bot, event, code_test_ob11_img_summary)
         Context.get_context(session).set_value("gurl", url)
         ctx.should_call_send(event, expected)
@@ -242,6 +243,7 @@ await api.set_card("test_card")
 @pytest.mark.asyncio
 async def test_ob11_set_card(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.exception import ParamMissing
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -258,7 +260,10 @@ async def test_ob11_set_card(app: App) -> None:
             await Context.execute(bot, event, code_test_ob11_set_card)
 
         event, _ = fake_v11_event_session(bot)
-        with ensure_context(bot, event), pytest.raises(ValueError, match="未指定群号"):
+        with (
+            ensure_context(bot, event),
+            pytest.raises(ParamMissing, match="未指定群号"),
+        ):
             await Context.execute(bot, event, code_test_ob11_set_card)
 
 
@@ -383,6 +388,7 @@ await api.set_mute(114514, uid)
 @pytest.mark.asyncio
 async def test_ob11_set_mute(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.exception import ParamMissing
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -399,7 +405,10 @@ async def test_ob11_set_mute(app: App) -> None:
             await Context.execute(bot, event, code_test_ob11_set_mute)
 
         event, _ = fake_v11_event_session(bot)
-        with ensure_context(bot, event), pytest.raises(ValueError, match="未指定群号"):
+        with (
+            ensure_context(bot, event),
+            pytest.raises(ParamMissing, match="未指定群号"),
+        ):
             await Context.execute(bot, event, code_test_ob11_set_mute)
 
 
@@ -432,6 +441,7 @@ await api.send_private_file("file", "name", "string")
 @pytest.mark.asyncio
 async def test_ob11_send_private_file(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.exception import ParamMismatch
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -440,7 +450,7 @@ async def test_ob11_send_private_file(app: App) -> None:
             "upload_private_file",
             {"user_id": event.user_id, "file": "file", "name": "name"},
         )
-        with ensure_context(bot, event), pytest.raises(ValueError, match="不是数字"):
+        with ensure_context(bot, event), pytest.raises(ParamMismatch, match="不是数字"):
             await Context.execute(bot, event, code_test_ob11_send_private_file)
 
 
@@ -453,6 +463,7 @@ await api.send_group_file("file", "name", "string")
 @pytest.mark.asyncio
 async def test_ob11_send_group_file(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.exception import ParamMismatch, ParamMissing
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -461,11 +472,14 @@ async def test_ob11_send_group_file(app: App) -> None:
             "upload_group_file",
             {"group_id": event.group_id, "file": "file", "name": "name"},
         )
-        with ensure_context(bot, event), pytest.raises(ValueError, match="不是数字"):
+        with ensure_context(bot, event), pytest.raises(ParamMismatch, match="不是数字"):
             await Context.execute(bot, event, code_test_ob11_send_group_file)
 
         event, _ = fake_v11_event_session(bot)
-        with ensure_context(bot, event), pytest.raises(ValueError, match="未指定群号"):
+        with (
+            ensure_context(bot, event),
+            pytest.raises(ParamMissing, match="未指定群号"),
+        ):
             await Context.execute(bot, event, code_test_ob11_send_group_file)
 
 
@@ -618,6 +632,7 @@ async def test_ob11_get_platform(app: App) -> None:
 @pytest.mark.asyncio
 async def test_ob11_set_reaction(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.exception import APICallFailed
 
     code_test_ob11_set_reaction_1 = "await api.set_reaction(123, api.mid, 456)"
     code_test_ob11_set_reaction_2 = "await api.set_reaction(123, api.mid)"
@@ -685,6 +700,6 @@ async def test_ob11_set_reaction(app: App) -> None:
         )
         with (
             ensure_context(bot, event),
-            pytest.raises(RuntimeError, match="unkown platform"),
+            pytest.raises(APICallFailed, match="unkown platform"),
         ):
             await Context.execute(bot, event, code_test_ob11_set_reaction_1)

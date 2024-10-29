@@ -91,6 +91,10 @@ async def test_context_variable(app: App) -> None:
 @pytest.mark.asyncio
 async def test_session_fetch(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.exception import (
+        BotEventMismatch,
+        SessionNotInitialized,
+    )
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -99,14 +103,14 @@ async def test_session_fetch(app: App) -> None:
 
         with (
             ensure_context(bot, wrong_event),
-            pytest.raises(RuntimeError, match="event mismatch"),
+            pytest.raises(BotEventMismatch),
         ):
             Context.get_context(event)
 
         with ensure_context(bot, event):
-            with pytest.raises(RuntimeError, match="not initialized"):
+            with pytest.raises(SessionNotInitialized):
                 Context.get_context(event)
-            with pytest.raises(RuntimeError, match="not initialized"):
+            with pytest.raises(SessionNotInitialized):
                 Context.get_context(event.get_user_id())
 
             Context.get_context(session)

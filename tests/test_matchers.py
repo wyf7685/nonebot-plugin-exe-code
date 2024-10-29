@@ -291,7 +291,8 @@ async def test_terminate(app: App) -> None:
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(
             event,
-            f"获取 Context 失败: session ('{target_id}', '{bot.type}') not initialized",
+            "获取 Context 失败: "
+            f"SessionNotInitialized: None, key=('{target_id}', '{bot.type}')",
         )
         ctx.should_finished(matcher)
 
