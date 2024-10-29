@@ -15,7 +15,8 @@ from nonebot import on_fullmatch, on_message
 from nonebot.adapters import Event
 from nonebot.utils import escape_tag
 
-from ...typings import T_ForwardMsg, T_Message, UserStr
+from ...exception import APICallFailed, ParamMismatch, ParamMissing
+from ...typings import T_ForwardMsg, UserStr
 from ..api import API as BaseAPI
 from ..api import register_api
 from ..decorators import Overload, debug_log, export, strict
@@ -296,9 +297,8 @@ with contextlib.suppress(ImportError):
         async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
             if not self.is_group():
                 return await self.send_prv_fwd(self.uid, msgs)
-            if self.gid is not None:
-                return await self.send_grp_fwd(self.gid, msgs)
-            raise ValueError("获取消息上下文失败")  # pragma: no cover
+            assert self.gid is not None, "获取上下文失败"
+            return await self.send_grp_fwd(self.gid, msgs)
 
         @overload
         async def help(self, method: Callable[..., Any]) -> None:
@@ -307,7 +307,7 @@ with contextlib.suppress(ImportError):
         @overload
         async def help(self) -> None:
             content, description = self.get_all_description()
-            msgs: list[T_Message] = [
+            msgs = [
                 "   ===== API说明 =====   ",
                 " - API说明文档 - 目录 - \n" + "\n".join(content),
                 *description,
@@ -391,7 +391,7 @@ with contextlib.suppress(ImportError):
                 url = Context.get_context(self.session).ctx.get("gurl")
 
             if not url:
-                raise ValueError("无效 url")
+                raise ParamMissing("无效 url")
 
             logger.debug(f"[NapCat] 创建图片外显: <y>{summary}</y>, <c>{url}</c>")
             seg = MessageSegment.image(url)
@@ -415,7 +415,7 @@ with contextlib.suppress(ImportError):
             gid: str | int | None = None,
         ) -> None:
             if gid is None and self.gid is None:
-                raise ValueError("未指定群号")
+                raise ParamMissing("未指定群号")
             await self.call_api(
                 "set_group_card",
                 group_id=int(gid or self.gid or 0),
@@ -440,7 +440,7 @@ with contextlib.suppress(ImportError):
             gid: str | int | None = None,
         ) -> None:
             if gid is None and self.gid is None:
-                raise ValueError("未指定群号")
+                raise ParamMissing("未指定群号")
             await self.call_api(
                 "set_group_ban",
                 group_id=int(gid or self.gid or 0),
@@ -488,7 +488,7 @@ with contextlib.suppress(ImportError):
 
             if "lagrange" in platform:
                 if (gid := gid or self.gid) is None:
-                    raise TypeError("在 Lagrange 下进行表情回应需要指定群号")
+                    raise ParamMissing("在 Lagrange 下进行表情回应需要指定群号")
 
                 # Lagrange
                 return await self.call_api(
@@ -499,7 +499,7 @@ with contextlib.suppress(ImportError):
                     raise_text="调用 Lagrange 接口 set_group_reaction 出错",
                 )
 
-            raise RuntimeError(f"发送消息回应失败: 未知平台 {platform}")
+            raise APICallFailed(f"发送消息回应失败: 未知平台 {platform}")
 
         @descript(
             description="发送群文件",
@@ -522,9 +522,9 @@ with contextlib.suppress(ImportError):
             file = file2str(file)
             gid = gid or self.gid
             if gid is None:
-                raise ValueError("未指定群号")
+                raise ParamMissing("未指定群号")
             if not str(gid).isdigit():
-                raise ValueError(f"群号错误: {gid} 不是数字")
+                raise ParamMismatch(f"群号错误: {gid} 不是数字")
 
             # https://docs.go-cqhttp.org/api/#%E4%B8%8A%E4%BC%A0%E7%BE%A4%E6%96%87%E4%BB%B6
             await self.call_api(
@@ -556,7 +556,7 @@ with contextlib.suppress(ImportError):
             file = file2str(file)
             uid = uid or self.uid
             if not str(uid).isdigit():
-                raise ValueError(f"用户ID错误: {uid} 不是数字")
+                raise ParamMismatch(f"用户ID错误: {uid} 不是数字")
 
             # https://docs.go-cqhttp.org/api/#%E4%B8%8A%E4%BC%A0%E7%A7%81%E8%81%8A%E6%96%87%E4%BB%B6
             await self.call_api(
@@ -652,14 +652,14 @@ with contextlib.suppress(ImportError):
 
             res = await send("markdown", {"content": md})
             if not isinstance(res.error, ActionFailed):
-                raise RuntimeError(  # noqa: TRY004
+                raise APICallFailed(
                     "Markdown 消息发送失败: 伪造合并转发失败"
                 )
 
             m = re.search(r"res_id：(.+?)\s失败", res.error.info["message"])
             if m is None:
-                raise RuntimeError("Markdown 消息发送失败: 无法提取 res_id")
+                raise APICallFailed("Markdown 消息发送失败: 无法提取 res_id")
 
             res = await send("forward", {"id": m.group(1)})
             if res.error:
-                raise RuntimeError("Markdown 消息发送失败") from res.error
+                raise APICallFailed("Markdown 消息发送失败") from res.error

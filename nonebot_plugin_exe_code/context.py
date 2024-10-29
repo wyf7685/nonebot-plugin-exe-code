@@ -12,6 +12,7 @@ from nonebot.utils import escape_tag
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
 from nonebot_plugin_session import Session, SessionIdType, extract_session
 
+from .exception import EventMismatch, SessionNotInitialized
 from .interface import API, Buffer, default_context, get_api_class
 from .typings import T_Context, T_Executor
 
@@ -55,15 +56,15 @@ class Context:
     def _session2uin(cls, session: Session | Event | str) -> str:
         if isinstance(session, Event):
             if current_event.get() is not session:
-                raise RuntimeError("event mismatch")
+                raise EventMismatch
             key = (session.get_user_id(), current_bot.get().type)
             if key not in cls.__ua2session:
-                raise RuntimeError(f"session {key!r} not initialized")
+                raise SessionNotInitialized(key=key)
             session = cls.__ua2session[key]
         elif isinstance(session, str):
             key = (session, current_bot.get().type)
             if key not in cls.__ua2session:
-                raise RuntimeError(f"session {key!r} not initialized")
+                raise SessionNotInitialized(key=key)
             session = cls.__ua2session[key]
 
         key = (session.id1 or "", session.bot_type)

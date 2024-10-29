@@ -19,6 +19,8 @@ import nonebot
 from nonebot.utils import is_coroutine_callable
 from tarina import generic_isinstance
 
+from ..exception import ParamMismatch
+
 INTERFACE_EXPORT_METHOD = "__export_method__"
 """接口方法上的 bool 类型变量，标识该方法是否为导出函数"""
 INTERFACE_METHOD_DESCRIPTION = "__method_description__"
@@ -238,7 +240,7 @@ class Overload[T, **P, R]:
             with contextlib.suppress(TypeError):
                 _check_args(call, args, kwargs)
                 return call
-        raise TypeError(f"未找到匹配的重载: {args=}, {kwargs=}")
+        raise ParamMismatch(f"未找到匹配的重载: {args=}, {kwargs=}")
 
     @overload
     def __get__(self, obj: T, objtype: type[T]) -> Callable[P, R]: ...
