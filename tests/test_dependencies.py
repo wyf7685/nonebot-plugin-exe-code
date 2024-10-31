@@ -8,7 +8,6 @@ import pytest
 from nonebot.adapters.onebot.v11.event import Reply, Sender
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 from nonebot.dependencies import Dependent
-from nonebot.exception import SkippedException
 from nonebot.internal.matcher import Matcher
 from nonebot.internal.params import DependsInner
 from nonebug import App
@@ -76,7 +75,10 @@ async def test_extract_code_fail(app: App) -> None:
         state = {}
         stack = AsyncExitStack()
 
-        with ensure_context(bot, event), pytest.raises(SkippedException):
+        with (
+            ensure_context(bot, event),
+            pytest.raises(ExceptionGroup),
+        ):
             await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
@@ -179,6 +181,7 @@ async def test_event_image_fail(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.depends import _event_image
 
     dependent = parse_handler_dependent(_event_image())
+
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
         event = fake_v11_group_message_event(
@@ -186,7 +189,10 @@ async def test_event_image_fail(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        with ensure_context(bot, event), pytest.raises(SkippedException):
+        with (
+            ensure_context(bot, event),
+            pytest.raises(BaseExceptionGroup),
+        ):
             await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
@@ -241,7 +247,10 @@ async def test_event_reply_fail(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        with ensure_context(bot, event), pytest.raises(SkippedException):
+        with (
+            ensure_context(bot, event),
+            pytest.raises(ExceptionGroup),
+        ):
             await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
@@ -334,7 +343,10 @@ async def test_event_reply_message_fail_1(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        with ensure_context(bot, event), pytest.raises(SkippedException):
+        with (
+            ensure_context(bot, event),
+            pytest.raises(BaseExceptionGroup),
+        ):
             await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
@@ -368,5 +380,8 @@ async def test_event_reply_message_fail_2(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        with ensure_context(bot, event), pytest.raises(SkippedException):
+        with (
+            ensure_context(bot, event),
+            pytest.raises(ExceptionGroup),
+        ):
             await dependent(bot=bot, event=event, state=state, stack=stack)

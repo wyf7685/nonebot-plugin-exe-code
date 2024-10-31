@@ -7,6 +7,7 @@ import nonebot
 from nonebot.adapters import Adapter, Bot, Event
 from nonebot.matcher import Matcher
 from nonebug.mixin.call_api import ApiContext
+from nonebug.mixin.dependent import DependentContext
 from nonebug.mixin.process import MatcherContext
 
 fake_user_id = (lambda: (g := itertools.count(100000)) and (lambda: next(g)))()
@@ -41,7 +42,7 @@ def ensure_context(
 
 
 def fake_bot[B: Bot](
-    ctx: ApiContext | MatcherContext,
+    ctx: ApiContext | MatcherContext | DependentContext,
     adapter_base: type[Adapter],
     bot_base: type[B],
     **kwargs: Any,
