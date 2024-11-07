@@ -53,3 +53,11 @@ def _load_bot() -> None:
     driver.register_adapter(qq.Adapter)
     driver.register_adapter(satori.Adapter)
     driver.register_adapter(telegram.Adapter)
+
+
+@pytest.fixture(autouse=True)
+async def _gtg() -> None:
+    nonebot.require("nonebot_plugin_exe_code")
+    from nonebot_plugin_exe_code.interface.utils import GlobalTaskGroup
+
+    await GlobalTaskGroup.on_startup()

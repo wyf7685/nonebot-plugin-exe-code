@@ -1,6 +1,8 @@
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import Any, cast
 
+import anyio
+import anyio.lowlevel
 import pytest
 from nonebot.utils import run_sync
 from nonebug import App
@@ -73,3 +75,30 @@ def test_user_str() -> None:
     assert (UserStr("some string") @ "123" & "456").extract_args() == ["123", "456"]
     with pytest.raises(TypeError):
         _ = UserStr("some string") @ 123  # pyright: ignore[reportOperatorIssue]
+
+
+@pytest.mark.asyncio
+async def test_global_task_group() -> None:
+    from nonebot_plugin_exe_code.interface.utils import GlobalTaskGroup
+
+    called = cast(bool, False)  # noqa: FBT003
+
+    @GlobalTaskGroup.start_soon
+    async def _() -> None:
+        nonlocal called
+        called = True
+
+    await anyio.lowlevel.checkpoint()
+    assert called
+
+    called = cast(bool, False)  # noqa: FBT003
+
+    async def callback() -> None:
+        nonlocal called
+        called = True
+
+    GlobalTaskGroup.call_later(0, callback)
+    await anyio.lowlevel.checkpoint()
+    await anyio.lowlevel.checkpoint()
+    assert called
+

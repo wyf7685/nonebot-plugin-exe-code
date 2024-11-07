@@ -1,10 +1,11 @@
 import contextlib
 import inspect
-from asyncio import Future, Queue, Task, get_event_loop
 from collections.abc import AsyncGenerator
 from copy import deepcopy
 from typing import Any, ClassVar, Self, cast
 
+import anyio
+import anyio.abc
 import nonebot
 from nonebot.adapters import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
@@ -42,15 +43,15 @@ class Context:
     uin: str
     ctx: T_Context
     locked: bool
-    waitlist: Queue[Future[None]]
-    task: Task[Any] | None
+    waitlist: list[anyio.Event]
+    cancel_scope: anyio.CancelScope | None
 
     def __init__(self, uin: str) -> None:
         self.uin = uin
         self.ctx = deepcopy(default_context)
         self.locked = False
-        self.waitlist = Queue()
-        self.task = None
+        self.waitlist = []
+        self.cancel_scope = None
 
     @classmethod
     def _session2uin(cls, session: Session | Event | str) -> str:
@@ -84,22 +85,18 @@ class Context:
 
     @contextlib.asynccontextmanager
     async def lock(self) -> AsyncGenerator[None, None]:
-        fut: Future[None]
-
         if self.locked:
-            fut = get_event_loop().create_future()
-            await self.waitlist.put(fut)
-            await fut
+            evt = anyio.Event()
+            self.waitlist.append(evt)
+            await evt.wait()
         self.locked = True
 
         try:
             yield
         finally:
-            if not self.waitlist.empty():
-                fut = await self.waitlist.get()
-                fut.set_result(None)
+            if self.waitlist:
+                self.waitlist.pop(0).set()
             self.locked = False
-            self.task = None
 
     def _solve_code(self, raw_code: str, api: API) -> T_Executor:
         assert self.locked, "`Context._solve_code` called without lock"
@@ -145,8 +142,10 @@ class Context:
             escaped = escape_tag(repr(executor))
             logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
 
-            self.task = get_event_loop().create_task(executor())
-            result, self.task = await self.task, None
+            self.cancel_scope = anyio.CancelScope()
+            with self.cancel_scope:
+                result = await executor()
+            self.cancel_scope = None
 
             if buf := Buffer.get(uin).read().rstrip("\n"):
                 logger.debug(f"用户 {colored_uin} 清空缓冲:")
@@ -163,9 +162,10 @@ class Context:
             raise cast(Exception, exc)
 
     def cancel(self) -> bool:
-        if self.task is None:
+        if self.cancel_scope is None:
             return False
-        return self.task.cancel()
+        self.cancel_scope.cancel()
+        return True
 
     def set_value(self, varname: str, value: Any) -> None:
         if value is not None:
