@@ -1,7 +1,7 @@
-import asyncio
 from collections.abc import Callable
 from typing import Any, ClassVar, Self, override
 
+import anyio
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage, reply_fetch
 from nonebot_plugin_session import Session, SessionIdType
@@ -276,7 +276,7 @@ class API[B: Bot, E: Event](Interface):
     @debug_log
     @strict
     async def sleep(self, seconds: int | float) -> None:  # noqa: PYI041
-        await asyncio.sleep(seconds)
+        await anyio.sleep(seconds)
 
     @descript(
         description="重置环境",

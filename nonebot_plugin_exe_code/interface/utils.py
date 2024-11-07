@@ -1,7 +1,8 @@
-import asyncio
 from collections.abc import Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 
+import anyio
+import anyio.abc
 import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Segment, Target, UniMessage
@@ -131,6 +132,30 @@ async def as_msg(message: Any) -> Message:
     return message
 
 
+class GlobalTaskGroup:
+    task_group: anyio.abc.TaskGroup
+
+    @nonebot.get_driver().on_startup
+    async def on_startup() -> None:
+        GlobalTaskGroup.task_group = anyio.create_task_group()
+        await GlobalTaskGroup.task_group.__aenter__()
+
+    @nonebot.get_driver().on_shutdown
+    async def on_shutdown() -> None:
+        await GlobalTaskGroup.task_group.__aexit__(None, None, None)
+
+    @classmethod
+    def call_later(cls, delay: float, callback: Callable[..., Any], *args: Any) -> None:
+        @cls.task_group.start_soon
+        async def _() -> None:
+            await anyio.sleep(delay)
+            await callback(*args)
+
+    @classmethod
+    def start_soon(cls, callback: Callable[..., Any], *args: Any) -> None:
+        cls.task_group.start_soon(callback, *args)
+
+
 class ReachLimit(Exception):  # noqa: N818
     limit: int = 6
 
@@ -153,7 +178,7 @@ def _send_message():  # noqa: ANN202
         key = id(session)
         if key not in call_cnt:
             call_cnt[key] = 1
-            asyncio.get_event_loop().call_later(60, clean_cnt, key)
+            GlobalTaskGroup.call_later(60, clean_cnt, key)
         elif call_cnt[key] >= ReachLimit.limit or call_cnt[key] < 0:
             call_cnt[key] = -1
             raise ReachLimit("消息发送触发次数限制")
