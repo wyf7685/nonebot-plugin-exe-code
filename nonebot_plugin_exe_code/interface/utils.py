@@ -1,5 +1,5 @@
-from collections.abc import Callable, Generator
-from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
+from collections.abc import Awaitable, Callable, Generator
+from typing import TYPE_CHECKING, Any, ClassVar, ParamSpec, Self, cast
 
 import anyio
 import anyio.abc
@@ -13,6 +13,8 @@ from .decorators import INTERFACE_EXPORT_METHOD, INTERFACE_METHOD_DESCRIPTION, s
 
 if TYPE_CHECKING:
     from .help_doc import MethodDescription
+
+P = ParamSpec("P")
 
 
 def is_export_method(call: Callable[..., Any]) -> bool:
@@ -135,25 +137,41 @@ async def as_msg(message: Any) -> Message:
 class GlobalTaskGroup:
     task_group: anyio.abc.TaskGroup
 
+    @staticmethod
     @nonebot.get_driver().on_startup
     async def on_startup() -> None:
         GlobalTaskGroup.task_group = anyio.create_task_group()
         await GlobalTaskGroup.task_group.__aenter__()
 
+    @staticmethod
     @nonebot.get_driver().on_shutdown
     async def on_shutdown() -> None:
+        GlobalTaskGroup.task_group.cancel_scope.cancel()
         await GlobalTaskGroup.task_group.__aexit__(None, None, None)
 
     @classmethod
-    def call_later(cls, delay: float, callback: Callable[..., Any], *args: Any) -> None:
+    def call_later(
+        cls,
+        delay: float,
+        callback: Callable[P, Awaitable[Any]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> None:
         @cls.task_group.start_soon
         async def _() -> None:
             await anyio.sleep(delay)
-            await callback(*args)
+            await callback(*args, **kwargs)
 
     @classmethod
-    def start_soon(cls, callback: Callable[..., Any], *args: Any) -> None:
-        cls.task_group.start_soon(callback, *args)
+    def start_soon(
+        cls,
+        callback: Callable[P, Any],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> None:
+        @cls.task_group.start_soon
+        async def _() -> None:
+            await callback(*args, **kwargs)
 
 
 class ReachLimit(Exception):  # noqa: N818
@@ -166,7 +184,7 @@ class ReachLimit(Exception):  # noqa: N818
 def _send_message():  # noqa: ANN202
     call_cnt: dict[int, int] = {}
 
-    def clean_cnt(key: int) -> None:  # pragma: no cover
+    async def clean_cnt(key: int) -> None:  # pragma: no cover
         if key in call_cnt:
             del call_cnt[key]
 
