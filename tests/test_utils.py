@@ -101,4 +101,3 @@ async def test_global_task_group() -> None:
     await anyio.lowlevel.checkpoint()
     await anyio.lowlevel.checkpoint()
     assert called
-
