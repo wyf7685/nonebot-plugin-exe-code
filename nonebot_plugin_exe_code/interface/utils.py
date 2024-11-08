@@ -88,33 +88,33 @@ class Result:
 
 
 async def as_unimsg(message: Any) -> UniMessage[Any]:
-    if not is_message_t(message):
-        message = str(message)
-    if isinstance(message, MessageSegment):
-        message = cast(type[Message], message.get_message_class())(message)
-    if isinstance(message, str):
-        message = UniMessage.text(message)
-    if isinstance(message, Segment):
-        message = UniMessage(message)
-    elif isinstance(message, Message):
-        message = await UniMessage.generate(message=message)
-
-    return message
+    msg = message
+    if not is_message_t(msg):
+        msg = str(msg)
+    if isinstance(msg, MessageSegment):
+        msg = cast(type[Message], msg.get_message_class())(msg)
+    if isinstance(msg, str):
+        msg = UniMessage.text(msg)
+    elif isinstance(msg, Segment):
+        msg = UniMessage(msg)
+    elif isinstance(msg, Message):
+        msg = await UniMessage.generate(message=msg)
+    return msg
 
 
 def as_unimsg_sync(message: Any) -> UniMessage[Any]:
-    if not is_message_t(message):
-        message = str(message)
-    if isinstance(message, MessageSegment):
-        message = cast(type[Message], message.get_message_class())(message)
-    if isinstance(message, str):
-        message = UniMessage.text(message)
-    if isinstance(message, Segment):
-        message = UniMessage(message)
-    elif isinstance(message, Message):
-        message = UniMessage.generate_sync(message=message)
-
-    return message
+    msg = message
+    if not is_message_t(msg):
+        msg = str(msg)
+    if isinstance(msg, MessageSegment):
+        msg = cast(type[Message], msg.get_message_class())(msg)
+    if isinstance(msg, str):
+        msg = UniMessage.text(msg)
+    elif isinstance(msg, Segment):
+        msg = UniMessage(msg)
+    elif isinstance(msg, Message):
+        msg = UniMessage.generate_sync(message=msg)
+    return msg
 
 
 async def as_msg(message: Any) -> Message:
