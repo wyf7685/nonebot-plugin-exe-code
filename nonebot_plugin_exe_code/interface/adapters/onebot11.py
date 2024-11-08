@@ -157,7 +157,7 @@ with contextlib.suppress(ImportError):
                 on_message(rule, handlers=[handle_ob], temp=True, expire_time=expire),
             }
 
-            def cleanup() -> None:  # pragma: no cover
+            async def cleanup() -> None:  # pragma: no cover
                 nonlocal result
 
                 for matcher in matchers:
