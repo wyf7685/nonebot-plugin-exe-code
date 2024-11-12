@@ -1,5 +1,5 @@
 from collections.abc import Awaitable, Callable, Generator
-from typing import TYPE_CHECKING, Any, ClassVar, ParamSpec, Self, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 
 import anyio
 import anyio.abc
@@ -154,11 +154,18 @@ class GlobalTaskGroup:
         callback: Callable[P, Awaitable[Any]],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> None:
+    ) -> Callable[[], None]:
+        scope: anyio.CancelScope | None = None
+
         @cls.task_group.start_soon
         async def _() -> None:
-            await anyio.sleep(delay)
-            await callback(*args, **kwargs)
+            nonlocal scope
+
+            with anyio.CancelScope() as scope:
+                await anyio.sleep(delay)
+                await callback(*args, **kwargs)
+
+        return lambda: scope and scope.cancel()
 
     @classmethod
     def start_soon[**P](
@@ -166,10 +173,8 @@ class GlobalTaskGroup:
         callback: Callable[P, Any],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> None:
-        @cls.task_group.start_soon
-        async def _() -> None:
-            await callback(*args, **kwargs)
+    ) -> Callable[[], None]:
+        return cls.call_later(0, callback, *args, **kwargs)
 
 
 class ReachLimit(Exception):  # noqa: N818
@@ -182,7 +187,7 @@ class ReachLimit(Exception):  # noqa: N818
 def _send_message():  # noqa: ANN202
     call_cnt: dict[int, int] = {}
 
-    async def clean_cnt(key: int) -> None:  # pragma: no cover
+    async def clean(key: int) -> None:  # pragma: no cover
         if key in call_cnt:
             del call_cnt[key]
 
@@ -194,12 +199,12 @@ def _send_message():  # noqa: ANN202
         key = id(session)
         if key not in call_cnt:
             call_cnt[key] = 1
-            GlobalTaskGroup.call_later(60, clean_cnt, key)
-        elif call_cnt[key] >= ReachLimit.limit or call_cnt[key] < 0:
+            GlobalTaskGroup.call_later(60, clean, key)
+        elif 0 <= call_cnt[key] < ReachLimit.limit:
+            call_cnt[key] += 1
+        else:
             call_cnt[key] = -1
             raise ReachLimit("消息发送触发次数限制")
-        else:
-            call_cnt[key] += 1
 
         msg = await as_unimsg(message)
         return await msg.send(target)

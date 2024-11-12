@@ -81,23 +81,21 @@ def test_user_str() -> None:
 async def test_global_task_group() -> None:
     from nonebot_plugin_exe_code.interface.utils import GlobalTaskGroup
 
-    called = cast(bool, False)  # noqa: FBT003
-
-    @GlobalTaskGroup.start_soon
-    async def _() -> None:
-        nonlocal called
-        called = True
-
-    await anyio.lowlevel.checkpoint()
-    assert called
-
-    called = cast(bool, False)  # noqa: FBT003
+    called: bool
 
     async def callback() -> None:
         nonlocal called
         called = True
 
-    GlobalTaskGroup.call_later(0, callback)
+    called = cast(bool, False)  # noqa: FBT003
+    GlobalTaskGroup.start_soon(callback)
     await anyio.lowlevel.checkpoint()
     await anyio.lowlevel.checkpoint()
     assert called
+
+    called = cast(bool, False)  # noqa: FBT003
+    cancel = GlobalTaskGroup.call_later(0, callback)
+    await anyio.lowlevel.checkpoint()
+    cancel()
+    await anyio.lowlevel.checkpoint()
+    assert not called
