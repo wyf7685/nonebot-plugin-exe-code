@@ -14,8 +14,6 @@ from .decorators import INTERFACE_EXPORT_METHOD, INTERFACE_METHOD_DESCRIPTION, s
 if TYPE_CHECKING:
     from .help_doc import MethodDescription
 
-P = ParamSpec("P")
-
 
 def is_export_method(call: Callable[..., Any]) -> bool:
     """判断一个方法是否为导出函数
@@ -150,7 +148,7 @@ class GlobalTaskGroup:
         await GlobalTaskGroup.task_group.__aexit__(None, None, None)
 
     @classmethod
-    def call_later(
+    def call_later[**P](
         cls,
         delay: float,
         callback: Callable[P, Awaitable[Any]],
@@ -163,7 +161,7 @@ class GlobalTaskGroup:
             await callback(*args, **kwargs)
 
     @classmethod
-    def start_soon(
+    def start_soon[**P](
         cls,
         callback: Callable[P, Any],
         *args: P.args,
