@@ -59,6 +59,8 @@ src_paths = ["nonebot_plugin_exe_code", "tests"]
 [tool.ruff]
 line-length = 88
 target-version = "py312"
+
+[tool.ruff.lint]
 select = [
   "F",     # Pyflakes
   "W",     # pycodestyle warnings

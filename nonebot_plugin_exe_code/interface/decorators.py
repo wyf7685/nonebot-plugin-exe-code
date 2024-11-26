@@ -235,7 +235,7 @@ class Overload[T, **P, R]:
         if _set_name := getattr(self.__origin, "__set_name__", None):
             _set_name(owner, name)
 
-    def __find_overload(self, args: T_Args, kwargs: T_Kwargs) -> Any:
+    def __find_overload(self, args: T_Args, kwargs: T_Kwargs) -> Callable[..., Any]:
         for call in self.__overloads:
             with contextlib.suppress(TypeError):
                 _check_args(call, args, kwargs)
@@ -263,19 +263,19 @@ class Overload[T, **P, R]:
             self.__overloads = get_overloads(call)
             assert self.__overloads, "应提供至少一个函数重载"
 
-        bound = obj if obj is not None else objtype
-
         if is_coroutine_callable(call):
 
             async def wrapper_async(*args: Any, **kwargs: Any) -> Any:
-                args = (bound, *args)
+                if obj is not None:
+                    args = (obj, *args)
                 return await self.__find_overload(args, kwargs)(*args, **kwargs)
 
             wrapper = cast(Callable[..., Any], wrapper_async)
         else:
 
             def wrapper(*args: Any, **kwargs: Any) -> Any:
-                args = (bound, *args)
+                if obj is not None:
+                    args = (obj, *args)
                 return self.__find_overload(args, kwargs)(*args, **kwargs)
 
         return functools.update_wrapper(wrapper, call, assigned=WRAPPER_ASSIGNMENTS)
