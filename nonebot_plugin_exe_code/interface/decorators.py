@@ -286,5 +286,5 @@ class Overload[T, **P, R]:
     def __delete__(self, obj: T) -> NoReturn:
         raise AttributeError(f"attribute {self.__name!r} of {obj!r} cannot be deleted")
 
-    def __getattr__(self, __name: str) -> Any:
-        return getattr(self.__origin, __name)
+    def __getattr__(self, name: str, /) -> Any:
+        return getattr(self.__origin, name)

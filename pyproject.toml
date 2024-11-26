@@ -59,8 +59,6 @@ src_paths = ["nonebot_plugin_exe_code", "tests"]
 [tool.ruff]
 line-length = 88
 target-version = "py312"
-
-[tool.ruff.lint]
 select = [
   "F",     # Pyflakes
   "W",     # pycodestyle warnings
@@ -103,7 +101,6 @@ select = [
   "TID",   # flake8-tidy-imports
   "ARG",   # flake8-unused-arguments
   "PTH",   # flake8-use-pathlib
-  "TCH",   # flake8-type-checking
   "YTT",   # flake8-2020
 ]
 ignore = [
@@ -112,8 +109,6 @@ ignore = [
   "RUF001", # ambiguous-unicode-character-string
   "RUF002", # ambiguous-unicode-character-docstring
   "RUF003", # ambiguous-unicode-character-comment
-  "ANN101", # missing-type-self
-  "ANN102", # missing-type-cls
   "TRY003", # raise-vanilla-args
   "EM102",  # f-string-in-exception
   "COM812", # missing-trailing-comma
