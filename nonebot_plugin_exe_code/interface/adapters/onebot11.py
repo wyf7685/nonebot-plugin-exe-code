@@ -642,6 +642,7 @@ with contextlib.suppress(ImportError):
             ),
         )
         @export
+        @debug_log
         @strict
         async def send_md(
             self,
@@ -676,3 +677,27 @@ with contextlib.suppress(ImportError):
             res = await send("forward", {"id": m.group(1)})
             if res.error:
                 raise APICallFailed("Markdown 消息发送失败") from res.error
+
+        @descript(
+            description="群聊戳一戳",
+            parameters=dict(
+                uid="被戳用户ID",
+                gid="所在群号, 默认为当前群聊",
+            ),
+        )
+        @export
+        @debug_log
+        @strict
+        async def group_poke(
+            self,
+            uid: str | int,
+            gid: str | int | None = None,
+        ) -> None:
+            if (gid := gid or self.gid) is None:
+                raise ParamMissing("未指定群号")
+
+            await self.call_api(
+                "group_poke",
+                group_id=int(gid),
+                user_id=int(uid),
+            )
