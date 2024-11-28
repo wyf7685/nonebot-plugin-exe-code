@@ -1,3 +1,4 @@
+import ast
 import inspect
 from copy import deepcopy
 from typing import Any, ClassVar, Self, cast
@@ -17,12 +18,11 @@ from .typings import T_Context, T_Executor
 
 logger = nonebot.logger.opt(colors=True)
 
-EXECUTOR_INDENT = " " * 8
 EXECUTOR_FUNCTION = """\
 last_exc, __exception__ = __exception__,  (None, None)
 async def __executor__():
     try:
-        {CODE}
+        ...
     except BaseException as e:
         global __exception__
         __exception__ = (e, __import__("traceback").format_exc())
@@ -82,12 +82,12 @@ class Context:
     def _solve_code(self, raw_code: str, api: API) -> T_Executor:
         assert self.lock.locked(), "`Context._solve_code` called without lock"
 
-        # 预处理代码
-        lines: list[str] = [
-            f"global {', '.join(self.ctx.keys())}",
-            *raw_code.split("\n"),
+        parsed = ast.parse(EXECUTOR_FUNCTION, mode="exec")
+        cast(ast.Try, cast(ast.AsyncFunctionDef, parsed.body[1]).body[0]).body[:] = [
+            ast.Global(names=list(self.ctx)),
+            *ast.parse(raw_code, mode="exec").body,
         ]
-        solved = EXECUTOR_FUNCTION.replace("{CODE}", f"\n{EXECUTOR_INDENT}".join(lines))
+        solved = ast.unparse(parsed)
         code = compile(solved, f"<executor_{self.uin}>", "exec")
 
         # 包装为异步函数
