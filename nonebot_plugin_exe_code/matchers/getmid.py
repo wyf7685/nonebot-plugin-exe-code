@@ -20,7 +20,7 @@ async def handle_getmid(
     reply: EventReply,
     reply_msg: EventReplyMessage,
 ) -> NoReturn:
-    async with ctx.lock():
+    async with ctx.lock:
         ctx.set_gem(reply_msg)
         ctx.set_gurl(await UniMessage.generate(message=reply_msg))
     await UniMessage.text(reply.id).finish()

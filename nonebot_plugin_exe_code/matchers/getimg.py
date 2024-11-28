@@ -32,7 +32,7 @@ async def handle_getimg(
     if not isinstance(img_bytes, bytes):
         await UniMessage(f"获取图片数据类型错误: {type(img_bytes)!r}").finish()
 
-    async with ctx.lock():
+    async with ctx.lock:
         ctx.set_gurl(image)
         ctx.set_value(varname, PIL.Image.open(BytesIO(img_bytes)))
     await UniMessage(f"图片已保存至变量 {varname}").finish()
