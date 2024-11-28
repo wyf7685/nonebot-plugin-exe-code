@@ -703,3 +703,35 @@ async def test_ob11_set_reaction(app: App) -> None:
             pytest.raises(APICallFailed, match="unkown platform"),
         ):
             await Context.execute(bot, event, code_test_ob11_set_reaction_1)
+
+
+@pytest.mark.asyncio
+async def test_ob11_group_poke(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+    from nonebot_plugin_exe_code.exception import ParamMissing
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+
+        event, _ = fake_v11_event_session(bot, group_id=fake_group_id())
+        ctx.should_call_api(
+            "group_poke",
+            {"group_id": event.group_id, "user_id": event.user_id},
+        )
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, "await api.group_poke(uid)")
+
+        event, _ = fake_v11_event_session(bot)
+        with (
+            ensure_context(bot, event),
+            pytest.raises(ParamMissing, match="未指定群号"),
+        ):
+            await Context.execute(bot, event, "await api.group_poke(uid)")
+
+        event, _ = fake_v11_event_session(bot, group_id=fake_group_id())
+        ctx.should_call_api(
+            "group_poke",
+            {"group_id": event.group_id, "user_id": event.user_id},
+        )
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, "await api.group_poke(uid, gid)")
