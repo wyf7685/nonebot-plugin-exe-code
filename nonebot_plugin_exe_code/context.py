@@ -1,6 +1,4 @@
-import contextlib
 import inspect
-from collections.abc import AsyncGenerator
 from copy import deepcopy
 from typing import Any, ClassVar, Self, cast
 
@@ -42,15 +40,13 @@ class Context:
 
     uin: str
     ctx: T_Context
-    locked: bool
-    waitlist: list[anyio.Event]
+    lock: anyio.Lock
     cancel_scope: anyio.CancelScope | None
 
     def __init__(self, uin: str) -> None:
         self.uin = uin
         self.ctx = deepcopy(default_context)
-        self.locked = False
-        self.waitlist = []
+        self.lock = anyio.Lock()
         self.cancel_scope = None
 
     @classmethod
@@ -83,23 +79,8 @@ class Context:
 
         return cls.__contexts[uin]
 
-    @contextlib.asynccontextmanager
-    async def lock(self) -> AsyncGenerator[None, None]:
-        if self.locked:
-            evt = anyio.Event()
-            self.waitlist.append(evt)
-            await evt.wait()
-        self.locked = True
-
-        try:
-            yield
-        finally:
-            if self.waitlist:
-                self.waitlist.pop(0).set()
-            self.locked = False
-
     def _solve_code(self, raw_code: str, api: API) -> T_Executor:
-        assert self.locked, "`Context._solve_code` called without lock"
+        assert self.lock.locked(), "`Context._solve_code` called without lock"
 
         # 预处理代码
         lines: list[str] = [
@@ -137,7 +118,7 @@ class Context:
         colored_uin = f"<y>{escape_tag(uin)}</y>"
 
         # 执行代码时加锁，避免出现多段代码分别读写变量
-        async with self.lock(), api_class(bot, event, session, self.ctx) as api:
+        async with self.lock, api_class(bot, event, session, self.ctx) as api:
             executor = self._solve_code(code, api)
             escaped = escape_tag(repr(executor))
             logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
