@@ -172,7 +172,6 @@ class API[B: Bot, E: Event](Interface):
     )
     @export
     @debug_log
-    @strict
     async def feedback(self, msg: Any) -> Receipt:
         if not is_message_t(msg):
             msg = str(msg)
