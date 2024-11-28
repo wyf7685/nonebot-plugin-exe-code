@@ -19,7 +19,7 @@ from .typings import T_Context, T_Executor
 logger = nonebot.logger.opt(colors=True)
 
 EXECUTOR_FUNCTION = """\
-last_exc, __exception__ = __exception__,  (None, None)
+last_exc, __exception__ = __exception__, (None, None)
 async def __executor__():
     try:
         ...
@@ -83,7 +83,8 @@ class Context:
         assert self.lock.locked(), "`Context._solve_code` called without lock"
 
         parsed = ast.parse(EXECUTOR_FUNCTION, mode="exec")
-        cast(ast.Try, cast(ast.AsyncFunctionDef, parsed.body[1]).body[0]).body[:] = [
+        func_def = cast(ast.AsyncFunctionDef, parsed.body[1])
+        cast(ast.Try, func_def.body[0]).body[:] = [
             ast.Global(names=list(self.ctx)),
             *ast.parse(raw_code, mode="exec").body,
         ]
@@ -92,7 +93,7 @@ class Context:
 
         # 包装为异步函数
         exec(code, self.ctx, self.ctx)  # noqa: S102
-        executor = self.ctx.pop("__executor__")
+        executor = self.ctx.pop(func_def.name)
 
         if inspect.isasyncgenfunction(executor):
             _executor = executor
