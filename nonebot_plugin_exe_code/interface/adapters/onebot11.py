@@ -400,10 +400,9 @@ with contextlib.suppress(ImportError):
             gid: str | int | None = None,
         ) -> Result:
             if message_id is None:
+                message_id = self.event.message_id
                 if self.event.reply is not None:
                     message_id = self.event.reply.message_id
-                else:
-                    message_id = self.event.message_id
 
             platform = (await self.get_platform()).lower()
             if "napcat" in platform or "llonebot" in platform:

@@ -4,7 +4,8 @@ from typing import override
 from nonebot.adapters import Event
 from nonebot.exception import ActionFailed
 
-from ...exception import APICallFailed, ParamMismatch
+from ...exception import APICallFailed as BaseAPICallFailed
+from ...exception import ParamMismatch
 from ..api import API as BaseAPI
 from ..api import register_api
 from ..decorators import debug_log, strict
@@ -13,7 +14,10 @@ from ..help_doc import descript
 with contextlib.suppress(ImportError):
     from nonebot.adapters.telegram import Adapter, Bot
     from nonebot.adapters.telegram.event import MessageEvent
+    from nonebot.adapters.telegram.exception import ActionFailed
     from nonebot.adapters.telegram.model import ReactionTypeEmoji
+
+    class APICallFailed(BaseAPICallFailed, ActionFailed): ...
 
     @register_api(Adapter)
     class API(BaseAPI[Bot, MessageEvent]):

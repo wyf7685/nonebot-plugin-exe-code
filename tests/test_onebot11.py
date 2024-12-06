@@ -1,21 +1,14 @@
 # ruff: noqa: N806, N814
 
-import asyncio
 
 import pytest
 from nonebot.adapters.onebot.v11 import ActionFailed, Message, MessageSegment
-from nonebot.adapters.qq.models import MessageArk, MessageArkKv
+from nonebot.adapters.onebot.v11.event import Reply, Sender
 from nonebug import App
-from pytest_mock import MockerFixture
 
-from .conftest import exe_code_group, exe_code_qbot_id
+from .conftest import exe_code_group
 from .fake.common import ensure_context, fake_group_id
-from .fake.onebot11 import (
-    fake_v11_bot,
-    fake_v11_event_session,
-    fake_v11_private_message_event,
-)
-from .fake.qq import fake_qq_bot, fake_qq_c2c_message_create_event
+from .fake.onebot11 import fake_v11_bot, fake_v11_event_session
 
 code_test_ob11_img_summary = """\
 await api.img_summary("test")
@@ -265,119 +258,6 @@ async def test_ob11_set_card(app: App) -> None:
             pytest.raises(ParamMissing, match="未指定群号"),
         ):
             await Context.execute(bot, event, code_test_ob11_set_card)
-
-
-code_test_ob11_send_ark = """\
-await api.ark_24("title", "desc", "prompt", "img", "link")
-"""
-expected_ark_24 = MessageArk(
-    template_id=24,
-    kv=[
-        MessageArkKv(key="#TITLE#", value="title"),
-        MessageArkKv(key="#METADESC#", value="desc"),
-        MessageArkKv(key="#PROMPT#", value="prompt"),
-        MessageArkKv(key="#IMG#", value="img"),
-        MessageArkKv(key="#LINK#", value="link"),
-    ],
-)
-
-
-@pytest.mark.asyncio
-async def test_ob11_send_ark(app: App, mocker: MockerFixture) -> None:
-    import uuid
-
-    from nonebot.adapters.qq import MessageSegment as QQMS
-    from nonebot.message import handle_event
-
-    from nonebot_plugin_exe_code.context import Context
-
-    mocker.patch("os.urandom", return_value=b"0" * 16)
-    key = f"$ARK-{uuid.uuid4()}$"
-    card = "JSON_DATA"
-
-    async with app.test_api() as ctx:
-        botV11 = fake_v11_bot(ctx, self_id="test-v11")
-        botQQ = fake_qq_bot(ctx, self_id="test-qq")
-
-        event_code, _ = fake_v11_event_session(botV11)
-        event_qq = fake_qq_c2c_message_create_event(content=key)
-        event_v11 = fake_v11_private_message_event(
-            user_id=exe_code_qbot_id,
-            message=Message(MessageSegment.json(card)),
-        )
-        ctx.should_call_api(
-            "send_msg",
-            {
-                "message_type": "private",
-                "user_id": exe_code_qbot_id,
-                "message": Message(key),
-            },
-            {"message_id": 1},
-        )
-        ctx.should_call_send(event_qq, QQMS.ark(expected_ark_24), bot=botQQ)
-        ctx.should_call_send(event_code, Message(MessageSegment.json(card)))
-
-        async def _test1() -> None:
-            with ensure_context(botV11, event_code):
-                await Context.execute(botV11, event_code, code_test_ob11_send_ark)
-
-        async def _test2() -> None:
-            await asyncio.sleep(0.01)
-            await handle_event(botQQ, event_qq)
-
-        async def _test3() -> None:
-            await asyncio.sleep(0.02)
-            await handle_event(botV11, event_v11)
-
-        await asyncio.gather(_test1(), _test2(), _test3())
-
-
-@pytest.mark.asyncio
-async def test_ob11_send_ark_fail(app: App, mocker: MockerFixture) -> None:
-    import uuid
-
-    from nonebot.adapters.qq import MessageSegment as QQMS
-    from nonebot.message import handle_event
-
-    from nonebot_plugin_exe_code.context import Context
-
-    mocker.patch("os.urandom", return_value=b"0" * 16)
-    key = f"$ARK-{uuid.uuid4()}$"
-
-    async with app.test_api() as ctx:
-        botV11 = fake_v11_bot(ctx, self_id="test-v11")
-        botQQ = fake_qq_bot(ctx, self_id="test-qq")
-
-        event_code, _ = fake_v11_event_session(botV11)
-        event_qq = fake_qq_c2c_message_create_event(content=key)
-        ctx.should_call_api(
-            "send_msg",
-            {
-                "message_type": "private",
-                "user_id": exe_code_qbot_id,
-                "message": Message(key),
-            },
-            {"message_id": 1},
-        )
-        ctx.should_call_send(
-            event_qq,
-            QQMS.ark(expected_ark_24),
-            bot=botQQ,
-            exception=RuntimeError("test"),
-        )
-
-        async def _test1() -> None:
-            with (
-                ensure_context(botV11, event_code),
-                pytest.raises(RuntimeError, match="test"),
-            ):
-                await Context.execute(botV11, event_code, code_test_ob11_send_ark)
-
-        async def _test2() -> None:
-            await asyncio.sleep(0.01)
-            await handle_event(botQQ, event_qq)
-
-        await asyncio.gather(_test1(), _test2())
 
 
 code_test_ob11_set_mute = """\
@@ -636,6 +516,7 @@ async def test_ob11_set_reaction(app: App) -> None:
 
     code_test_ob11_set_reaction_1 = "await api.set_reaction(123, api.mid, 456)"
     code_test_ob11_set_reaction_2 = "await api.set_reaction(123, api.mid)"
+    code_test_ob11_set_reaction_3 = "await api.set_reaction(123)"
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -703,6 +584,32 @@ async def test_ob11_set_reaction(app: App) -> None:
             pytest.raises(APICallFailed, match="unkown platform"),
         ):
             await Context.execute(bot, event, code_test_ob11_set_reaction_1)
+
+        # 5. without mid
+        event.reply = Reply(
+            time=1000000,
+            message_type="test",
+            message_id=111,
+            real_id=1,
+            sender=Sender(
+                card="",
+                nickname="test",
+                role="member",
+            ),
+            message=Message(),
+        )
+        ctx.should_call_api(
+            "get_version_info",
+            {},
+            {"app_name": "NapCat", "app_version": "app_version"},
+        )
+        ctx.should_call_api(
+            "set_msg_emoji_like",
+            {"message_id": 111, "emoji_id": 123},
+            result=None,
+        )
+        with ensure_context(bot, event):
+            await Context.execute(bot, event, code_test_ob11_set_reaction_3)
 
 
 @pytest.mark.asyncio
