@@ -1,17 +1,13 @@
 import contextlib
 import functools
 import re
-import uuid
 from base64 import b64encode
 from collections.abc import Callable
-from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, cast, overload, override
 
-import anyio
 import nonebot
-from nonebot import on_fullmatch, on_message
 from nonebot.adapters import Event
 from nonebot.utils import escape_tag
 
@@ -24,8 +20,7 @@ from ..decorators import Overload, debug_log, export, strict
 from ..group import Group as BaseGroup
 from ..help_doc import descript
 from ..user import User as BaseUser
-from ..utils import GlobalTaskGroup, Result, as_msg
-from ._send_ark import SendArk
+from ..utils import Result, as_msg
 
 if TYPE_CHECKING:
 
@@ -84,98 +79,11 @@ with contextlib.suppress(ImportError):
         Message,
         MessageEvent,
         MessageSegment,
-        PrivateMessageEvent,
     )
 
     class APICallFailed(BaseAPICallFailed, ActionFailed): ...
 
     logger = nonebot.logger.opt(colors=True)
-
-    async def create_ark_card(api: "API", ark: "MessageArk") -> MessageSegment:
-        raise NotImplementedError
-
-    with contextlib.suppress(ImportError, RuntimeError):
-        from nonebot import get_plugin_config
-        from nonebot.adapters.qq import Bot as QQBot
-        from nonebot.adapters.qq import C2CMessageCreateEvent
-        from nonebot.adapters.qq import MessageSegment as QQMS  # noqa: N814
-        from nonebot.adapters.qq.models import MessageArk
-        from pydantic import BaseModel
-
-        class Config(BaseModel):
-            class ExeCodeConfig(BaseModel):
-                qbot_id: int = 0
-                qbot_timeout: float = 30.0
-
-            exe_code: ExeCodeConfig = ExeCodeConfig()
-
-        _conf = get_plugin_config(Config).exe_code
-        if not _conf.qbot_id:  # pragma: no cover
-            logger.warning("官方机器人QQ账号未配置，ark卡片将不可用")
-            raise RuntimeError
-
-        async def create_ark_card(
-            api: "API",
-            ark: MessageArk,
-        ) -> MessageSegment:
-            evt = anyio.Event()
-            result = cast(str | Exception, RuntimeError())
-
-            key = f"$ARK-{uuid.uuid4()}$"
-            logger.debug(f"生成 ark key: {key}")
-
-            async def handle_qq(bot: QQBot, event: C2CMessageCreateEvent) -> None:
-                nonlocal result
-
-                logger.debug("QQ Adapter 收到 ark key")
-                try:
-                    await bot.send(event, QQMS.ark(ark))
-                    logger.debug("QQ Adapter 已发送 ark 消息成功")
-                except Exception as err:
-                    logger.debug(f"QQ Adapter 发送 ark 消息失败: {err!r}")
-                    if not evt.is_set():
-                        evt.set()
-                        result = err
-
-            def rule(event: PrivateMessageEvent) -> bool:
-                return event.user_id == _conf.qbot_id and len(event.message) == 1
-
-            async def handle_ob(event: PrivateMessageEvent) -> None:
-                nonlocal result
-
-                seg = event.message.include("json")[0]
-                logger.debug("OneBot V11 Adapter 收到 ark 卡片")
-                card_json: str = seg.data["data"]
-                if not evt.is_set():
-                    evt.set()
-                    result = card_json
-                    logger.debug(f"OneBot V11 Adapter 设置 future 结果: {card_json}")
-
-            expire = timedelta(seconds=_conf.qbot_timeout)
-            matchers = {
-                on_fullmatch(key, handlers=[handle_qq], temp=True, expire_time=expire),
-                on_message(rule, handlers=[handle_ob], temp=True, expire_time=expire),
-            }
-
-            async def cleanup() -> None:  # pragma: no cover
-                nonlocal result
-
-                for matcher in matchers:
-                    with contextlib.suppress(ValueError):
-                        matcher.destroy()
-
-                if not evt.is_set():
-                    evt.set()
-                    result = TimeoutError("卡片获取超时")
-
-            await api.send_prv(_conf.qbot_id, key)
-            GlobalTaskGroup.call_later(_conf.qbot_timeout, cleanup)
-            await evt.wait()
-            if isinstance(result, Exception):
-                raise result
-
-            logger.debug("API 调用结束, 获得 card_json")
-            return MessageSegment.json(result)
 
     class User(BaseUser["API"]):
         @descript(
@@ -198,7 +106,7 @@ with contextlib.suppress(ImportError):
             return await self.api.send_grp_fwd(self.uid, msgs)
 
     @register_api(Adapter)
-    class API(SendArk, BaseAPI[Bot, MessageEvent]):
+    class API(BaseAPI[Bot, MessageEvent]):
         __slots__ = ()
 
         @classmethod
@@ -608,11 +516,6 @@ with contextlib.suppress(ImportError):
                 await self.send_group_file(file, name, self.gid, timeout)
             else:
                 await self.send_private_file(file, name, self.uid, timeout)
-
-        @override
-        async def _send_ark(self, ark: "MessageArk") -> Any:
-            card = Message(await create_ark_card(self, ark))
-            return await self.native_send(card)
 
         @descript(
             description="获取用户对象",
