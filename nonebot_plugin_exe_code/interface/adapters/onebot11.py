@@ -479,7 +479,7 @@ with contextlib.suppress(ImportError):
             description="[NapCat/LLOneBot/Lagrange] 群聊消息回应",
             parameters=dict(
                 emoji_id="回应的表情ID",
-                message_id="需要回应的消息ID，可通过getmid获取",
+                message_id="需要回应的消息ID，可通过getmid获取，默认为当前回复消息/当前消息",
                 gid="[Lagrange] 指定群聊ID，默认为当前群聊",
             ),
         )
@@ -488,9 +488,15 @@ with contextlib.suppress(ImportError):
         async def set_reaction(
             self,
             emoji_id: str | int,
-            message_id: str | int,
+            message_id: str | int | None = None,
             gid: str | int | None = None,
         ) -> Result:
+            if message_id is None:
+                if self.event.reply is not None:
+                    message_id = self.event.reply.message_id
+                else:
+                    message_id = self.event.message_id
+
             platform = (await self.get_platform()).lower()
             if "napcat" in platform or "llonebot" in platform:
                 # NapCat/LLOneBot
