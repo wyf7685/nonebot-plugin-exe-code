@@ -13,9 +13,23 @@ on:
       - "uv.lock"
 
 jobs:
-  lint:
+  ruff:
+    name: Ruff Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Ruff Lint
+        uses: astral-sh/ruff-action@v2
+        with:
+          src: >-
+            nonebot_plugin_exe_code/
+            tests/
+
+  pyright:
     name: Pyright Lint
     runs-on: ubuntu-latest
+    needs: ruff
     concurrency:
       group: pyright-${{ github.ref }}
       cancel-in-progress: true
@@ -40,7 +54,7 @@ jobs:
   test:
     name: Test & Coverage
     runs-on: ubuntu-latest
-    needs: lint
+    needs: pyright
     concurrency:
       group: test-coverage-${{ github.ref }}-${{ matrix.python-version }}
       cancel-in-progress: true

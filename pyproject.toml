@@ -46,19 +46,6 @@ dev-dependencies = [
   "ipykernel>=6.29.5",
 ]
 
-[tool.black]
-line-length = 88
-target-version = ["py312"]
-include = '\.pyi?$'
-extend-exclude = '''
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 88
-skip_gitignore = true
-src_paths = ["nonebot_plugin_exe_code", "tests"]
-
 [tool.ruff]
 line-length = 88
 target-version = "py312"
@@ -125,6 +112,23 @@ ignore = [
   "S101",   # assert
   "ISC001", # single-line-implicit-string-concatenation
 ]
+
+[tool.ruff.format]
+line-ending = "lf"
+
+[tool.ruff.lint.flake8-builtins]
+builtins-ignorelist = ["id", "dir"]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.isort]
+known-first-party = ["nonebot_plugin_exe_code", "tests/*"]
+extra-standard-library = ["typing_extensions"]
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
 
 [tool.pyright]
 pythonVersion = "3.12"
