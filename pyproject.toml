@@ -9,7 +9,6 @@ dependencies = [
   "nonebot-plugin-localstore>=0.6.0",
   "nonebot-plugin-session>=0.3.2",
   "nonebot-plugin-waiter>=0.8.0",
-  "Pillow>=10.4.0",
   "tarina>=0.6.1",
   "anyio>=4.6.2.post1",
 ]
@@ -22,6 +21,10 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
+[project.optional-dependencies]
+pillow = ["Pillow"]
+
+
 [project.urls]
 homepage = "https://github.com/wyf7685/nonebot-plugin-exe-code"
 repository = "https://github.com/wyf7685/nonebot-plugin-exe-code"
@@ -32,12 +35,12 @@ dev-dependencies = [
   "nonebot2[fastapi,httpx,websockets]>=2.4.0",
   "nonebot-adapter-console>=0.6.0",
   "nonebot-adapter-onebot>=2.4.6",
-  "nonebot-adapter-qq>=1.5.3",
-  "nonebot-adapter-satori>=0.12.6",
-  "nonebot-adapter-telegram>=0.1.0b19",
+  "nonebot-adapter-qq>=1.6.0",
+  "nonebot-adapter-satori>=0.13.1",
+  "nonebot-adapter-telegram>=0.1.0b20",
   "nonebug>=0.4.2",
-  "pytest>=8.3.3",
-  "pytest-asyncio>=0.24.0",
+  "pytest>=8.3.4",
+  "pytest-asyncio>=0.25.0",
   "pytest-cov>=6.0.0",
   "pytest-mock>=3.14.0",
   "ipykernel>=6.29.5",
