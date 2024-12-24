@@ -1,6 +1,5 @@
 import pytest
 from nonebot.adapters.satori import Message
-from nonebot.adapters.satori.models import Login, LoginStatus
 from nonebug import App
 
 from .conftest import exe_code_group, exe_code_user, superuser
@@ -8,6 +7,7 @@ from .fake.common import ensure_context, fake_group_id, fake_user_id
 from .fake.satori import (
     fake_satori_bot,
     fake_satori_event_session,
+    fake_satori_login,
     fake_satori_private_message_created_event,
     fake_satori_public_message_created_event,
 )
@@ -162,11 +162,7 @@ async def test_satori_get_platform(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_satori_bot(ctx)
         event, _ = fake_satori_event_session(bot)
-        ctx.should_call_api(
-            "login_get",
-            {},
-            Login(sn="0", status=LoginStatus.ONLINE, adapter="satori"),
-        )
+        ctx.should_call_api("login_get", {}, fake_satori_login())
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
             await Context.execute(bot, event, code_test_satori_get_platform)

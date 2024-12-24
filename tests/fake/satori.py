@@ -30,12 +30,16 @@ if TYPE_CHECKING:
     from nonebot_plugin_session import Session
 
 
+def fake_satori_login() -> Login:
+    return Login(sn="0", status=LoginStatus.ONLINE, adapter="satori")
+
+
 def fake_satori_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> Bot:
     return fake_bot(
         ctx,
         Adapter,
         Bot,
-        login=Login(status=LoginStatus.ONLINE),
+        login=fake_satori_login(),
         info=ClientInfo(port=8080),
         **kwargs,
     )
