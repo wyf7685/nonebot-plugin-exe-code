@@ -15,6 +15,7 @@ from nonebot.adapters.satori.models import (
     Channel,
     ChannelType,
     Login,
+    LoginOnline,
     LoginStatus,
     Member,
     MessageObject,
@@ -31,7 +32,12 @@ if TYPE_CHECKING:
 
 
 def fake_satori_login() -> Login:
-    return Login(sn="0", status=LoginStatus.ONLINE, adapter="satori")
+    return Login(
+        sn="0",
+        status=LoginStatus.ONLINE,
+        adapter="satori",
+        platform="platform",
+    )
 
 
 def fake_satori_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> Bot:
@@ -60,6 +66,12 @@ def fake_satori_private_message_created_event(
         platform: str = "fake"
         self_id: str = "100"
         timestamp: datetime = datetime.now()  # noqa: DTZ005
+        login: LoginOnline = LoginOnline(
+            sn="0",
+            adapter="satori",
+            platform="platform",
+            user=User(id="100"),
+        )
         channel: Channel = Channel(id=f"private:{user_id}", type=ChannelType.TEXT)
         user: User = User(id=user_id)
         message: MessageObject = MessageObject(id="10000", content="")
@@ -84,6 +96,12 @@ def fake_satori_public_message_created_event(
         platform: str = "fake"
         self_id: str = "100"
         timestamp: datetime = datetime.now()  # noqa: DTZ005
+        login: LoginOnline = LoginOnline(
+            sn="0",
+            adapter="satori",
+            platform="platform",
+            user=User(id="100"),
+        )
         channel: Channel = Channel(id=channel_id, type=ChannelType.TEXT)
         user: User = User(id=user_id)
         member: Member = Member(user=User(id=user_id))
