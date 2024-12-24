@@ -165,7 +165,7 @@ async def test_satori_get_platform(app: App) -> None:
         ctx.should_call_api(
             "login_get",
             {},
-            Login(platform="platform", status=LoginStatus.ONLINE),
+            Login(sn="0", status=LoginStatus.ONLINE, adapter="satori"),
         )
         ctx.should_call_send(event, expected)
         with ensure_context(bot, event):
