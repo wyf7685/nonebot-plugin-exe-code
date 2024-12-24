@@ -41,6 +41,7 @@ def fake_satori_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> Bot:
         Bot,
         login=fake_satori_login(),
         info=ClientInfo(port=8080),
+        proxy_urls=[],
         **kwargs,
     )
 
