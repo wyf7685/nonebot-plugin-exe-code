@@ -117,7 +117,8 @@ ignore = [
 line-ending = "lf"
 
 [tool.ruff.lint.flake8-builtins]
-builtins-ignorelist = ["id", "dir", "code"]
+builtins-allowed-modules = ["code"]
+builtins-ignorelist = ["id", "dir"]
 
 [tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false
