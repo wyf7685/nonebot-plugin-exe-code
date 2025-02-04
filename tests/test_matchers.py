@@ -52,9 +52,9 @@ async def test_getraw(app: App) -> None:
     context = Context.get_context(session).ctx
     gem = context.get("gem")
     assert gem is not None, "Context variable `gem` not set"
-    assert (
-        gem == reply_msg
-    ), f"Context variable `gem` error: expect `{reply_msg}`, got `{gem}`"
+    assert gem == reply_msg, (
+        f"Context variable `gem` error: expect `{reply_msg}`, got `{gem}`"
+    )
 
     gurl = context.get("gurl")
     assert gurl is None, "Got unexpected variable `gurl`"
@@ -95,9 +95,9 @@ async def test_getmid(app: App) -> None:
     context = Context.get_context(session).ctx
     gem = context.get("gem")
     assert gem is not None, "Context variable `gem` not set"
-    assert (
-        gem == reply_msg
-    ), f"Context variable `gem` error: expect `{reply_msg}`, got `{gem}`"
+    assert gem == reply_msg, (
+        f"Context variable `gem` error: expect `{reply_msg}`, got `{gem}`"
+    )
 
     gurl = context.get("gurl")
     assert gurl is None, "Got unexpected variable `gurl`"

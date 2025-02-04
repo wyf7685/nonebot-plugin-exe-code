@@ -214,8 +214,7 @@ def strict[**P, R](call: AnyCallable[P, R]) -> AnyCallable[P, R]:
         if name not in {"cls", "self"} and param.annotation is signature.empty:
             # 参数 {name} 未添加类型注解
             raise TypeError(
-                f"Parameter {name!r} of "
-                f"strict callable {call.__name__!r} is not typed"
+                f"Parameter {name!r} of strict callable {call.__name__!r} is not typed"
             )
 
     def before(args: T_Args, kwargs: T_Kwargs) -> None:
