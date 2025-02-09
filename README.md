@@ -93,24 +93,11 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 在 nonebot2 项目的 `.env` 文件中添加下表中的配置
 
-|      配置项       | 必填 | 默认值 |         说明          |
-| :---------------: | :--: | :----: | :-------------------: |
-| `exe_code__user`  |  否  |   []   | 允许执行代码的用户 ID |
-| `exe_code__group` |  否  |   []   | 允许执行代码的群组 ID |
-
-<details>
-  <summary>可选配置</summary>
-
-插件为 `OneBot V11` 适配器封装了发送 [`QQ官方机器人`](https://bot.q.qq.com/wiki/develop/api-v2/) 的 [`ark卡片消息`](https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/type/ark.html) 的接口，参考 [`这里`](https://github.com/wyf7685/nonebot-plugin-exe-code/blob/master/nonebot_plugin_exe_code/interface/adapter_api/onebot11.py#L59-L99)
-
-使用时需要在 `.env` 文件中添加如下配置，在 nonebot2 项目中配置 `OneBot V11` 适配器和 `QQ` 适配器，并连接到两个对应的 Bot 账号，并确保两者之间可以发送私聊消息。
-
-|          配置项          | 必填 | 默认值 |                     说明                     |
-| :----------------------: | :--: | :----: | :------------------------------------------: |
-|   `exe_code__qbot_id`    |  是  |   无   | `OneBot V11` 发送 ark 卡片所需的官 Bot QQ 号 |
-| `exe_code__qbot_timeout` |  否  |  30.0  |   `OneBot V11` 发送 ark 卡片的超时时长(秒)   |
-
-</details>
+|         配置项          | 必填  | 默认值 |              说明               |
+| :---------------------: | :---: | :----: | :-----------------------------: |
+|    `exe_code__user`     |  否   |   []   |      允许执行代码的用户 ID      |
+|    `exe_code__group`    |  否   |   []   |      允许执行代码的群组 ID      |
+| `exe_code__buffer_size` |  否   |  8192  | 执行代码时 `print` 的缓冲区大小 |
 
 ### 📄 权限说明
 

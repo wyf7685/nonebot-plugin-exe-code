@@ -8,6 +8,7 @@ from nonebot.adapters import Adapter, Bot, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Segment, Target, UniMessage
 from nonebot_plugin_session import Session
 
+from ..config import config
 from ..typings import T_API_Result, T_Context, T_Message, is_message_t
 from .decorators import INTERFACE_EXPORT_METHOD, INTERFACE_METHOD_DESCRIPTION, strict
 
@@ -55,6 +56,9 @@ class Buffer:
         return cls._user_buf[uin]
 
     def write(self, text: str) -> None:
+        if len(self._buffer) + len(text) > config.buffer_size:
+            raise OverflowError("缓冲区溢出")
+
         self._buffer += str(text)
 
     def read(self) -> str:
@@ -217,7 +221,6 @@ send_message = _send_message()
 
 class _Sudo:
     def __init__(self) -> None:
-        from ..config import config
         from ..context import Context
 
         self.__config = config
