@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 def fake_satori_login() -> Login:
     return Login(
-        sn="0",
+        sn=0,
         status=LoginStatus.ONLINE,
         adapter="satori",
         platform="platform",
@@ -67,7 +67,7 @@ def fake_satori_private_message_created_event(
         self_id: str = "100"
         timestamp: datetime = datetime.now()  # noqa: DTZ005
         login: LoginOnline = LoginOnline(
-            sn="0",
+            sn=0,
             adapter="satori",
             platform="platform",
             user=User(id="100"),
@@ -97,7 +97,7 @@ def fake_satori_public_message_created_event(
         self_id: str = "100"
         timestamp: datetime = datetime.now()  # noqa: DTZ005
         login: LoginOnline = LoginOnline(
-            sn="0",
+            sn=0,
             adapter="satori",
             platform="platform",
             user=User(id="100"),

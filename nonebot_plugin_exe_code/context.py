@@ -123,6 +123,7 @@ class Context:
             escaped = escape_tag(repr(executor))
             logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
 
+            result = None
             with anyio.CancelScope() as self.cancel_scope:
                 result = await executor()
             self.cancel_scope = None
