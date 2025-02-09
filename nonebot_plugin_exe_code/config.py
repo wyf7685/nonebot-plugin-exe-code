@@ -7,6 +7,7 @@ class ExeCodeConfig(BaseModel):
     group: set[str] = Field(default_factory=set)
     buffer_size: int = 8192
 
+
 class Config(BaseModel):
     exe_code: ExeCodeConfig = Field(default_factory=ExeCodeConfig)
 

@@ -44,6 +44,7 @@ dev-dependencies = [
   "pytest-cov>=6.0.0",
   "pytest-mock>=3.14.0",
   "ipykernel>=6.29.5",
+  "pre-commit>=4.1.0",
 ]
 
 [tool.ruff]
