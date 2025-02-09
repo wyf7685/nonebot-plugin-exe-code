@@ -98,6 +98,36 @@ async def test_help(app: App) -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.usefixtures("app")
+async def test_doc_annotation() -> None:
+    from nonebot.adapters import Message
+
+    from nonebot_plugin_exe_code.interface.help_doc import format_annotation
+
+    assert format_annotation("test") == "test"
+    assert format_annotation(int) == "int"
+    assert format_annotation(str) == "str"
+    assert format_annotation(None) == "None"
+    assert format_annotation(Message) == "Message"
+
+
+@pytest.mark.asyncio
+async def test_buffer_size(app: App) -> None:
+    from nonebot_plugin_exe_code.config import config
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, _ = fake_v11_event_session(bot)
+
+        original, config.buffer_size = config.buffer_size, 100
+        ctx.should_call_send(event, V11Message("0" * 10))
+        with ensure_context(bot, event), pytest.raises(OverflowError):
+            await Context.execute(bot, event, "print('0' * 10); print('0' * 100)")
+        config.buffer_size = original
+
+
+@pytest.mark.asyncio
 async def test_descriptor(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 

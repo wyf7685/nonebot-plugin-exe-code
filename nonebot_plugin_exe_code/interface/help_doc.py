@@ -37,7 +37,7 @@ def message_alia(m: type[Message], ms: type[MessageSegment], /) -> None:
     type_alias[ms] = "MessageSegment"
 
 
-def format_annotation(t: type | str) -> str:
+def format_annotation(t: object) -> str:
     if isinstance(t, str):
         return t
     if t in type_alias:

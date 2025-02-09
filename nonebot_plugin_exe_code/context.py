@@ -41,13 +41,12 @@ class Context:
     uin: str
     ctx: T_Context
     lock: anyio.Lock
-    cancel_scope: anyio.CancelScope | None
+    cancel_scope: anyio.CancelScope | None = None
 
     def __init__(self, uin: str) -> None:
         self.uin = uin
         self.ctx = deepcopy(default_context)
         self.lock = anyio.Lock()
-        self.cancel_scope = None
 
     @classmethod
     def _session2uin(cls, session: Session | Event | str) -> str:
@@ -124,8 +123,7 @@ class Context:
             escaped = escape_tag(repr(executor))
             logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
 
-            self.cancel_scope = anyio.CancelScope()
-            with self.cancel_scope:
+            with anyio.CancelScope() as self.cancel_scope:
                 result = await executor()
             self.cancel_scope = None
 
