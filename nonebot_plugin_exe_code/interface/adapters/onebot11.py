@@ -2,7 +2,7 @@ import contextlib
 import functools
 import re
 from base64 import b64encode
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, cast, overload, override
@@ -25,7 +25,7 @@ from ..utils import Result, as_msg
 if TYPE_CHECKING:
 
     class _ApiCall(Protocol):
-        async def __call__(self, **kwargs: Any) -> Any: ...
+        def __call__(self, **kwargs: Any) -> Awaitable[Result]: ...
 
 
 def file2str(file: str | bytes | BytesIO | Path) -> str:
