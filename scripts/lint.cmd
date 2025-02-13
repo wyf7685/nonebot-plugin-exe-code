@@ -1,4 +1,4 @@
-isort .
+@ECHO OFF
 ruff format .
-pyright .
+basedpyright .
 ruff check .

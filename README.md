@@ -198,6 +198,11 @@ await receipt.recall()  # 撤回消息
   
 <!-- CHANGELOG -->
 
+- 2025.02.13 v1.1.5
+
+  - Python >= 3.12
+  - 累积更新
+
 - 2024.10.12 v1.1.4
 
   - 重构 descript 装饰器
