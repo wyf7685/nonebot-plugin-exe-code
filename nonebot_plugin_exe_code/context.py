@@ -1,4 +1,5 @@
 import ast
+import functools
 import inspect
 from copy import deepcopy
 from typing import Any, ClassVar, Self, cast
@@ -31,6 +32,15 @@ async def __executor__():
             k: v for k, v in dict(locals()).items()
             if not k.startswith("__") and not k.endswith("__")
         })
+"""
+ASYNCGEN_WRAPPER = """\
+async def wrapper(ctx, api, gen):
+    try:
+        async for value in gen():
+            await api.feedback(repr(value))
+    except BaseException as err:
+        import traceback
+        ctx["__exception__"] = (e, traceback.format_exc())
 """
 
 
@@ -92,20 +102,11 @@ class Context:
 
         # 包装为异步函数
         exec(code, self.ctx, self.ctx)  # noqa: S102
-        executor = self.ctx.pop(func_def.name)
+        executor: T_Executor = self.ctx.pop(func_def.name)
 
         if inspect.isasyncgenfunction(executor):
-            _executor = executor
-
-            async def executor() -> None:
-                try:
-                    async for value in _executor():
-                        await api.feedback(repr(value))
-                except BaseException as err:
-                    import traceback
-
-                    self.ctx["last_exc"] = self.ctx["__exception__"]
-                    self.ctx["__exception__"] = (err, traceback.format_exc())
+            exec(ASYNCGEN_WRAPPER, ns := {}, ns)  # noqa: S102
+            executor = functools.partial(ns.pop("wrapper"), self.ctx, api, executor)
 
         return executor
 

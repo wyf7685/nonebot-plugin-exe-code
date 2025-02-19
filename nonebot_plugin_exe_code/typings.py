@@ -1,4 +1,4 @@
-from collections.abc import Callable, Coroutine
+from collections.abc import Awaitable, Callable
 from typing import Any, Self, TypeGuard
 
 from nonebot.adapters import Message, MessageSegment
@@ -6,7 +6,7 @@ from nonebot_plugin_alconna.uniseg import Segment, UniMessage
 from tarina import generic_isinstance
 
 type T_Context = dict[str, Any]
-type T_Executor = Callable[[], Coroutine[None, None, object]]
+type T_Executor = Callable[[], Awaitable[object]]
 type T_API_Result = dict[str, Any] | list[Any] | None
 T_Message = str | Message | MessageSegment | UniMessage | Segment
 T_ConstVar = str | bool | int | float | dict | list | None
