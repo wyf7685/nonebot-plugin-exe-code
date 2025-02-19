@@ -1,5 +1,4 @@
 import ast
-import functools
 import inspect
 from copy import deepcopy
 from typing import Any, ClassVar, Self, cast
@@ -34,13 +33,13 @@ async def __executor__():
         })
 """
 ASYNCGEN_WRAPPER = """\
-async def wrapper(ctx, api, gen):
+async def wrapper():
     try:
         async for value in gen():
             await api.feedback(repr(value))
     except BaseException as err:
         import traceback
-        ctx["__exception__"] = (e, traceback.format_exc())
+        ctx["__exception__"] = (err, traceback.format_exc())
 """
 
 
@@ -105,8 +104,9 @@ class Context:
         executor: T_Executor = self.ctx.pop(func_def.name)
 
         if inspect.isasyncgenfunction(executor):
-            exec(ASYNCGEN_WRAPPER, ns := {}, ns)  # noqa: S102
-            executor = functools.partial(ns.pop("wrapper"), self.ctx, api, executor)
+            ns = {"ctx": self.ctx, "api": api, "gen": executor}
+            exec(ASYNCGEN_WRAPPER, ns, ns)  # noqa: S102
+            executor = ns.pop("wrapper")
 
         return executor
 
