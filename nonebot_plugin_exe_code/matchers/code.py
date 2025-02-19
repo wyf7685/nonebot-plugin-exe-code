@@ -1,5 +1,6 @@
 from typing import NoReturn
 
+import anyio
 from nonebot import on_message
 from nonebot.adapters import Bot, Event
 from nonebot.log import logger
@@ -15,6 +16,8 @@ matcher = on_message(startswith("code"), permission=AllowExeCode)
 async def handle_code(bot: Bot, event: Event, code: ExtractCode) -> NoReturn:
     try:
         await Context.execute(bot, event, code)
+    except anyio.get_cancelled_exc_class():
+        pass  # pragma: no cover
     except BaseException as err:
         msg = f"用户 {event.get_user_id()} 执行代码时发生错误: {err}"
         logger.opt(exception=err).warning(msg)
