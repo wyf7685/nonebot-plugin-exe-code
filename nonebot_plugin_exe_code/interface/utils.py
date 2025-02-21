@@ -136,49 +136,17 @@ async def as_msg(message: Any) -> Message:
     return message
 
 
-class GlobalTaskGroup:
-    task_group: anyio.abc.TaskGroup
+def call_later[**P](
+    delay: float,
+    call: Callable[P, Awaitable[Any]],
+    *args: P.args,
+    **kwargs: P.kwargs,
+) -> None:
+    async def wrapper() -> None:
+        await anyio.sleep(delay)
+        await call(*args, **kwargs)
 
-    @staticmethod
-    @nonebot.get_driver().on_startup
-    async def on_startup() -> None:
-        GlobalTaskGroup.task_group = anyio.create_task_group()
-        await GlobalTaskGroup.task_group.__aenter__()
-
-    @staticmethod
-    @nonebot.get_driver().on_shutdown
-    async def on_shutdown() -> None:
-        GlobalTaskGroup.task_group.cancel_scope.cancel()
-        await GlobalTaskGroup.task_group.__aexit__(None, None, None)
-
-    @classmethod
-    def call_later[**P](
-        cls,
-        delay: float,
-        callback: Callable[P, Awaitable[Any]],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Callable[[], None]:
-        scope: anyio.CancelScope | None = None
-
-        @cls.task_group.start_soon
-        async def _() -> None:
-            nonlocal scope
-
-            with anyio.CancelScope() as scope:
-                await anyio.sleep(delay)
-                await callback(*args, **kwargs)
-
-        return lambda: scope and scope.cancel()
-
-    @classmethod
-    def start_soon[**P](
-        cls,
-        callback: Callable[P, Any],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Callable[[], None]:
-        return cls.call_later(0, callback, *args, **kwargs)
+    nonebot.get_driver().task_group.start_soon(wrapper)
 
 
 class ReachLimit(Exception):  # noqa: N818
@@ -203,7 +171,7 @@ def _send_message():  # noqa: ANN202
         key = id(session)
         if key not in call_cnt:
             call_cnt[key] = 1
-            GlobalTaskGroup.call_later(60, clean, key)
+            call_later(60, clean, key)
         elif 0 <= call_cnt[key] < ReachLimit.limit:
             call_cnt[key] += 1
         else:
