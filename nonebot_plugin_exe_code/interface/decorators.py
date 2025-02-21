@@ -33,17 +33,6 @@ WRAPPER_ASSIGNMENTS = (
 )
 
 
-@runtime_checkable
-class _DescriptorType[T, **P, R](Protocol):
-    @overload
-    def __get__(self, obj: T, objtype: type[T]) -> Callable[P, R]: ...
-    @overload
-    def __get__(
-        self, obj: None, objtype: type[T]
-    ) -> Callable[Concatenate[T, P], R]: ...
-    def __set_name__(self, owner: type[T], name: str) -> None: ...
-
-
 def export[**P, R](call: Callable[P, R]) -> Callable[P, R]:
     """将一个方法标记为导出方法
     Args:
@@ -221,6 +210,17 @@ def strict[**P, R](call: AnyCallable[P, R]) -> AnyCallable[P, R]:
         _check_args(call, args, kwargs)
 
     return make_wrapper(call, before)
+
+
+@runtime_checkable
+class _DescriptorType[T, **P, R](Protocol):
+    @overload
+    def __get__(self, obj: T, objtype: type[T]) -> Callable[P, R]: ...
+    @overload
+    def __get__(
+        self, obj: None, objtype: type[T]
+    ) -> Callable[Concatenate[T, P], R]: ...
+    def __set_name__(self, owner: type[T], name: str) -> None: ...
 
 
 class Overload[T, **P, R]:

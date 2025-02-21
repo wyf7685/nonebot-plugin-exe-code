@@ -1,3 +1,4 @@
+from collections import UserString
 from collections.abc import Awaitable, Callable
 from typing import Any, Self, TypeGuard
 
@@ -12,7 +13,7 @@ T_Message = str | Message | MessageSegment | UniMessage | Segment
 T_ConstVar = str | bool | int | float | dict | list | None
 
 
-class UserStr(str):
+class UserStr(UserString):
     __slots__ = ("__user_str_args__",)
     __user_str_args__: list[T_Message]
 
