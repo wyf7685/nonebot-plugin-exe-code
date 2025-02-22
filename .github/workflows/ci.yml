@@ -38,12 +38,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v2
+        uses: astral-sh/setup-uv@v5
         with:
+          python-version: "3.12"
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --python 3.12 --all-extras
+        run: uv sync --all-extras
 
       - name: Configure venv
         run: echo "$PWD/.venv/bin" >> $GITHUB_PATH
@@ -67,12 +68,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v2
+        uses: astral-sh/setup-uv@v5
         with:
+          python-version: ${{ matrix.python-version }}
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --python ${{ matrix.python-version }} --all-extras
+        run: uv sync --all-extras
 
       - name: Run Pytest
         run: uv run pytest --cov=nonebot_plugin_exe_code --cov-report=xml
