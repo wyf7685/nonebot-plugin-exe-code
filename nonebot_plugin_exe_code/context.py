@@ -19,7 +19,7 @@ from .typings import T_Context, T_Executor
 logger = nonebot.logger.opt(colors=True)
 
 EXECUTOR_FUNCTION = """\
-last_exc, __exception__ = __exception__, (None, None)
+(exc, tb), __exception__ = __exception__, (None, None)
 async def __executor__():
     try:
         ...
@@ -91,9 +91,9 @@ class Context:
         assert self.lock.locked(), "`Context._solve_code` called without lock"
 
         parsed = ast.parse(EXECUTOR_FUNCTION, mode="exec")
-        func_def = cast(ast.AsyncFunctionDef, parsed.body[1])
-        cast(ast.Try, func_def.body[0]).body[:] = [
-            ast.Global(names=list(self.ctx)),
+        func_def = next(x for x in parsed.body if isinstance(x, ast.AsyncFunctionDef))
+        next(x for x in func_def.body if isinstance(x, ast.Try)).body[:] = [
+            ast.Global(names=[name for name in self.ctx if name.isidentifier()]),
             *ast.parse(raw_code, mode="exec").body,
         ]
         solved = ast.unparse(parsed)
