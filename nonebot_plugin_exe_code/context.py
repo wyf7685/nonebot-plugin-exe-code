@@ -1,5 +1,8 @@
 import ast
+import contextlib
+import functools
 import inspect
+from collections.abc import Callable, Generator
 from copy import deepcopy
 from typing import Any, ClassVar, Self, cast
 
@@ -41,6 +44,19 @@ async def wrapper():
         import traceback
         ctx["__exception__"] = (err, traceback.format_exc())
 """
+type T_ExecutorCtx = Callable[[], contextlib.AbstractContextManager[None]]
+
+
+@contextlib.contextmanager
+def fake_linecache(name: str, code: str) -> Generator[None]:
+    import linecache
+
+    cache = (len(code), None, [line + "\n" for line in code.splitlines()], name)
+    linecache.cache[name] = cache
+    try:
+        yield
+    finally:
+        linecache.cache.pop(name, None)
 
 
 class Context:
@@ -87,7 +103,7 @@ class Context:
 
         return cls.__contexts[uin]
 
-    def _solve_code(self, raw_code: str, api: API) -> T_Executor:
+    def _solve_code(self, raw_code: str, api: API) -> tuple[T_Executor, T_ExecutorCtx]:
         assert self.lock.locked(), "`Context._solve_code` called without lock"
 
         parsed = ast.parse(EXECUTOR_FUNCTION, mode="exec")
@@ -97,7 +113,8 @@ class Context:
             *ast.parse(raw_code, mode="exec").body,
         ]
         solved = ast.unparse(parsed)
-        code = compile(solved, f"<executor_{self.uin}>", "exec")
+        filename = f"<executor_{self.uin}>"
+        code = compile(solved, filename, "exec")
 
         # 包装为异步函数
         exec(code, self.ctx, self.ctx)  # noqa: S102
@@ -108,7 +125,7 @@ class Context:
             exec(ASYNCGEN_WRAPPER, ns, ns)  # noqa: S102
             executor = ns.pop("wrapper")
 
-        return executor
+        return executor, functools.partial(fake_linecache, filename, solved)
 
     @classmethod
     async def execute(cls, bot: Bot, event: Event, code: str) -> None:
@@ -120,12 +137,12 @@ class Context:
 
         # 执行代码时加锁，避免出现多段代码分别读写变量
         async with self.lock, api_class(bot, event, session, self.ctx) as api:
-            executor = self._solve_code(code, api)
+            executor, ctx = self._solve_code(code, api)
             escaped = escape_tag(repr(executor))
             logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
 
             result = None
-            with anyio.CancelScope() as self.cancel_scope:
+            with anyio.CancelScope() as self.cancel_scope, ctx():
                 result = await executor()
             self.cancel_scope = None
 
