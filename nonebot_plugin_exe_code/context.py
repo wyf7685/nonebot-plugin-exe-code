@@ -52,11 +52,13 @@ def fake_linecache(name: str, code: str) -> Generator[None]:
     import linecache
 
     cache = (len(code), None, [line + "\n" for line in code.splitlines()], name)
-    linecache.cache[name] = cache
+    with contextlib.suppress(Exception):
+        linecache.cache[name] = cache
     try:
         yield
     finally:
-        linecache.cache.pop(name, None)
+        with contextlib.suppress(Exception):
+            linecache.cache.pop(name, None)
 
 
 class Context:
