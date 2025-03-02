@@ -1,3 +1,4 @@
+import builtins
 import json
 from pathlib import Path
 from typing import Any
@@ -7,19 +8,24 @@ from nonebot_plugin_alconna.uniseg import At, Image, Reply, Text, UniMessage
 from ..constant import DATA_DIR
 from ..typings import T_ConstVar, T_Context, UserStr
 
-default_context: T_Context = {}
+DEFAULT_BUILTINS = builtins.__dict__.copy()
+BUILTINS_KEY = "__builtins__"
 
 
 def context_var(item: Any, name: str | None = None) -> None:
     key = name or getattr(item, "__name__", None)
     assert key is not None, f"Name for {item!r} cannot be empty"
-    default_context[key] = item
+    DEFAULT_BUILTINS[key] = item
 
 
 context_var((None, None), "__exception__")
 context_var(lambda x: At(flag="user", target=str(x)), "At")
 context_var(lambda x: Reply(id=str(x)), "Reply")
 [context_var(i) for i in {Image, Text, UniMessage, UserStr}]
+
+
+def get_default_context() -> T_Context:
+    return {BUILTINS_KEY: DEFAULT_BUILTINS.copy()}
 
 
 def _const_var_path(uin: str) -> Path:

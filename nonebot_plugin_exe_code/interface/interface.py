@@ -3,6 +3,7 @@ from typing import Any, ClassVar, NamedTuple, Self, cast
 
 from ..typings import T_Context
 from .help_doc import MethodDescription
+from .user_const_var import BUILTINS_KEY, DEFAULT_BUILTINS
 from .utils import get_method_description, is_export_method
 
 
@@ -49,7 +50,9 @@ class Interface:
             raise TypeError(
                 f"Interface class {type(self).__name__!r} not allowed to export"
             )
-        self.__context[key] = val
+        if BUILTINS_KEY not in self.__context:
+            self.__context[BUILTINS_KEY] = DEFAULT_BUILTINS.copy()
+        self.__context[BUILTINS_KEY][key] = val
         self.__exported.add(key)
 
     def export(self) -> None:
@@ -62,9 +65,11 @@ class Interface:
         return self
 
     def __exit__(self, *_: object) -> bool:
-        if self.__context is not None:
+        if self.__context is not None and isinstance(
+            _builtins := self.__context.get(BUILTINS_KEY), dict
+        ):
             for name in self.__exported:
-                self.__context.pop(name, None)
+                _builtins.pop(name, None)
         return False
 
     async def __aenter__(self) -> Self:

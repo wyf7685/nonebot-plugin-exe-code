@@ -136,3 +136,18 @@ async def test_async_generator_executor(app: App) -> None:
             await Context.get_context(session).execute(
                 bot, event, "yield 1\nyield 2\nyield 3\nyield 4"
             )
+
+
+@pytest.mark.asyncio
+async def test_delete_builtins(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, session = fake_v11_event_session(bot)
+
+        with ensure_context(bot, event):
+            context = Context.get_context(session)
+            assert context.ctx.pop("__builtins__", None) is not None
+            await context.execute(bot, event, "api, UniMessage")
+            assert "__builtins__" in context.ctx

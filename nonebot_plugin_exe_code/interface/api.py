@@ -14,7 +14,7 @@ from .group import Group
 from .help_doc import descript, message_alia
 from .interface import Interface
 from .user import User
-from .user_const_var import default_context, load_const, set_const
+from .user_const_var import get_default_context, load_const, set_const
 from .utils import (
     Buffer,
     as_msg,
@@ -288,7 +288,7 @@ class API[B: Bot, E: Event](Interface):
 
         context = Context.get_context(self.session).ctx
         context.clear()
-        context.update(default_context)
+        context.update(get_default_context())
         self.export()
 
     @override

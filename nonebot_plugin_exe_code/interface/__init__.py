@@ -3,7 +3,7 @@ from nonebot.adapters import Bot, Event
 from . import adapters as adapters
 from .api import API as API
 from .api import api_registry
-from .user_const_var import default_context as default_context
+from .user_const_var import get_default_context as get_default_context
 from .utils import Buffer as Buffer
 
 

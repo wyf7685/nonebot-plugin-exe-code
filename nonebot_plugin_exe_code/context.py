@@ -5,7 +5,6 @@ import inspect
 import linecache
 import time
 from collections.abc import Awaitable, Callable, Generator
-from copy import deepcopy
 from typing import Any, ClassVar, Self, cast
 
 import anyio
@@ -19,7 +18,7 @@ from nonebot_plugin_alconna.uniseg import Image, UniMessage
 from nonebot_plugin_session import Session, SessionIdType, extract_session
 
 from .exception import BotEventMismatch, SessionNotInitialized
-from .interface import API, Buffer, default_context, get_api_class
+from .interface import API, Buffer, get_api_class, get_default_context
 from .typings import T_Context
 
 logger = nonebot.logger.opt(colors=True)
@@ -53,7 +52,7 @@ type T_ExecutorCtx = Callable[[], contextlib.AbstractContextManager[None]]
 
 async def _cleanup_linecache(name: str) -> None:
     await anyio.sleep(300)
-    with contextlib.suppress(Exception):
+    with contextlib.suppress(Exception):  # pragma: no cover
         linecache.cache.pop(name, None)
         logger.debug(f"Cleaned linecache for {name}")
 
@@ -85,7 +84,7 @@ class Context:
 
     def __init__(self, uin: str) -> None:
         self.uin = uin
-        self.ctx = deepcopy(default_context)
+        self.ctx = get_default_context()
         self.lock = anyio.Lock()
 
     @classmethod
@@ -146,12 +145,13 @@ class Context:
     async def execute(cls, bot: Bot, event: Event, code: str) -> None:
         session = extract_session(bot, event)
         uin = cls._session2uin(session)
-        self = cls.get_context(session)
-        api_class = get_api_class(bot)
         colored_uin = f"<y>{escape_tag(uin)}</y>"
+        self = cls.get_context(session)
+        api = get_api_class(bot)(bot, event, session, self.ctx)
 
-        # 执行代码时加锁，避免出现多段代码分别读写变量
-        async with self.lock, api_class(bot, event, session, self.ctx) as api:
+        # 执行代码时加异步锁，避免出现多段代码分别读写变量
+        # api 导出接口到 ctx
+        async with self.lock, api:
             executor, ctx = self._solve_code(code, api)
             escaped = escape_tag(repr(executor))
             logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
