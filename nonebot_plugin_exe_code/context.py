@@ -2,13 +2,16 @@ import ast
 import contextlib
 import functools
 import inspect
-from collections.abc import Callable, Generator
+import linecache
+import time
+from collections.abc import Awaitable, Callable, Generator
 from copy import deepcopy
 from typing import Any, ClassVar, Self, cast
 
 import anyio
 import anyio.abc
 import nonebot
+from nonebot import get_driver
 from nonebot.adapters import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
 from nonebot.utils import escape_tag
@@ -17,7 +20,7 @@ from nonebot_plugin_session import Session, SessionIdType, extract_session
 
 from .exception import BotEventMismatch, SessionNotInitialized
 from .interface import API, Buffer, default_context, get_api_class
-from .typings import T_Context, T_Executor
+from .typings import T_Context
 
 logger = nonebot.logger.opt(colors=True)
 
@@ -44,21 +47,31 @@ async def wrapper():
         import traceback
         ctx["__exception__"] = (err, traceback.format_exc())
 """
+type T_Executor = Callable[[], Awaitable[object]]
 type T_ExecutorCtx = Callable[[], contextlib.AbstractContextManager[None]]
+
+
+async def _cleanup_linecache(name: str) -> None:
+    await anyio.sleep(300)
+    with contextlib.suppress(Exception):
+        linecache.cache.pop(name, None)
+        logger.debug(f"Cleaned linecache for {name}")
 
 
 @contextlib.contextmanager
 def fake_linecache(name: str, code: str) -> Generator[None]:
-    import linecache
-
     cache = (len(code), None, [line + "\n" for line in code.splitlines()], name)
+
+    # https://docs.python.org/3/library/linecache.html
+    # linecache.cache is undocumented and may change in the future
     with contextlib.suppress(Exception):
         linecache.cache[name] = cache
+        logger.debug(f"Set linecache for {name}")
+
     try:
         yield
     finally:
-        with contextlib.suppress(Exception):
-            linecache.cache.pop(name, None)
+        get_driver().task_group.start_soon(_cleanup_linecache, name)
 
 
 class Context:
@@ -115,7 +128,7 @@ class Context:
             *ast.parse(raw_code, mode="exec").body,
         ]
         solved = ast.unparse(parsed)
-        filename = f"<executor_{self.uin}>"
+        filename = f"<executor_{self.uin}_{int(time.time())}>"
         code = compile(solved, filename, "exec")
 
         # 包装为异步函数
