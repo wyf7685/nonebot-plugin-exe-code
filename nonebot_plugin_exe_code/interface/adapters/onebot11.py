@@ -283,13 +283,13 @@ with contextlib.suppress(ImportError):
 
         @descript(
             description="通过合并转发ID获取合并转发消息",
-            parameters=dict(msg_id="需要获取的合并转发ID，可通过getcqcode获取"),
+            parameters=dict(msg_id="需要获取的合并转发ID，可通过getraw获取"),
             result="获取到的合并转发消息列表",
         )
         @export
         @debug_log
         @strict
-        async def get_fwd(self, msg_id: int) -> list[Message]:
+        async def get_fwd(self, msg_id: int | str) -> list[Message]:
             logger.debug(f"[OneBot V11] 获取合并转发消息: {msg_id=}")
             res = await self.call_api(
                 "get_forward_msg",
