@@ -50,27 +50,38 @@ type T_Executor = Callable[[], Awaitable[object]]
 type T_ExecutorCtx = Callable[[], contextlib.AbstractContextManager[None]]
 
 
-async def _cleanup_linecache(name: str) -> None:
-    await anyio.sleep(300)
-    with contextlib.suppress(Exception):  # pragma: no cover
-        linecache.cache.pop(name, None)
-        logger.debug(f"Cleaned linecache for {name}")
+async def _cleanup(
+    delay: float,
+    callbacks: list[Callable[[], object]],
+) -> None:  # pragma: no cover
+    await anyio.sleep(delay)
+
+    for callback in callbacks:
+        with contextlib.suppress(Exception):
+            callback()
 
 
 @contextlib.contextmanager
 def fake_linecache(name: str, code: str) -> Generator[None]:
-    cache = (len(code), None, [line + "\n" for line in code.splitlines()], name)
+    cbs: list[Callable[[], object]] = []
 
     # https://docs.python.org/3/library/linecache.html
     # linecache.cache is undocumented and may change in the future
     with contextlib.suppress(Exception):
+        cache = (len(code), None, [line + "\n" for line in code.splitlines()], name)
         linecache.cache[name] = cache
-        logger.debug(f"Set linecache for {name}")
+        cbs.append(lambda: linecache.cache.pop(name, None))
+
+    # set modulesbyfile[name] to this module temporarily
+    # allow inspect.getmodule to work on executor frame
+    fake_filename = inspect.getabsfile(object, name)
+    inspect.modulesbyfile[fake_filename] = __name__
+    cbs.append(lambda: inspect.modulesbyfile.pop(fake_filename, None))
 
     try:
         yield
     finally:
-        get_driver().task_group.start_soon(_cleanup_linecache, name)
+        get_driver().task_group.start_soon(_cleanup, 300, cbs)
 
 
 class Context:
@@ -120,12 +131,19 @@ class Context:
     def _solve_code(self, raw_code: str, api: API) -> tuple[T_Executor, T_ExecutorCtx]:
         assert self.lock.locked(), "`Context._solve_code` called without lock"
 
+        def valid_name(name: str) -> bool:
+            return (
+                name.isidentifier()
+                and not name.startswith("__")
+                and not name.endswith("__")
+            )
+
+        stmts = ast.parse(raw_code, mode="exec").body[:]
+        if global_names := list(filter(valid_name, self.ctx)):
+            stmts.insert(0, ast.Global(names=global_names))
         parsed = ast.parse(EXECUTOR_FUNCTION, mode="exec")
         func_def = next(x for x in parsed.body if isinstance(x, ast.AsyncFunctionDef))
-        next(x for x in func_def.body if isinstance(x, ast.Try)).body[:] = [
-            ast.Global(names=[name for name in self.ctx if name.isidentifier()]),
-            *ast.parse(raw_code, mode="exec").body,
-        ]
+        next(x for x in func_def.body if isinstance(x, ast.Try)).body[:] = stmts
         solved = ast.unparse(parsed)
         filename = f"<executor_{self.uin}_{int(time.time())}>"
         code = compile(solved, filename, "exec")
