@@ -80,7 +80,7 @@ def fake_cache(filename: str, code: str) -> Generator[None]:
 @contextlib.contextmanager
 def setup_ctx(ctx: T_Context) -> Generator[None]:
     localns = sys._getframe(2).f_locals  # noqa: SLF001
-    old_names = set(filter(lambda x: not x.startswith("__"), ctx))
+    old_names = {name for name in ctx if not name.startswith("__")}
     for name in old_names:
         localns[name] = ctx[name]
     localns["exc"], localns["tb"] = ctx.pop("__exception__", (None, None))
@@ -91,7 +91,7 @@ def setup_ctx(ctx: T_Context) -> Generator[None]:
     except BaseException as exc:
         ctx["__exception__"] = (exc, traceback.format_exc())
     finally:
-        new_names = set(filter(lambda x: not x.startswith("__"), localns))
+        new_names = {name for name in localns if not name.startswith("__")}
         for name in old_names - new_names:
             del ctx[name]
         for name in (old_names & new_names) | (new_names - old_names):
