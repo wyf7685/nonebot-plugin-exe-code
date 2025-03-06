@@ -235,7 +235,7 @@ class Overload[T, **P, R]:
             _set_name(owner, name)
 
     def __find_overload(self, args: T_Args, kwargs: T_Kwargs) -> Callable[..., Any]:
-        for call in self.__overloads:
+        for call in self.__overloads__:
             with contextlib.suppress(TypeError):
                 _check_args(call, args, kwargs)
                 return call
@@ -259,8 +259,8 @@ class Overload[T, **P, R]:
             call = cast(Callable[Concatenate[T, P], R], call)
 
         if not hasattr(self, "__overloads__"):
-            self.__overloads = get_overloads(call)
-            assert self.__overloads, "应提供至少一个函数重载"
+            self.__overloads__ = get_overloads(call)
+            assert self.__overloads__, "应提供至少一个函数重载"
 
         if is_coroutine_callable(call):
 
