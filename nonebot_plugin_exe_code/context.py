@@ -35,9 +35,9 @@ async def wrapper():
     try:
         async for value in gen():
             await api.feedback(repr(value))
-    except BaseException as err:
+    except BaseException as exc:
         import traceback
-        ctx["__exception__"] = (err, traceback.format_exc())
+        ctx["__exception__"] = (exc, traceback.format_exc())
 """
 type T_Executor = Callable[[], Awaitable[object]]
 type T_ExecutorCtx = Callable[[], contextlib.AbstractContextManager[None]]
@@ -88,8 +88,8 @@ def setup_ctx(ctx: T_Context) -> Generator[None]:
 
     try:
         yield
-    except BaseException as e:
-        ctx["__exception__"] = (e, traceback.format_exc())
+    except BaseException as exc:
+        ctx["__exception__"] = (exc, traceback.format_exc())
     finally:
         new_names = set(filter(lambda x: not x.startswith("__"), localns))
         for name in old_names - new_names:
@@ -148,22 +148,21 @@ class Context:
         # 可能抛出 SyntaxError, 由 matcher 处理
         stmts = ast.parse(raw_code, mode="exec").body
 
-        # 将解析后的代码插入到 try 语句块中
+        # 将解析后的代码插入到 with 语句块中
         parsed = ast.parse(EXECUTOR_FUNCTION, mode="exec")
         func_def = next(x for x in parsed.body if isinstance(x, ast.AsyncFunctionDef))
         next(x for x in func_def.body if isinstance(x, ast.With)).body.extend(stmts)
         solved = ast.unparse(parsed)
 
+        # 将代码编译为 code 对象 (附加文件名)
         filename = f"<executor_{self.uin}_{int(time.time())}>"
         code = compile(solved, filename, "exec")
 
-        # 包装为异步函数
+        # 在 ctx 中执行代码，获取 executor
         exec(code, self.ctx, self.ctx)  # noqa: S102
-        executor: T_Executor = functools.partial(
-            self.ctx.pop(func_def.name),
-            setup_ctx(self.ctx),
-        )
+        executor = functools.partial(self.ctx.pop(func_def.name), setup_ctx(self.ctx))
 
+        # 如果 executor 是异步生成器函数, 则进行包装, 输出其每一步 yield 的值
         if inspect.isasyncgenfunction(executor):
             ns = {"ctx": self.ctx, "api": api, "gen": executor}
             exec(ASYNCGEN_WRAPPER, ns, ns)  # noqa: S102
