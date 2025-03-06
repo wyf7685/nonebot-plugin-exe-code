@@ -53,10 +53,10 @@ type AnyCallable[**P, R] = Callable[P, Coro[R]] | Callable[P, R]
 
 
 def make_wrapper[**P, R](
-    wrapped: Callable[P, Coro[R]] | Callable[P, R],
+    wrapped: AnyCallable[P, R],
     before: BeforeWrapped | None = None,
     after: AfterWrapped | None = None,
-) -> Callable[P, Coro[R]] | Callable[P, R]:
+) -> AnyCallable[P, R]:
     """包装函数 `wrapped`, 在调用前执行 `before`, 在调用后执行 `after`
 
     Args:
