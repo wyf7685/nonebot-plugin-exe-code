@@ -48,7 +48,7 @@ type Coro[T] = Coroutine[None, None, T]
 type T_Args = tuple[Any, ...]
 type T_Kwargs = dict[str, Any]
 type BeforeWrapped = Callable[[T_Args, T_Kwargs], tuple[T_Args, T_Kwargs] | None]
-type AfterWrapped = Callable[[T_Args, T_Kwargs, Any], tuple[bool, Any]]
+type AfterWrapped = Callable[[T_Args, T_Kwargs, object], tuple[bool, object]]
 type AnyCallable[**P, R] = Callable[P, Coro[R]] | Callable[P, R]
 
 
@@ -63,22 +63,24 @@ def make_wrapper[**P, R](
         wrapped (Callable[P, R]): 被包装的函数
         before (BeforeWrapped | None, optional):
             在函数调用前执行的操作, 接收传入函数的参数 (args, kwargs),
-            返回修改后的参数(可选). Defaults to None.
+            返回修改后的参数(可选). 默认值为 None.
         after (AfterWrapped[R] | None, optional):
             在函数调用后执行的操作, 接收传入函数的参数和返回值 (args, kwargs, result),
-            返回修改后的返回值(可选). Defaults to None.
+            返回修改后的返回值(可选). 默认值为 None.
 
     Returns:
         Callable[P, R]: 包装后的函数
     """
 
-    call = wrapped
+    call: AnyCallable[P, R] = wrapped
     before_calls: tuple[BeforeWrapped, ...] = (before,) if before else ()
     after_calls: tuple[AfterWrapped, ...] = (after,) if after else ()
 
     # 如果已经被包装过，提取原函数和对应的 _before/_after
     # before -> *_before -> call -> *_after -> after
     if wrapped_data := getattr(wrapped, "__exe_code_wrapped__", None):
+        _before: tuple[BeforeWrapped, ...]
+        _after: tuple[AfterWrapped, ...]
         call, _before, _after = wrapped_data
         before_calls = (*before_calls, *_before)
         after_calls = (*_after, *after_calls)
@@ -89,7 +91,7 @@ def make_wrapper[**P, R](
                 args, kwargs = res
         return args, kwargs
 
-    def call_after(args: T_Args, kwargs: T_Kwargs, result: Any) -> Any:
+    def call_after(args: T_Args, kwargs: T_Kwargs, result: object) -> object:
         for call in after_calls:
             mock, value = call(args, kwargs, result)
             if mock:
