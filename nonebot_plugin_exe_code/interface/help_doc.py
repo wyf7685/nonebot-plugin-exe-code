@@ -22,7 +22,7 @@ DESCRIPTION_RESULT_TYPE = "Result 对象，可通过属性名获取接口响应"
 DESCRIPTION_RECEIPT_TYPE = "UniMessage 发送后返回的 Receipt 对象，用于操作对应消息"
 
 EMPTY = inspect.Signature.empty
-type_alias: dict[Any, str] = {
+type_alias: dict[object, str] = {
     Receipt: "Receipt",
     Result: "Result",
     T_ConstVar: "T_ConstVar",
@@ -38,6 +38,7 @@ def message_alia(m: type[Message], ms: type[MessageSegment], /) -> None:
 
 
 def format_annotation(t: object) -> str:
+    # sourcery skip: assign-if-exp, reintroduce-else
     if isinstance(t, str):
         return t
     if t in type_alias:

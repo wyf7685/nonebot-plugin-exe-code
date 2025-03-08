@@ -39,14 +39,11 @@ def file2str(file: str | bytes | BytesIO | Path) -> str:
 
 
 async def _extract_user_str_args(us: UserStr) -> tuple[int, "Message", str | None]:
-    user_id = int(us)
     args = us.extract_args()
     assert len(args) > 0
     content = cast("Message", await as_msg(args.pop(0)))
-    name = None
-    if args:
-        name = (await as_msg(args.pop(0))).extract_plain_text()
-    return user_id, content, name
+    name = (await as_msg(args.pop(0))).extract_plain_text() if args else None
+    return int(us), content, name
 
 
 async def convert_forward(msgs: T_ForwardMsg) -> "Message":

@@ -74,15 +74,22 @@ def fake_cache(filename: str, code: str) -> Generator[None]:
     try:
         yield
     finally:
+        # cleanup cache later (300s)
         get_driver().task_group.start_soon(_cleanup, 300, cbs)
 
 
 @contextlib.contextmanager
 def setup_ctx(ctx: T_Context) -> Generator[None]:
+    # 0 -> current frame    sys._getframe
+    # 1 -> contextmanager   next(gen)
+    # 2 -> executor         with __context__:
     localns = sys._getframe(2).f_locals  # noqa: SLF001
+
+    # set variables to localns to avoid UnboundLocalError
     old_names = {name for name in ctx if not name.startswith("__")}
     for name in old_names:
         localns[name] = ctx[name]
+
     localns["exc"], localns["tb"] = ctx.pop("__exception__", (None, None))
     localns["__exception__"] = (None, None)
 
@@ -91,6 +98,7 @@ def setup_ctx(ctx: T_Context) -> Generator[None]:
     except BaseException as exc:
         ctx["__exception__"] = (exc, traceback.format_exc())
     finally:
+        # update ctx with localns
         new_names = {name for name in localns if not name.startswith("__")}
         for name in old_names - new_names:
             del ctx[name]
