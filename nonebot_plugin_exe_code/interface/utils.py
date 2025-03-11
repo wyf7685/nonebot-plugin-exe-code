@@ -246,6 +246,9 @@ async def _on_driver_startup() -> None:
         message_alia(*_get_msg_cls(a))
 
 
-def export_message(adapter: Adapter) -> Generator[tuple[str, Any], Any, None]:
-    m, ms = _get_msg_cls(adapter)
-    yield from {"Message": m, "MessageSegment": ms}.items()
+def export_message(adapter: Adapter) -> Generator[tuple[str, type], Any, None]:
+    yield from zip(
+        ("Message", "MessageSegment"),
+        _get_msg_cls(adapter),
+        strict=True,
+    )

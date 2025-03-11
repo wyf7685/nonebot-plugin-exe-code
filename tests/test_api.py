@@ -2,7 +2,9 @@
 
 import asyncio
 
+import httpx
 import pytest
+import respx
 from nonebot.adapters.console import Message as ConsoleMessage
 from nonebot.adapters.onebot.v11 import Message as V11Message
 from nonebot.adapters.onebot.v11 import MessageSegment as V11MS
@@ -375,3 +377,30 @@ async def test_api_reply_id(app: App) -> None:
         ctx.should_call_send(event, V11Message("123"))
         with ensure_context(bot, event):
             await Context.execute(bot, event, "print(await reply_id())")
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_api_http_request(app: App) -> None:  # noqa: ARG001
+    from nonebot_plugin_exe_code.interface.http import Http
+
+    url = "https://example.com/"
+    return_value = httpx.Response(200, content=b"test")
+
+    route_get = respx.get(url).mock(return_value)
+    resp = await Http().get(url)
+    assert route_get.called
+    assert resp.content == b"test"
+    request = route_get.calls.last.request
+    assert request.method == "GET"
+    assert str(request.url) == url
+
+    route_post = respx.post(url).mock(return_value)
+    resp = await Http().post(url, json={"test": "test"})
+    assert route_post.called
+    assert resp.content == b"test"
+    request = route_post.calls.last.request
+    assert request.method == "POST"
+    assert str(request.url) == url
+    assert request.headers["Content-Type"] == "application/json"
+    assert request.content == b'{"test":"test"}'

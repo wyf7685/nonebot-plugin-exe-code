@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from nonebot_plugin_alconna.uniseg import At, Image, Reply, Text, UniMessage
+from yarl import URL
 
 from ..constant import DATA_DIR
 from ..typings import T_ConstVar, T_Context, UserStr
@@ -21,7 +22,7 @@ def context_var(item: Any, name: str | None = None) -> None:
 context_var((None, None), "__exception__")
 context_var(lambda x: At(flag="user", target=str(x)), "At")
 context_var(lambda x: Reply(id=str(x)), "Reply")
-[context_var(i) for i in {Image, Text, UniMessage, UserStr}]
+[context_var(i) for i in {Image, Text, UniMessage, UserStr, Path, URL}]
 
 
 def get_default_context() -> T_Context:

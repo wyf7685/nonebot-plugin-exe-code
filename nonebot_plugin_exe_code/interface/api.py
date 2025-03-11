@@ -12,6 +12,7 @@ from ..typings import T_ConstVar, T_Context, T_Message, is_message_t
 from .decorators import debug_log, export, strict
 from .group import Group
 from .help_doc import descript, message_alia
+from .http import Http
 from .interface import Interface
 from .user import User
 from .user_const_var import get_default_context, load_const, set_const
@@ -305,6 +306,8 @@ class API[B: Bot, E: Event](Interface):
         if is_super_user(self.bot, self.uid):
             for k, v in export_superuser():
                 self._export(k, v)
+
+        self._export("http", Http())
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} user_id={self.uid}>"
