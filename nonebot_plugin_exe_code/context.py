@@ -78,20 +78,43 @@ def fake_cache(filename: str, code: str) -> Generator[None]:
         get_driver().task_group.start_soon(_cleanup, 300, cbs)
 
 
+def fix_code(node: ast.With, ctx: T_Context) -> None:
+    if sys.version_info >= (3, 13):
+        return
+
+    # Set variables to localns to avoid UnboundLocalError
+    #  by inserting `globals()[name] = name` for each name in ctx
+    node.body.extend(
+        ast.Assign(
+            targets=[ast.Name(id=name)],
+            value=ast.Subscript(
+                value=ast.Call(ast.Name("globals"), [], []),
+                slice=ast.Constant(name),
+            ),
+            lineno=0,
+        )
+        for name in ctx
+        if not name.startswith("__")
+    )
+
+
 @contextlib.contextmanager
 def setup_ctx(ctx: T_Context) -> Generator[None]:
-    # 0 -> current frame    sys._getframe
-    # 1 -> contextmanager   next(gen)
-    # 2 -> executor         with __context__:
-    localns = sys._getframe(2).f_locals  # noqa: SLF001
-
-    # set variables to localns to avoid UnboundLocalError
     old_names = {name for name in ctx if not name.startswith("__")}
-    for name in old_names:
-        localns[name] = ctx[name]
+    frame = sys._getframe()  # noqa: SLF001
+    while "__context__" not in frame.f_locals and frame.f_back:
+        frame = frame.f_back
 
-    localns["exc"], localns["tb"] = ctx.pop("__exception__", (None, None))
-    localns["__exception__"] = (None, None)
+    # Set variables to localns to avoid UnboundLocalError
+    #  by writing to frame.f_locals is only available since Python 3.13
+    # See https://peps.python.org/pep-0667/
+    if sys.version_info >= (3, 13):
+        localns = frame.f_locals
+        for name in old_names:
+            localns[name] = ctx[name]
+        localns["exc"], localns["tb"] = ctx.pop("__exception__", (None, None))
+        localns["__exception__"] = (None, None)
+        del localns
 
     try:
         yield
@@ -99,11 +122,11 @@ def setup_ctx(ctx: T_Context) -> Generator[None]:
         ctx["__exception__"] = (exc, traceback.format_exc())
     finally:
         # update ctx with localns
-        new_names = {name for name in localns if not name.startswith("__")}
+        new_names = {name for name in frame.f_locals if not name.startswith("__")}
         for name in old_names - new_names:
             del ctx[name]
         for name in (old_names & new_names) | (new_names - old_names):
-            ctx[name] = localns[name]
+            ctx[name] = frame.f_locals[name]
 
 
 class Context:
@@ -159,7 +182,9 @@ class Context:
         # 将解析后的代码插入到 with 语句块中
         parsed = ast.parse(EXECUTOR_FUNCTION, mode="exec")
         func_def = next(x for x in parsed.body if isinstance(x, ast.AsyncFunctionDef))
-        next(x for x in func_def.body if isinstance(x, ast.With)).body.extend(stmts)
+        with_block = next(x for x in func_def.body if isinstance(x, ast.With))
+        fix_code(with_block, self.ctx)
+        with_block.body.extend(stmts)
         solved = ast.unparse(parsed)
 
         # 将代码编译为 code 对象 (附加文件名)

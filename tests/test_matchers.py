@@ -105,6 +105,7 @@ async def test_getmid(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_getimg(app: App) -> None:
+    # sourcery skip: use-fstring-for-concatenation
     import PIL.Image
 
     from nonebot_plugin_exe_code.context import Context
@@ -172,6 +173,7 @@ async def test_getimg(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_getimg_exception_1(app: App) -> None:
+    # sourcery skip: use-fstring-for-concatenation
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
 
@@ -214,6 +216,7 @@ async def test_getimg_exception_1(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_getimg_exception_2(app: App) -> None:
+    # sourcery skip: use-fstring-for-concatenation
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
 
@@ -263,6 +266,7 @@ await feedback("test 2")
 
 @pytest.mark.asyncio
 async def test_terminate(app: App) -> None:
+    # sourcery skip: use-fstring-for-concatenation
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.terminate import handle_terminate, matcher
 
