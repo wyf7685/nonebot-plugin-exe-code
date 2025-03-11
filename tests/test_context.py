@@ -151,3 +151,21 @@ async def test_delete_builtins(app: App) -> None:
             assert context.ctx.pop("__builtins__", None) is not None
             await context.execute(bot, event, "api, UniMessage")
             assert "__builtins__" in context.ctx
+
+
+@pytest.mark.asyncio
+async def test_context_namespace(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event, session = fake_v11_event_session(bot)
+
+        with ensure_context(bot, event):
+            context = Context.get_context(session)
+            await context.execute(bot, event, "a = 1")
+            assert context.ctx["a"] == 1
+            await context.execute(bot, event, "a = 2")
+            assert context.ctx["a"] == 2
+            await context.execute(bot, event, "del a")
+            assert "a" not in context.ctx

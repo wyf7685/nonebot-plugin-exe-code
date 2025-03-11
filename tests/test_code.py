@@ -51,7 +51,11 @@ async def test_api_message(app: App) -> None:
 
 
 code_test_extract_code = (
-    "print(" + MessageSegment.at(111) + ")\nprint(" + MessageSegment.image(b"") + ")\n"
+    MessageSegment.text("print(")
+    + MessageSegment.at(111)
+    + MessageSegment.text(")\nprint(")
+    + MessageSegment.image(b"")
+    + MessageSegment.text(")\n")
 )
 
 

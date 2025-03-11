@@ -12,6 +12,8 @@ from .fake.onebot11 import fake_v11_bot, fake_v11_event_session
 
 @pytest.mark.asyncio
 async def test_as_unimsg(app: App) -> None:
+    # sourcery skip: use-fstring-for-concatenation
+
     from nonebot.adapters.onebot.v11 import MessageSegment as v11MS
     from nonebot_plugin_alconna.uniseg import At, UniMessage
 
@@ -36,6 +38,8 @@ async def test_as_unimsg(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_as_msg(app: App) -> None:
+    # sourcery skip: use-fstring-for-concatenation
+
     from nonebot.adapters import Message
     from nonebot.adapters.onebot.v11 import Message as v11Message
     from nonebot.adapters.onebot.v11 import MessageSegment as v11MS
