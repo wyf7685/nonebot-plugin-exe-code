@@ -82,19 +82,41 @@ def fix_code(node: ast.With, ctx: T_Context) -> None:
     if sys.version_info >= (3, 13):
         return
 
+    globals_ = ast.Call(ast.Name("globals"), [], [])
+
+    def get(*args: ast.expr) -> ast.Call:
+        return ast.Call(ast.Attribute(value=globals_, attr="get"), list(args), [])
+
+    def sub(name: str) -> ast.Subscript:
+        return ast.Subscript(value=globals_, slice=ast.Constant(name))
+
     # Set variables to localns to avoid UnboundLocalError
-    #  by inserting `globals()[name] = name` for each name in ctx
+    #  by inserting `name = globals()[name]` for each name in ctx
     node.body.extend(
-        ast.Assign(
-            targets=[ast.Name(id=name)],
-            value=ast.Subscript(
-                value=ast.Call(ast.Name("globals"), [], []),
-                slice=ast.Constant(name),
-            ),
-            lineno=0,
-        )
+        ast.Assign(targets=[ast.Name(id=name)], value=sub(name), lineno=0)
         for name in ctx
         if not name.startswith("__")
+    )
+
+    # (None, None)
+    default_exc = ast.Tuple([ast.Constant(None), ast.Constant(None)])
+
+    # exc, tb = globals().get("__exception__", (None, None))
+    node.body.append(
+        ast.Assign(
+            targets=[ast.Tuple([ast.Name(id="exc"), ast.Name(id="tb")])],
+            value=get(ast.Constant("__exception__"), default_exc),
+            lineno=0,
+        )
+    )
+
+    # globals()["__exception__"] = (None, None)
+    node.body.append(
+        ast.Assign(
+            targets=[sub("__exception__")],
+            value=default_exc,
+            lineno=0,
+        )
     )
 
 
