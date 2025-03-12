@@ -134,9 +134,10 @@ def setup_ctx(ctx: T_Context) -> Generator[None]:
         localns = frame.f_locals
         for name in old_names:
             localns[name] = ctx[name]
-        localns["exc"], localns["tb"] = ctx.pop("__exception__", (None, None))
-        localns["__exception__"] = (None, None)
         del localns
+
+    ctx["exc"], ctx["tb"] = ctx.pop("__exception__", (None, None))
+    ctx["__exception__"] = (None, None)
 
     try:
         yield
