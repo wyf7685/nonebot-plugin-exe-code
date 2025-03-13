@@ -1,5 +1,6 @@
 import ast
 import contextlib
+import functools
 import inspect
 import linecache
 import time
@@ -28,7 +29,7 @@ from .typings import T_Context
 
 logger = nonebot.logger.opt(colors=True)
 
-type T_Executor = Callable[[], Awaitable[object]]
+type T_Executor = Callable[[], Awaitable[None]]
 type T_ExecutorCtx = Callable[[], contextlib.AbstractContextManager[None]]
 
 
@@ -69,34 +70,28 @@ def fake_cache(filename: str, code: str) -> Generator[None]:
 
 class _NodeTransformer(ast.NodeTransformer):
     @staticmethod
-    def _await_call(func: ast.expr, arg: ast.expr | None) -> ast.expr:
+    def _call_api(name: str, arg: ast.expr | None) -> ast.expr:
+        func = ast.Attribute(ast.Name("api", ctx=ast.Load()), name, ctx=ast.Load())
         return ast.Await(ast.Call(func, [arg] if arg else [], []))
 
     @override
     def visit_Return(self, node: ast.Return) -> ast.Expr:
-        expr = self._await_call(
-            ast.Attribute(ast.Name("api", ctx=ast.Load()), "finish", ctx=ast.Load()),
-            node.value,
-        )
-        return ast.Expr(expr)
+        return ast.Expr(self._call_api("finish", node.value))
 
     @override
     def visit_Yield(self, node: ast.Yield) -> ast.expr:
-        return self._await_call(
-            ast.Attribute(ast.Name("api", ctx=ast.Load()), "feedback", ctx=ast.Load()),
-            node.value,
-        )
+        return self._call_api("feedback", node.value)
 
 
 def solve_code(
     source: str, filename: str, ctx: dict[str, object]
-) -> tuple[str, Callable[[], Awaitable[None]]]:
+) -> tuple[T_Executor, T_ExecutorCtx]:
     # 可能抛出 SyntaxError, 由 matcher 处理
     parsed = ast.parse(source)
 
-    fixed = ast.fix_missing_locations(_NodeTransformer().visit(parsed))
+    solved = ast.unparse(ast.fix_missing_locations(_NodeTransformer().visit(parsed)))
     code: types.CodeType = compile(
-        source=fixed,
+        source=solved,
         filename=filename,
         mode="exec",
         flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT,
@@ -109,7 +104,7 @@ def solve_code(
     if not is_coro:
         executor = run_sync(executor)
 
-    return ast.unparse(fixed), executor
+    return executor, functools.partial(fake_cache, filename, solved)
 
 
 class Context:
@@ -156,43 +151,61 @@ class Context:
 
         return cls.__contexts[uin]
 
+    @property
+    def colored_uin(self) -> str:
+        return f"<y>{escape_tag(self.uin)}</y>"
+
+    def _get_filename(self) -> str:
+        return f"<executor_{self.uin}_{int(time.time())}>"
+
+    async def _check_buffer(self) -> None:
+        if buf := Buffer.get(self.uin).read().rstrip("\n"):
+            logger.debug(f"用户 {self.colored_uin} 清空缓冲:")
+            logger.opt(raw=True).debug(buf)
+            await UniMessage.text(buf).send()
+
+    async def _inner_execute(
+        self, executor: T_Executor
+    ) -> tuple[object, BaseException | None]:
+        result = err = None
+
+        with anyio.CancelScope() as self.cancel_scope:
+            try:
+                await executor()
+            except ExecutorFinishedException as finished:
+                result = finished.result
+            except BaseException as exc:
+                self.ctx["exc"] = err = exc
+                self.ctx["tb"] = traceback.format_exc()
+            finally:
+                self.cancel_scope = None
+
+        return result, err
+
     @classmethod
     async def execute(cls, bot: Bot, event: Event, code: str) -> None:
-        session = extract_session(bot, event)
-        uin = cls._session2uin(session)
-        colored_uin = f"<y>{escape_tag(uin)}</y>"
-        self = cls.get_context(session)
+        self = cls.get_context(session := extract_session(bot, event))
         api = get_api_class(bot)(bot, event, session, self.ctx)
 
         # 执行代码时加异步锁，避免出现多段代码分别读写变量
         # api 导出接口到 ctx
         async with self.lock, api:
-            filename = f"<executor_{self.uin}_{int(time.time())}>"
-            solved, executor = solve_code(code, filename, self.ctx)
-            escaped = escape_tag(repr(executor))
-            logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
+            executor, ctx = solve_code(code, self._get_filename(), self.ctx)
+            logger.debug(
+                f"为用户 {self.colored_uin} 创建 executor: {escape_tag(repr(executor))}"
+            )
 
-            result = err = None
-            with anyio.CancelScope() as self.cancel_scope, fake_cache(filename, solved):
-                try:
-                    await executor()
-                except ExecutorFinishedException as finished:
-                    result = finished.result
-                except BaseException as exc:
-                    self.ctx["exc"] = err = exc
-                    self.ctx["tb"] = traceback.format_exc()
-                finally:
-                    self.cancel_scope = None
+            with ctx():
+                result, err = await self._inner_execute(executor)
 
-            if buf := Buffer.get(uin).read().rstrip("\n"):
-                logger.debug(f"用户 {colored_uin} 清空缓冲:")
-                logger.opt(raw=True).debug(buf)
-                await UniMessage.text(buf).send()
+            await self._check_buffer()
 
             if result is not None:
-                result = repr(result)
-                logger.debug(f"用户 {colored_uin} 输出返回值: {escape_tag(result)}")
-                await UniMessage.text(result).send()
+                result_repr = repr(result)
+                logger.debug(
+                    f"用户 {self.colored_uin} 输出返回值: {escape_tag(result_repr)}"
+                )
+                await UniMessage.text(result_repr).send()
 
             # 处理异常
             if err is not None:
