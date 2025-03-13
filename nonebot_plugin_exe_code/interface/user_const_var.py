@@ -19,7 +19,6 @@ def context_var(item: Any, name: str | None = None) -> None:
     DEFAULT_BUILTINS[key] = item
 
 
-context_var((None, None), "__exception__")
 context_var(lambda x: At(flag="user", target=str(x)), "At")
 context_var(lambda x: Reply(id=str(x)), "Reply")
 [context_var(i) for i in {Image, Text, UniMessage, UserStr, Path, URL}]

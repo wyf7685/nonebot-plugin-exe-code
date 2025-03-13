@@ -28,20 +28,6 @@ from .typings import T_Context
 
 logger = nonebot.logger.opt(colors=True)
 
-EXECUTOR_FUNCTION = """\
-async def __executor__(__context__, /):
-    with __context__:
-        del __context__
-"""
-ASYNCGEN_WRAPPER = """\
-async def wrapper():
-    try:
-        async for value in gen():
-            await api.feedback(repr(value))
-    except BaseException as exc:
-        import traceback
-        ctx["__exception__"] = (exc, traceback.format_exc())
-"""
 type T_Executor = Callable[[], Awaitable[object]]
 type T_ExecutorCtx = Callable[[], contextlib.AbstractContextManager[None]]
 
@@ -193,7 +179,8 @@ class Context:
                 except ExecutorFinishedException as finished:
                     result = finished.result
                 except BaseException as exc:
-                    self.ctx["__exception__"] = (err := exc, traceback.format_exc())
+                    self.ctx["exc"] = err = exc
+                    self.ctx["tb"] = traceback.format_exc()
                 finally:
                     self.cancel_scope = None
 
