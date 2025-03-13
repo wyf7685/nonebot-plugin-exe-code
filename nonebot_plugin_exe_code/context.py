@@ -196,7 +196,7 @@ class Context:
 
             # 处理异常
             if err is not None:
-                raise cast(Exception, err)
+                raise err
 
     def cancel(self) -> bool:
         if self.cancel_scope is None:
