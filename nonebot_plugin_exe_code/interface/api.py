@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from typing import Any, ClassVar, Self, override
 
 import anyio
@@ -182,6 +182,11 @@ class API[B: Bot, E: Event](Interface):
             target=None,
             message=msg,
         )
+
+    @debug_log
+    async def feedback_from(self, msgs: Iterable[object]) -> None:
+        for msg in msgs:
+            await self.feedback(msg)
 
     @descript(
         description="立即中止当前代码执行",

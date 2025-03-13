@@ -82,6 +82,20 @@ class _NodeTransformer(ast.NodeTransformer):
     def visit_Yield(self, node: ast.Yield) -> ast.expr:
         return self._call_api("feedback", node.value)
 
+    @override
+    def visit_YieldFrom(self, node: ast.YieldFrom) -> ast.expr:
+        return self._call_api("feedback_from", node.value)
+
+    @override
+    def visit_Try(self, node: ast.Try) -> ast.Try:
+        node.body[:] = [self.visit(stmt) for stmt in node.body]
+        node.handlers[:] = [self.visit(handler) for handler in node.handlers]
+        handler = ast.ExceptHandler(
+            ast.Name("InternalException", ctx=ast.Load()), body=[ast.Raise()]
+        )
+        node.handlers.insert(0, handler)
+        return node
+
 
 def solve_code(
     source: str, filename: str, ctx: dict[str, object]

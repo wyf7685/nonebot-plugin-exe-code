@@ -7,9 +7,10 @@ from nonebot_plugin_alconna.uniseg import At, Image, Reply, Text, UniMessage
 from yarl import URL
 
 from ..constant import DATA_DIR
+from ..exception import InternalException
 from ..typings import T_ConstVar, T_Context, UserStr
 
-DEFAULT_BUILTINS = builtins.__dict__.copy()
+DEFAULT_BUILTINS = {k: v for k, v in builtins.__dict__.items() if not k.startswith("_")}
 BUILTINS_KEY = "__builtins__"
 
 
@@ -21,7 +22,19 @@ def context_var(item: Any, name: str | None = None) -> None:
 
 context_var(lambda x: At(flag="user", target=str(x)), "At")
 context_var(lambda x: Reply(id=str(x)), "Reply")
-[context_var(i) for i in {Image, Text, UniMessage, UserStr, Path, URL}]
+[
+    context_var(i)
+    for i in {
+        Image,
+        Text,
+        UniMessage,
+        UserStr,
+        Path,
+        URL,
+        InternalException,
+        __import__,
+    }
+]
 
 
 def get_default_context() -> T_Context:

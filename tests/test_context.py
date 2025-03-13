@@ -131,10 +131,10 @@ async def test_async_generator_executor(app: App) -> None:
 
         ctx.should_call_send(event, Message("1"))
         ctx.should_call_send(event, Message("2"))
-        ctx.should_call_send(event, Message("3"))
+        ctx.should_call_send(event, Message("0"))
         with ensure_context(bot, event), pytest.raises(ReachLimit):
             await Context.get_context(session).execute(
-                bot, event, "yield 1\nyield 2\nyield 3\nyield 4"
+                bot, event, "yield 1\nyield 2\nyield from range(3)"
             )
 
 
