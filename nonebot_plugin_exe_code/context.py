@@ -70,30 +70,33 @@ def fake_cache(filename: str, code: str) -> Generator[None]:
 
 class _NodeTransformer(ast.NodeTransformer):
     @staticmethod
-    def _call_api(name: str, arg: ast.expr | None) -> ast.expr:
-        func = ast.Attribute(ast.Name("api", ctx=ast.Load()), name, ctx=ast.Load())
+    def call_api(name: str, arg: ast.expr | None) -> ast.expr:
+        globals_ = ast.Call(ast.Name("globals", ctx=ast.Load()), [], [])
+        api = ast.Subscript(globals_, ast.Constant("api"))
+        func = ast.Attribute(api, name, ctx=ast.Load())
         return ast.Await(ast.Call(func, [arg] if arg else [], []))
 
     @override
     def visit_Return(self, node: ast.Return) -> ast.Expr:
-        return ast.Expr(self._call_api("finish", node.value))
+        return ast.Expr(self.call_api("finish", node.value))
 
     @override
     def visit_Yield(self, node: ast.Yield) -> ast.expr:
-        return self._call_api("feedback", node.value)
+        return self.call_api("feedback", node.value)
 
     @override
     def visit_YieldFrom(self, node: ast.YieldFrom) -> ast.expr:
-        return self._call_api("feedback_from", node.value)
+        return self.call_api("feedback_from", node.value)
 
     @override
     def visit_Try(self, node: ast.Try) -> ast.Try:
         node.body[:] = [self.visit(stmt) for stmt in node.body]
-        node.handlers[:] = [self.visit(handler) for handler in node.handlers]
-        handler = ast.ExceptHandler(
-            ast.Name("InternalException", ctx=ast.Load()), body=[ast.Raise()]
-        )
-        node.handlers.insert(0, handler)
+        if node.handlers:
+            node.handlers[:] = [self.visit(handler) for handler in node.handlers]
+            handler = ast.ExceptHandler(
+                ast.Name("InternalException", ctx=ast.Load()), body=[ast.Raise()]
+            )
+            node.handlers.insert(0, handler)
         return node
 
 
