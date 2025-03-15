@@ -308,6 +308,7 @@ class API[B: Bot, E: Event](Interface):
     @override
     def export(self) -> None:
         super().export()
+        self._export("__api__", self)
 
         for k, v in load_const(self.session_id).items():
             self._export(k, v)

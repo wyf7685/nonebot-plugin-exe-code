@@ -45,7 +45,7 @@ class Interface:
             if (desc := get_method_description(value))
         }
 
-    def _export(self, key: str, val: Any) -> None:
+    def _export(self, key: str, val: object) -> None:
         if self.__context is None:  # pragma: no cover
             raise TypeError(
                 f"Interface class {type(self).__name__!r} not allowed to export"

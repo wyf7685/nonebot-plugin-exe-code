@@ -71,9 +71,7 @@ def fake_cache(filename: str, code: str) -> Generator[None]:
 class _NodeTransformer(ast.NodeTransformer):
     @staticmethod
     def call_api(name: str, arg: ast.expr | None) -> ast.expr:
-        globals_ = ast.Call(ast.Name("globals", ctx=ast.Load()), [], [])
-        api = ast.Subscript(globals_, ast.Constant("api"))
-        func = ast.Attribute(api, name, ctx=ast.Load())
+        func = ast.Attribute(ast.Name("__api__", ctx=ast.Load()), name, ctx=ast.Load())
         return ast.Await(ast.Call(func, [arg] if arg else [], []))
 
     @override
