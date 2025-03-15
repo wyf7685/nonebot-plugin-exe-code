@@ -101,7 +101,9 @@ class _NodeTransformer(ast.NodeTransformer):
 
 
 def solve_code(
-    source: str, filename: str, ctx: dict[str, object]
+    source: str,
+    filename: str,
+    ctx: dict[str, object],
 ) -> tuple[T_Executor, T_ExecutorCtx]:
     # 可能抛出 SyntaxError, 由 matcher 处理
     parsed = ast.parse(source)
@@ -121,6 +123,7 @@ def solve_code(
     if not is_coro:
         executor = run_sync(executor)
 
+    ctx["__name__"] = filename
     return executor, functools.partial(fake_cache, filename, solved)
 
 
