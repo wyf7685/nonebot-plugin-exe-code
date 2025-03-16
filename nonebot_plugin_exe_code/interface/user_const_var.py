@@ -35,6 +35,7 @@ context_var(lambda x: Reply(id=str(x)), "Reply")
         __import__,
     }
 ]
+context_var(UniMessage, "U")  # shortcut
 
 
 def get_default_context() -> T_Context:

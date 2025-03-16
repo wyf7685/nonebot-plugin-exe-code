@@ -36,7 +36,7 @@ def register_api[A: type["API"]](adapter: type[Adapter]) -> Callable[[A], A]:
     def decorator(api: A) -> A:
         api_registry[adapter] = api
         adapter_name = adapter.get_name()
-        for desc in api.__method_description__.values():
+        for desc in api.__method_description__:
             desc.description = f"[{adapter_name}] {desc.description}"
         return api
 
