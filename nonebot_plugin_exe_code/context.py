@@ -69,10 +69,19 @@ def fake_cache(filename: str, code: str) -> Generator[None]:
 
 
 class _NodeTransformer(ast.NodeTransformer):
+    _handler = ast.ExceptHandler(
+        ast.Name("InternalException", ctx=ast.Load()),
+        body=[ast.Raise()],
+    )
+
     @staticmethod
-    def call_api(name: str, arg: ast.expr | None) -> ast.expr:
-        func = ast.Attribute(ast.Name("__api__", ctx=ast.Load()), name, ctx=ast.Load())
-        return ast.Await(ast.Call(func, [arg] if arg else [], []))
+    @functools.cache
+    def _api(name: str) -> ast.expr:
+        return ast.Attribute(ast.Name("__api__", ctx=ast.Load()), name, ctx=ast.Load())
+
+    def call_api(self, name: str, arg: ast.expr | None) -> ast.expr:
+        args = [self.visit(arg)] if arg else []
+        return ast.Await(ast.Call(self._api(name), args, []))
 
     @override
     def visit_Return(self, node: ast.Return) -> ast.Expr:
@@ -88,13 +97,9 @@ class _NodeTransformer(ast.NodeTransformer):
 
     @override
     def visit_Try(self, node: ast.Try) -> ast.Try:
-        node.body[:] = [self.visit(stmt) for stmt in node.body]
-        if node.handlers:
-            node.handlers[:] = [self.visit(handler) for handler in node.handlers]
-            handler = ast.ExceptHandler(
-                ast.Name("InternalException", ctx=ast.Load()), body=[ast.Raise()]
-            )
-            node.handlers.insert(0, handler)
+        for member in (node.body, node.handlers, node.orelse, node.finalbody):
+            member[:] = map(self.visit, member)
+        node.handlers.insert(0, self._handler)
         return node
 
 
