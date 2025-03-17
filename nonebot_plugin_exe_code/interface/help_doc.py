@@ -4,7 +4,7 @@ import inspect
 import weakref
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Concatenate, NoReturn, cast, overload
+from typing import TYPE_CHECKING, Any, Concatenate, NoReturn, cast, overload, override
 
 from nonebot.adapters import Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt
@@ -67,6 +67,10 @@ class MethodDescription[T: "Interface", **P, R]:
     result: str | None
     ignore: set[str]
 
+    @property
+    def name(self) -> str:
+        return self.call.__name__
+
     def format(self) -> str:
         return DESCRIPTION_FORMAT.format(
             decl=func_declaration(self.call, self.ignore),
@@ -79,13 +83,17 @@ class MethodDescription[T: "Interface", **P, R]:
             res=self.result or "无",
         )
 
+    @override
+    def __hash__(self) -> int:
+        return hash(self.name)
+
 
 class MethodDescriptor[T: "Interface", **P, R]:
     __name: str
     __desc: MethodDescription[T, P, R]
 
     def __init__(self, desc: MethodDescription[T, P, R]) -> None:
-        self.__name = desc.call.__name__
+        self.__name = desc.name
         self.__desc = desc
         setattr(desc.call, INTERFACE_METHOD_DESCRIPTION, weakref.ref(desc))
 

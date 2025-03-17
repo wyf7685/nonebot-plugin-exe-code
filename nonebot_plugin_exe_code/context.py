@@ -3,11 +3,11 @@ import contextlib
 import functools
 import inspect
 import linecache
-import sys
 import time
 import traceback
+import types
 from collections.abc import Awaitable, Callable, Generator
-from typing import Any, ClassVar, Self, cast
+from typing import Any, ClassVar, Self, cast, override
 
 import anyio
 import anyio.abc
@@ -15,31 +15,21 @@ import nonebot
 from nonebot import get_driver
 from nonebot.adapters import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
-from nonebot.utils import escape_tag
+from nonebot.utils import escape_tag, run_sync
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
 from nonebot_plugin_session import Session, SessionIdType, extract_session
 
-from .exception import BotEventMismatch, SessionNotInitialized
-from .interface import API, Buffer, get_api_class, get_default_context
+from .exception import (
+    BotEventMismatch,
+    ExecutorFinishedException,
+    SessionNotInitialized,
+)
+from .interface import Buffer, get_api_class, get_default_context
 from .typings import T_Context
 
 logger = nonebot.logger.opt(colors=True)
 
-EXECUTOR_FUNCTION = """\
-async def __executor__(__context__, /):
-    with __context__:
-        del __context__
-"""
-ASYNCGEN_WRAPPER = """\
-async def wrapper():
-    try:
-        async for value in gen():
-            await api.feedback(repr(value))
-    except BaseException as exc:
-        import traceback
-        ctx["__exception__"] = (exc, traceback.format_exc())
-"""
-type T_Executor = Callable[[], Awaitable[object]]
+type T_Executor = Callable[[], Awaitable[None]]
 type T_ExecutorCtx = Callable[[], contextlib.AbstractContextManager[None]]
 
 
@@ -78,78 +68,66 @@ def fake_cache(filename: str, code: str) -> Generator[None]:
         get_driver().task_group.start_soon(_cleanup, 300, cbs)
 
 
-def fix_code(node: ast.With, ctx: T_Context) -> None:
-    if sys.version_info >= (3, 13):
-        return
-
-    globals_ = ast.Call(ast.Name("globals"), [], [])
-
-    def get(*args: ast.expr) -> ast.Call:
-        return ast.Call(ast.Attribute(value=globals_, attr="get"), list(args), [])
-
-    def sub(name: str) -> ast.Subscript:
-        return ast.Subscript(value=globals_, slice=ast.Constant(name))
-
-    # Set variables to localns to avoid UnboundLocalError
-    #  by inserting `name = globals()[name]` for each name in ctx
-    node.body.extend(
-        ast.Assign(targets=[ast.Name(id=name)], value=sub(name), lineno=0)
-        for name in ctx
-        if not name.startswith("__")
+class _NodeTransformer(ast.NodeTransformer):
+    _handler = ast.ExceptHandler(
+        ast.Name("InternalException", ctx=ast.Load()),
+        body=[ast.Raise()],
     )
 
-    # (None, None)
-    default_exc = ast.Tuple([ast.Constant(None), ast.Constant(None)])
+    @staticmethod
+    @functools.cache
+    def _api(name: str) -> ast.expr:
+        return ast.Attribute(ast.Name("__api__", ctx=ast.Load()), name, ctx=ast.Load())
 
-    # exc, tb = globals().get("__exception__", (None, None))
-    node.body.append(
-        ast.Assign(
-            targets=[ast.Tuple([ast.Name(id="exc"), ast.Name(id="tb")])],
-            value=get(ast.Constant("__exception__"), default_exc),
-            lineno=0,
-        )
+    def call_api(self, name: str, arg: ast.expr | None) -> ast.expr:
+        args = [self.visit(arg)] if arg else []
+        return ast.Await(ast.Call(self._api(name), args, []))
+
+    @override
+    def visit_Return(self, node: ast.Return) -> ast.Expr:
+        return ast.Expr(self.call_api("finish", node.value))
+
+    @override
+    def visit_Yield(self, node: ast.Yield) -> ast.expr:
+        return self.call_api("feedback", node.value)
+
+    @override
+    def visit_YieldFrom(self, node: ast.YieldFrom) -> ast.expr:
+        return self.call_api("feedback_from", node.value)
+
+    @override
+    def visit_Try(self, node: ast.Try) -> ast.Try:
+        for member in (node.body, node.handlers, node.orelse, node.finalbody):
+            member[:] = map(self.visit, member.copy())
+        node.handlers.insert(0, self._handler)
+        return node
+
+
+def solve_code(
+    source: str,
+    filename: str,
+    ctx: dict[str, object],
+) -> tuple[T_Executor, T_ExecutorCtx]:
+    # 可能抛出 SyntaxError, 由 matcher 处理
+    parsed = ast.parse(source)
+
+    solved = ast.unparse(ast.fix_missing_locations(_NodeTransformer().visit(parsed)))
+    code: types.CodeType = compile(
+        source=solved,
+        filename=filename,
+        mode="exec",
+        flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT,
     )
 
-    # globals()["__exception__"] = (None, None)
-    node.body.append(
-        ast.Assign(
-            targets=[sub("__exception__")],
-            value=default_exc,
-            lineno=0,
-        )
-    )
+    is_coro = bool(code.co_flags & inspect.CO_COROUTINE)
+    exec(f"{('async ' if is_coro else '')}def __executor__(): ...", ctx, ctx)  # noqa: S102
+    executor = cast(Callable[..., Any], ctx.pop("__executor__"))
+    executor.__code__ = code
+    if not is_coro:
+        executor = run_sync(executor)
 
-
-@contextlib.contextmanager
-def setup_ctx(ctx: T_Context) -> Generator[None]:
-    old_names = {name for name in ctx if not name.startswith("__")}
-    frame = sys._getframe()  # noqa: SLF001
-    while "__context__" not in frame.f_locals and frame.f_back:
-        frame = frame.f_back
-
-    # Set variables to localns to avoid UnboundLocalError
-    #  by writing to frame.f_locals is only available since Python 3.13
-    # See https://peps.python.org/pep-0667/
-    if sys.version_info >= (3, 13):
-        localns = frame.f_locals
-        for name in old_names:
-            localns[name] = ctx[name]
-        del localns
-
-    ctx["exc"], ctx["tb"] = ctx.pop("__exception__", (None, None))
-    ctx["__exception__"] = (None, None)
-
-    try:
-        yield
-    except BaseException as exc:
-        ctx["__exception__"] = (exc, traceback.format_exc())
-    finally:
-        # update ctx with localns
-        new_names = {name for name in frame.f_locals if not name.startswith("__")}
-        for name in old_names - new_names:
-            del ctx[name]
-        for name in (old_names & new_names) | (new_names - old_names):
-            ctx[name] = frame.f_locals[name]
+    ctx["__name__"] = filename
+    return executor, functools.partial(fake_cache, filename, solved)
 
 
 class Context:
@@ -196,69 +174,65 @@ class Context:
 
         return cls.__contexts[uin]
 
-    def _solve_code(self, raw_code: str, api: API) -> tuple[T_Executor, T_ExecutorCtx]:
-        assert self.lock.locked(), "`Context._solve_code` called without lock"
+    @property
+    def colored_uin(self) -> str:
+        return f"<y>{escape_tag(self.uin)}</y>"
 
-        # 可能抛出 SyntaxError, 由 matcher 处理
-        stmts = ast.parse(raw_code, mode="exec").body
+    def _get_filename(self) -> str:
+        return f"<executor_{self.uin}_{int(time.time())}>"
 
-        # 将解析后的代码插入到 with 语句块中
-        parsed = ast.parse(EXECUTOR_FUNCTION, mode="exec")
-        func_def = next(x for x in parsed.body if isinstance(x, ast.AsyncFunctionDef))
-        with_block = next(x for x in func_def.body if isinstance(x, ast.With))
-        fix_code(with_block, self.ctx)
-        with_block.body.extend(stmts)
-        solved = ast.unparse(parsed)
+    async def _check_buffer(self) -> None:
+        if buf := Buffer.get(self.uin).read().rstrip("\n"):
+            logger.debug(f"用户 {self.colored_uin} 清空缓冲:")
+            logger.opt(raw=True).debug(buf)
+            await UniMessage.text(buf).send()
 
-        # 将代码编译为 code 对象 (附加文件名)
-        filename = f"<executor_{self.uin}_{int(time.time())}>"
-        code = compile(solved, filename, "exec")
+    async def _inner_execute(
+        self, executor: T_Executor
+    ) -> tuple[object, BaseException | None]:
+        result = err = None
 
-        # 在 ctx 中执行代码，获取 executor
-        exec(code, self.ctx, self.ctx)  # noqa: S102
-        executor = functools.partial(self.ctx.pop(func_def.name), setup_ctx(self.ctx))
+        with anyio.CancelScope() as self.cancel_scope:
+            try:
+                await executor()
+            except ExecutorFinishedException as finished:
+                result = finished.result
+            except BaseException as exc:
+                self.ctx["exc"] = err = exc
+                self.ctx["tb"] = traceback.format_exc()
+            finally:
+                self.cancel_scope = None
 
-        # 如果 executor 是异步生成器函数, 则进行包装, 输出其每一步 yield 的值
-        if inspect.isasyncgenfunction(executor):
-            ns = {"ctx": self.ctx, "api": api, "gen": executor}
-            exec(ASYNCGEN_WRAPPER, ns, ns)  # noqa: S102
-            executor = ns.pop("wrapper")
-
-        return executor, functools.partial(fake_cache, filename, solved)
+        return result, err
 
     @classmethod
     async def execute(cls, bot: Bot, event: Event, code: str) -> None:
-        session = extract_session(bot, event)
-        uin = cls._session2uin(session)
-        colored_uin = f"<y>{escape_tag(uin)}</y>"
-        self = cls.get_context(session)
+        self = cls.get_context(session := extract_session(bot, event))
         api = get_api_class(bot)(bot, event, session, self.ctx)
 
         # 执行代码时加异步锁，避免出现多段代码分别读写变量
         # api 导出接口到 ctx
         async with self.lock, api:
-            executor, ctx = self._solve_code(code, api)
-            escaped = escape_tag(repr(executor))
-            logger.debug(f"为用户 {colored_uin} 创建 executor: {escaped}")
+            executor, ctx = solve_code(code, self._get_filename(), self.ctx)
+            logger.debug(
+                f"为用户 {self.colored_uin} 创建 executor: {escape_tag(repr(executor))}"
+            )
 
-            result = None
-            with anyio.CancelScope() as self.cancel_scope, ctx():
-                result = await executor()
-            self.cancel_scope = None
+            with ctx():
+                result, err = await self._inner_execute(executor)
 
-            if buf := Buffer.get(uin).read().rstrip("\n"):
-                logger.debug(f"用户 {colored_uin} 清空缓冲:")
-                logger.opt(raw=True).debug(buf)
-                await UniMessage.text(buf).send()
+            await self._check_buffer()
 
             if result is not None:
-                result = repr(result)
-                logger.debug(f"用户 {colored_uin} 输出返回值: {escape_tag(result)}")
-                await UniMessage.text(result).send()
+                result_repr = repr(result)
+                logger.debug(
+                    f"用户 {self.colored_uin} 输出返回值: {escape_tag(result_repr)}"
+                )
+                await UniMessage.text(result_repr).send()
 
-        # 处理异常
-        if exc := self.ctx.setdefault("__exception__", (None, None))[0]:
-            raise cast(Exception, exc)
+            # 处理异常
+            if err is not None:
+                raise err
 
     def cancel(self) -> bool:
         if self.cancel_scope is None:

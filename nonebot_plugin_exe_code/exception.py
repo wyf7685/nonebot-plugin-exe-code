@@ -4,12 +4,14 @@ Error
 ├── ContextError
 │   ├── SessionNotInitialized
 │   └── BotEventMismatch
-└── APIError
-    ├── APICallFailed
-    ├── ParamError
-    │   ├── ParamMismatch
-    │   └── ParamMissing
-    └── NoMethodDescription
+├── APIError
+|   ├── APICallFailed
+|   ├── ParamError
+|   │   ├── ParamMismatch
+|   │   └── ParamMissing
+|   └── NoMethodDescription
+└── InternalException
+    └── ExecutorFinishedException
 """
 
 from typing import Any
@@ -52,3 +54,11 @@ class ParamMissing(ParamError): ...
 
 
 class NoMethodDescription(APIError): ...
+
+
+class InternalException(Error): ...
+
+
+class ExecutorFinishedException(InternalException):
+    def __init__(self, result: object) -> None:
+        self.result = result

@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from typing import Any, ClassVar, Self, override
 
 import anyio
@@ -7,7 +7,7 @@ from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage, reply_fet
 from nonebot_plugin_session import Session, SessionIdType
 from nonebot_plugin_waiter import prompt as waiter_prompt
 
-from ..exception import BotEventMismatch, NoMethodDescription
+from ..exception import BotEventMismatch, ExecutorFinishedException, NoMethodDescription
 from ..typings import T_ConstVar, T_Context, T_Message, is_message_t
 from .decorators import debug_log, export, strict
 from .group import Group
@@ -36,7 +36,7 @@ def register_api[A: type["API"]](adapter: type[Adapter]) -> Callable[[A], A]:
     def decorator(api: A) -> A:
         api_registry[adapter] = api
         adapter_name = adapter.get_name()
-        for desc in api.__method_description__.values():
+        for desc in api.__method_description__:
             desc.description = f"[{adapter_name}] {desc.description}"
         return api
 
@@ -173,7 +173,7 @@ class API[B: Bot, E: Event](Interface):
     )
     @export
     @debug_log
-    async def feedback(self, msg: Any) -> Receipt:
+    async def feedback(self, msg: object) -> Receipt:
         if not is_message_t(msg):
             msg = str(msg)
 
@@ -182,6 +182,20 @@ class API[B: Bot, E: Event](Interface):
             target=None,
             message=msg,
         )
+
+    @debug_log
+    async def feedback_from(self, msgs: Iterable[object]) -> None:
+        for msg in msgs:
+            await self.feedback(msg)
+
+    @descript(
+        description="立即中止当前代码执行",
+        parameters=dict(obj="需要输出的对象"),
+    )
+    @export
+    @debug_log
+    async def finish(self, obj: object = None) -> None:
+        raise ExecutorFinishedException(obj)
 
     @descript(
         description="获取用户对象",
@@ -294,6 +308,7 @@ class API[B: Bot, E: Event](Interface):
     @override
     def export(self) -> None:
         super().export()
+        self._export("__api__", self)
 
         for k, v in load_const(self.session_id).items():
             self._export(k, v)
