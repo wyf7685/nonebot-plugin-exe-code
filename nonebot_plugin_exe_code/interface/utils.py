@@ -160,8 +160,7 @@ def _send_message():  # noqa: ANN202
     call_cnt: dict[int, int] = {}
 
     async def clean(key: int) -> None:  # pragma: no cover
-        if key in call_cnt:
-            del call_cnt[key]
+        call_cnt.pop(key, None)
 
     async def send_message(
         session: Session,
