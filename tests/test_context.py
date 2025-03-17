@@ -1,6 +1,7 @@
 # ruff: noqa: S101
 
 import asyncio
+from typing import override
 
 import pytest
 from nonebot.adapters.onebot.v11 import Message
@@ -169,3 +170,82 @@ async def test_context_namespace(app: App) -> None:
             assert context.ctx["a"] == 2
             await context.execute(bot, event, "del a")
             assert "a" not in context.ctx
+
+
+code_test_ast_node_transformer_convert = """\
+yield y
+yield from z
+return x
+"""
+code_test_ast_node_transformer_func_def = """\
+def _() -> X:
+    return x
+async def _():
+    yield y
+    yield from z
+"""
+
+
+def test_ast_node_transformer() -> None:
+    import ast
+
+    from nonebot_plugin_exe_code.context import _NodeTransformer as Transformer
+
+    class Visitor1(ast.NodeVisitor):
+        await_visited = False
+
+        @override
+        def visit_Return(self, node: ast.Return) -> None:
+            pytest.fail("Return should be transformed")
+
+        @override
+        def visit_Yield(self, node: ast.Yield) -> None:
+            pytest.fail("Yield should be transformed")
+
+        @override
+        def visit_YieldFrom(self, node: ast.YieldFrom) -> None:
+            pytest.fail("YieldFrom should be transformed")
+
+        @override
+        def visit_Await(self, node: ast.Await) -> ast.Await:
+            expected = {"x": "finish", "y": "feedback", "z": "feedback_from"}
+            match node.value:
+                case ast.Call(
+                    func=ast.Attribute(value=ast.Name(id="__api__"), attr=api_attr),
+                    args=[ast.Name(id=key)],
+                ):
+                    assert api_attr == expected[key]
+                    Visitor1.await_visited = True
+                    return node
+            pytest.fail("Await not added correctly")
+
+    tree = ast.parse(code_test_ast_node_transformer_convert)
+    transformed = Transformer().visit(tree)
+    Visitor1().visit(transformed)
+    assert Visitor1.await_visited, "Await not added"
+
+    class Visitor2(ast.NodeVisitor):
+        @override
+        def visit_Return(self, node: ast.Return) -> None:
+            match node.value:
+                case ast.Name(id="x"):
+                    return
+            pytest.fail("Return should not be transformed")
+
+        @override
+        def visit_Yield(self, node: ast.Yield) -> None:
+            match node.value:
+                case ast.Name(id="y"):
+                    return
+            pytest.fail("Yield should not be transformed")
+
+        @override
+        def visit_YieldFrom(self, node: ast.YieldFrom) -> None:
+            match node.value:
+                case ast.Name(id="z"):
+                    return
+            pytest.fail("YieldFrom should not be transformed")
+
+    tree = ast.parse(code_test_ast_node_transformer_func_def)
+    transformed = Transformer().visit(tree)
+    Visitor2().visit(transformed)

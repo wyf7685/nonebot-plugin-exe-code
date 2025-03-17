@@ -92,17 +92,24 @@ class _NodeTransformer(ast.NodeTransformer):
         args = [self.visit(arg)] if arg else []
         return ast.Await(ast.Call(self._api(name), args, []))
 
+    def _visit_function[T: (ast.FunctionDef, ast.AsyncFunctionDef)](self, node: T) -> T:
+        with self.disable_transform():
+            for member in node.decorator_list, node.body:
+                member[:] = map(self.visit, member.copy())
+            node.args = self.visit(node.args)
+            if node.returns is not None:
+                node.returns = self.visit(node.returns)
+            return node
+
     @override
     def visit_FunctionDef(self, node: ast.FunctionDef) -> ast.FunctionDef:
-        with self.disable_transform():
-            return self.visit(node)
+        return self._visit_function(node)
 
     @override
     def visit_AsyncFunctionDef(
         self, node: ast.AsyncFunctionDef
     ) -> ast.AsyncFunctionDef:
-        with self.disable_transform():
-            return self.visit(node)
+        return self._visit_function(node)
 
     @override
     def visit_Return(self, node: ast.Return) -> ast.stmt:
