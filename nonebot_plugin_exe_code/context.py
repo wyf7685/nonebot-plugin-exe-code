@@ -73,27 +73,48 @@ class _NodeTransformer(ast.NodeTransformer):
         ast.Name("InternalException", ctx=ast.Load()),
         body=[ast.Raise()],
     )
+    enabled: bool = True
 
     @staticmethod
     @functools.cache
     def _api(name: str) -> ast.expr:
         return ast.Attribute(ast.Name("__api__", ctx=ast.Load()), name, ctx=ast.Load())
 
+    @contextlib.contextmanager
+    def disable_transform(self) -> Generator[None, None, None]:
+        self.enabled, enabled = False, self.enabled
+        try:
+            yield
+        finally:
+            self.enabled = enabled
+
     def call_api(self, name: str, arg: ast.expr | None) -> ast.expr:
         args = [self.visit(arg)] if arg else []
         return ast.Await(ast.Call(self._api(name), args, []))
 
     @override
-    def visit_Return(self, node: ast.Return) -> ast.Expr:
-        return ast.Expr(self.call_api("finish", node.value))
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> ast.FunctionDef:
+        with self.disable_transform():
+            return self.visit(node)
+
+    @override
+    def visit_AsyncFunctionDef(
+        self, node: ast.AsyncFunctionDef
+    ) -> ast.AsyncFunctionDef:
+        with self.disable_transform():
+            return self.visit(node)
+
+    @override
+    def visit_Return(self, node: ast.Return) -> ast.stmt:
+        return ast.Expr(self.call_api("finish", node.value)) if self.enabled else node
 
     @override
     def visit_Yield(self, node: ast.Yield) -> ast.expr:
-        return self.call_api("feedback", node.value)
+        return self.call_api("feedback", node.value) if self.enabled else node
 
     @override
     def visit_YieldFrom(self, node: ast.YieldFrom) -> ast.expr:
-        return self.call_api("feedback_from", node.value)
+        return self.call_api("feedback_from", node.value) if self.enabled else node
 
     @override
     def visit_Try(self, node: ast.Try) -> ast.Try:
