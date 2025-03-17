@@ -98,7 +98,7 @@ class _NodeTransformer(ast.NodeTransformer):
     @override
     def visit_Try(self, node: ast.Try) -> ast.Try:
         for member in (node.body, node.handlers, node.orelse, node.finalbody):
-            member[:] = map(self.visit, member)
+            member[:] = map(self.visit, member.copy())
         node.handlers.insert(0, self._handler)
         return node
 
