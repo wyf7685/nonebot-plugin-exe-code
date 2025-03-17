@@ -388,19 +388,27 @@ async def test_api_http_request(app: App) -> None:  # noqa: ARG001
     return_value = httpx.Response(200, content=b"test")
 
     route_get = respx.get(url).mock(return_value)
-    resp = await Http().get(url)
+    resp = (await Http().get(url)).raise_for_status()
     assert route_get.called
-    assert resp.content == b"test"
+    assert resp.read() == b"test"
     request = route_get.calls.last.request
     assert request.method == "GET"
     assert str(request.url) == url
 
     route_post = respx.post(url).mock(return_value)
-    resp = await Http().post(url, json={"test": "test"})
+    resp = (await Http().post(url, json={"test": "test"})).raise_for_status()
     assert route_post.called
-    assert resp.content == b"test"
+    assert resp.read() == b"test"
     request = route_post.calls.last.request
     assert request.method == "POST"
     assert str(request.url) == url
     assert request.headers["Content-Type"] == "application/json"
     assert request.content == b'{"test":"test"}'
+
+    respx.clear()
+
+    route_fail = respx.get(url).mock(httpx.Response(404, content=None))
+    resp = await Http().get(url)
+    assert route_fail.called
+    with pytest.raises(RuntimeError):
+        resp.raise_for_status().read()

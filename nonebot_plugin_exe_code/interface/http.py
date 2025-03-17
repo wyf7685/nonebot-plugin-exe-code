@@ -2,7 +2,7 @@
 import functools
 from collections.abc import Mapping
 from http.cookiejar import CookieJar
-from typing import IO
+from typing import IO, Self, override
 
 from multidict import CIMultiDict
 from nonebot import get_driver
@@ -51,6 +51,39 @@ _PARAMETER_DESCRIPTION = dict(
 )
 
 
+class WrappedResponse:
+    status_code: int
+    headers: CIMultiDict[str]
+    content: ContentTypes
+    request: Request | None
+
+    def __init__(self, response: Response) -> None:
+        self._response = response
+
+    def __getattr__(self, name: str) -> object:
+        return getattr(self._response, name)
+
+    @property
+    def ok(self) -> bool:
+        return 200 <= self.status_code < 300
+
+    def raise_for_status(self) -> Self:
+        if not self.ok:
+            raise RuntimeError(f"Request failed with status code {self.status_code}")
+        return self
+
+    def read(self) -> bytes:
+        return (
+            self.content.encode()
+            if isinstance(self.content, str)
+            else self.content or b""
+        )
+
+    @override
+    def __repr__(self) -> str:  # pragma: no cover
+        return repr(self._response)
+
+
 class Http(Interface):
     __slots__ = ("__dict__",)
 
@@ -85,7 +118,7 @@ class Http(Interface):
         data: DataTypes = None,
         json: object = None,
         files: FilesTypes = None,
-    ) -> Response:
+    ) -> WrappedResponse:
         setup = Request(
             method=method,
             url=url,
@@ -97,7 +130,7 @@ class Http(Interface):
             json=json,
             files=files,
         )
-        return await self._http.request(setup)
+        return WrappedResponse(await self._http.request(setup))
 
     @descript(
         description="发送 GET 请求",
@@ -115,7 +148,7 @@ class Http(Interface):
         data: DataTypes = None,
         json: object = None,
         files: FilesTypes = None,
-    ) -> Response:
+    ) -> WrappedResponse:
         return await self.request(
             "GET",
             url,
@@ -144,7 +177,7 @@ class Http(Interface):
         data: DataTypes = None,
         json: object = None,
         files: FilesTypes = None,
-    ) -> Response:
+    ) -> WrappedResponse:
         return await self.request(
             "POST",
             url,
