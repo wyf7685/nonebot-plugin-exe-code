@@ -435,7 +435,6 @@ with contextlib.suppress(ImportError):
                 timeout="上传文件超时时长，单位秒",
             ),
         )
-        @debug_log
         @strict
         async def send_group_file(
             self,
@@ -469,7 +468,6 @@ with contextlib.suppress(ImportError):
                 timeout="上传文件超时时长，单位秒",
             ),
         )
-        @debug_log
         @strict
         async def send_private_file(
             self,
@@ -500,7 +498,6 @@ with contextlib.suppress(ImportError):
                 timeout="上传文件超时时长，单位秒",
             ),
         )
-        @debug_log
         @strict
         async def send_file(
             self,
