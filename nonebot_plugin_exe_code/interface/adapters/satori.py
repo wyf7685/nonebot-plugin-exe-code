@@ -29,7 +29,7 @@ with contextlib.suppress(ImportError):
         )
         @debug_log
         @override
-        async def get_platform(self) -> str:
+        async def get_platform(self: BaseAPI[Bot, MessageEvent]) -> str:
             login = await self.bot.login_get()
             platform = login.platform or "Unkown"
             return f"[{self.bot.type}] {platform}"

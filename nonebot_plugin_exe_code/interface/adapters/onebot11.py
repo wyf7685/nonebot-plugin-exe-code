@@ -118,7 +118,7 @@ with contextlib.suppress(ImportError):
         )
         @debug_log
         @override
-        async def get_platform(self) -> str:
+        async def get_platform(self: BaseAPI[Bot, MessageEvent]) -> str:
             data = await self.bot.get_version_info()
             return f"[{self.bot.type}] {data['app_name']} {data['app_version']}"
 
@@ -576,7 +576,7 @@ with contextlib.suppress(ImportError):
             if m is None:
                 raise APICallFailed("Markdown 消息发送失败: 无法提取 res_id")
 
-            res = await send("forward", {"id": m.group(1)})
+            res = await send("forward", {"id": m[1]})
             if res.error:
                 raise APICallFailed("Markdown 消息发送失败") from res.error
 
