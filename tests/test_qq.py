@@ -5,8 +5,8 @@ from nonebot.adapters.qq import Message
 from nonebug import App
 
 from .conftest import exe_code_group
-from .fake.common import ensure_context, fake_user_id
-from .fake.qq import fake_qq_bot, fake_qq_event_session, fake_qq_guild_exe_code
+from .fake.common import fake_user_id
+from .fake.qq import ensure_qq_api, fake_qq_bot, fake_qq_guild_exe_code
 
 
 @pytest.mark.asyncio
@@ -30,11 +30,5 @@ async def test_qq(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_qq_mid(app: App) -> None:
-    from nonebot_plugin_exe_code.context import Context
-
-    async with app.test_api() as ctx:
-        bot = fake_qq_bot(ctx)
-        event, _ = fake_qq_event_session(bot)
-        ctx.should_call_send(event, Message("id"))
-        with ensure_context(bot, event):
-            await Context.execute(bot, event, "print(api.mid)")
+    async with app.test_api() as ctx, ensure_qq_api(ctx) as api:
+        assert api.mid == api.event.event_id

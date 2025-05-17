@@ -24,11 +24,6 @@ def parse_handler_dependent(depends: DependsInner) -> Dependent[Any]:
     )
 
 
-code_test_extract_code = (
-    "print(" + MessageSegment.at(111) + ")\nprint(" + MessageSegment.image(b"") + ")\n"
-)
-
-
 @pytest.mark.asyncio
 async def test_extract_code(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.depends import _extract_code
@@ -119,7 +114,7 @@ async def test_event_image_1(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        expected = Image(id="base64://" + base64.b64encode(fake_img_bytes).decode())
+        expected = Image(id=f"base64://{base64.b64encode(fake_img_bytes).decode()}")
         with ensure_context(bot, event):
             result = await dependent(bot=bot, event=event, state=state, stack=stack)
             assert result == expected
@@ -145,7 +140,7 @@ async def test_event_image_2(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        expected = Image(id="base64://" + base64.b64encode(fake_img_bytes).decode())
+        expected = Image(id=f"base64://{base64.b64encode(fake_img_bytes).decode()}")
         with ensure_context(bot, event):
             result = await dependent(bot=bot, event=event, state=state, stack=stack)
             assert result == expected
@@ -170,7 +165,7 @@ async def test_event_image_3(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        expected = Image(id="base64://" + base64.b64encode(b"\0\0\0").decode())
+        expected = Image(id=f"base64://{base64.b64encode(b'\0\0\0').decode()}")
         with ensure_context(bot, event):
             result = await dependent(bot=bot, event=event, state=state, stack=stack)
             assert result == expected

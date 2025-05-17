@@ -9,7 +9,6 @@ from nonebug import NONEBOT_INIT_KWARGS, App
 superuser = 7685000
 exe_code_user = 114514
 exe_code_group = 1919810
-exe_code_qbot_id = 10007685
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -22,7 +21,6 @@ def pytest_configure(config: pytest.Config) -> None:
         "exe_code": {
             "user": [str(exe_code_user)],
             "group": [str(exe_code_group)],
-            "qbot_id": exe_code_qbot_id,
         },
     }
     os.environ["PLUGIN_ALCONNA_TESTENV"] = "1"

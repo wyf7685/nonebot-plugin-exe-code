@@ -18,3 +18,8 @@ with contextlib.suppress(ImportError):
         @override
         def _validate(cls, bot: Bot, event: Event) -> bool:
             return isinstance(bot, Bot) and isinstance(event, MessageEvent)
+
+        @property
+        @override
+        def mid(self) -> str | int:
+            return self.event.event_id or super().mid

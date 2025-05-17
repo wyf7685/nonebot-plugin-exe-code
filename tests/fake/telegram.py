@@ -1,5 +1,7 @@
 # ruff: noqa: N806, S106
 
+import contextlib
+from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 from nonebot.adapters.telegram import Adapter, Bot, Message
@@ -14,10 +16,12 @@ from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pydantic import create_model
 
-from .common import fake_bot, fake_user_id
+from .common import ensure_context, fake_api, fake_bot, fake_user_id
 
 if TYPE_CHECKING:
     from nonebot_plugin_session import Session
+
+    from nonebot_plugin_exe_code.interface.adapters.telegram import API
 
 
 def fake_telegram_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> Bot:
@@ -102,6 +106,10 @@ def fake_telegram_event_session(
 def fake_telegram_event_session(
     bot: Bot, user_id: int, group_id: int
 ) -> tuple[GroupMessageEvent, "Session"]: ...
+@overload
+def fake_telegram_event_session(
+    bot: Bot, user_id: int | None, group_id: int | None
+) -> tuple[PrivateMessageEvent | GroupMessageEvent, "Session"]: ...
 
 
 def fake_telegram_event_session(
@@ -125,3 +133,22 @@ def fake_telegram_event_session(
         )
     session = extract_session(bot, event)
     return event, session
+
+
+@contextlib.asynccontextmanager
+async def ensure_telegram_api(
+    ctx: ApiContext,
+    *,
+    user_id: int | None = None,
+    group_id: int | None = None,
+) -> AsyncGenerator["API"]:
+    bot = fake_telegram_bot(ctx)
+    event, _ = fake_telegram_event_session(bot, user_id=user_id, group_id=group_id)
+    api = fake_api(bot, event)
+
+    try:
+        with ensure_context(bot, event):
+            yield api
+    finally:
+        ctx.connected_bot.discard(bot)
+        bot.adapter.bot_disconnect(bot)

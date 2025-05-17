@@ -10,7 +10,6 @@ from collections.abc import Awaitable, Callable, Generator
 from typing import Any, ClassVar, Self, cast, override
 
 import anyio
-import anyio.abc
 import nonebot
 from nonebot import get_driver
 from nonebot.adapters import Bot, Event, Message

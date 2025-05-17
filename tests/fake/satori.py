@@ -1,5 +1,7 @@
 # ruff: noqa: N806
 
+import contextlib
+from collections.abc import AsyncGenerator
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, overload
 
@@ -25,10 +27,12 @@ from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pydantic import create_model
 
-from .common import fake_bot, fake_user_id
+from .common import ensure_context, fake_api, fake_bot, fake_user_id
 
 if TYPE_CHECKING:
     from nonebot_plugin_session import Session
+
+    from nonebot_plugin_exe_code.interface.adapters.satori import API
 
 
 def fake_satori_login() -> Login:
@@ -147,6 +151,10 @@ def fake_satori_event_session(
 def fake_satori_event_session(
     bot: Bot, user_id: str, channel_id: str
 ) -> tuple[PublicMessageCreatedEvent, "Session"]: ...
+@overload
+def fake_satori_event_session(
+    bot: Bot, user_id: str | None, channel_id: str | None
+) -> tuple[PrivateMessageCreatedEvent | PublicMessageCreatedEvent, "Session"]: ...
 
 
 def fake_satori_event_session(
@@ -173,3 +181,22 @@ def fake_satori_event_session(
         )
     session = extract_session(bot, event)
     return event, session
+
+
+@contextlib.asynccontextmanager
+async def ensure_satori_api(
+    ctx: ApiContext,
+    *,
+    user_id: str | None = None,
+    channel_id: str | None = None,
+) -> AsyncGenerator["API"]:
+    bot = fake_satori_bot(ctx)
+    event, _ = fake_satori_event_session(bot, user_id=user_id, channel_id=channel_id)
+    api = fake_api(bot, event)
+
+    try:
+        with ensure_context(bot, event):
+            yield api
+    finally:
+        ctx.connected_bot.discard(bot)
+        bot.adapter.bot_disconnect(bot)

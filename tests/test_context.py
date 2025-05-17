@@ -184,6 +184,12 @@ async def _():
     yield y
     yield from z
 """
+code_test_ast_node_transformer_try = """\
+try:
+    yield y
+finally:
+    yield from z
+"""
 
 
 def test_ast_node_transformer() -> None:
@@ -249,3 +255,16 @@ def test_ast_node_transformer() -> None:
     tree = ast.parse(code_test_ast_node_transformer_func_def)
     transformed = Transformer().visit(tree)
     Visitor2().visit(transformed)
+
+    class Visitor3(ast.NodeVisitor):
+        @override
+        def visit_Yield(self, node: ast.Yield) -> None:
+            pytest.fail("Yield should be transformed")
+
+        @override
+        def visit_YieldFrom(self, node: ast.YieldFrom) -> None:
+            pytest.fail("YieldFrom should be transformed")
+
+    tree = ast.parse(code_test_ast_node_transformer_try)
+    transformed = Transformer().visit(tree)
+    Visitor3().visit(transformed)

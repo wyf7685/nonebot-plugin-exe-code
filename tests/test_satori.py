@@ -3,10 +3,10 @@ from nonebot.adapters.satori import Message
 from nonebug import App
 
 from .conftest import exe_code_group, exe_code_user, superuser
-from .fake.common import ensure_context, fake_group_id, fake_user_id
+from .fake.common import fake_group_id, fake_user_id
 from .fake.satori import (
+    ensure_satori_api,
     fake_satori_bot,
-    fake_satori_event_session,
     fake_satori_login,
     fake_satori_private_message_created_event,
     fake_satori_public_message_created_event,
@@ -61,64 +61,43 @@ async def test_satori_public(app: App) -> None:
         ctx.should_finished(matcher)
 
 
-code_test_satori_set_mute = """\
-await api.set_mute(7685)
-"""
-
-
 @pytest.mark.asyncio
 async def test_satori_set_mute(app: App) -> None:
-    from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.exception import ParamMissing
 
-    async with app.test_api() as ctx:
-        bot = fake_satori_bot(ctx)
-        event, _ = fake_satori_event_session(bot, channel_id=str(exe_code_group))
+    async with (
+        app.test_api() as ctx,
+        ensure_satori_api(ctx, channel_id=str(exe_code_group)) as api,
+    ):
         ctx.should_call_api(
             "guild_member_mute",
             {
                 "guild_id": str(exe_code_group),
-                "user_id": event.user.id,
+                "user_id": api.event.user.id,
                 "duration": 7685000.0,
             },
         )
-        with ensure_context(bot, event):
-            await Context.execute(bot, event, code_test_satori_set_mute)
+        await api.set_mute(7685)
 
-        event, _ = fake_satori_event_session(bot)
-        with (
-            ensure_context(bot, event),
-            pytest.raises(ParamMissing, match="未指定群组ID"),
-        ):
-            await Context.execute(bot, event, code_test_satori_set_mute)
+    async with app.test_api() as ctx, ensure_satori_api(ctx) as api:
+        with pytest.raises(ParamMissing, match="未指定群组ID"):
+            await api.set_mute(7685)
 
 
 @pytest.mark.asyncio
 async def test_satori_mid(app: App) -> None:
-    from nonebot_plugin_exe_code.context import Context
-
-    async with app.test_api() as ctx:
-        bot = fake_satori_bot(ctx)
-        event, _ = fake_satori_event_session(bot)
-        ctx.should_call_send(event, Message("10000"))
-        with ensure_context(bot, event):
-            await Context.execute(bot, event, "print(api.mid)")
-
-
-code_test_satori_set_reaction = """\
-await api.set_reaction(123, api.mid)
-"""
+    async with app.test_api() as ctx, ensure_satori_api(ctx) as api:
+        assert api.mid == api.event.message.id
 
 
 @pytest.mark.asyncio
 async def test_satori_set_reaction(app: App) -> None:
-    from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.exception import ParamMissing
 
-    async with app.test_api() as ctx:
-        bot = fake_satori_bot(ctx)
-
-        event, _ = fake_satori_event_session(bot, channel_id=str(exe_code_group))
+    async with (
+        app.test_api() as ctx,
+        ensure_satori_api(ctx, channel_id=str(exe_code_group)) as api,
+    ):
         ctx.should_call_api(
             "reaction_create",
             {
@@ -137,32 +116,15 @@ async def test_satori_set_reaction(app: App) -> None:
             },
             result=None,
         )
-        with ensure_context(bot, event):
-            await Context.execute(bot, event, code_test_satori_set_reaction)
+        await api.set_reaction(123, api.mid)
 
-        event, _ = fake_satori_event_session(bot)
-        with (
-            ensure_context(bot, event),
-            pytest.raises(ParamMissing, match="未指定群组ID"),
-        ):
-            await Context.execute(bot, event, code_test_satori_set_reaction)
-
-
-code_test_satori_get_platform = """\
-print(await api.get_platform())
-"""
+    async with app.test_api() as ctx, ensure_satori_api(ctx) as api:
+        with pytest.raises(ParamMissing, match="未指定群组ID"):
+            await api.set_reaction(123, api.mid)
 
 
 @pytest.mark.asyncio
 async def test_satori_get_platform(app: App) -> None:
-    from nonebot_plugin_exe_code.context import Context
-
-    expected = Message("[Satori] platform")
-
-    async with app.test_api() as ctx:
-        bot = fake_satori_bot(ctx)
-        event, _ = fake_satori_event_session(bot)
+    async with app.test_api() as ctx, ensure_satori_api(ctx) as api:
         ctx.should_call_api("login_get", {}, fake_satori_login())
-        ctx.should_call_send(event, expected)
-        with ensure_context(bot, event):
-            await Context.execute(bot, event, code_test_satori_get_platform)
+        assert await api.get_platform() == "[Satori] platform"
