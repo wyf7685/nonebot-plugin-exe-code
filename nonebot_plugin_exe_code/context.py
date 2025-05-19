@@ -75,7 +75,7 @@ class _NodeTransformer(ast.NodeTransformer):
     enabled: bool = True
 
     @staticmethod
-    @functools.cache
+    @functools.lru_cache(maxsize=16)
     def _api(name: str) -> ast.expr:
         return ast.Attribute(ast.Name("__api__", ctx=ast.Load()), name, ctx=ast.Load())
 
@@ -124,6 +124,9 @@ class _NodeTransformer(ast.NodeTransformer):
 
     @override
     def visit_Try(self, node: ast.Try) -> ast.Try:
+        if not self.enabled:
+            return node
+
         for member in (node.body, node.handlers, node.orelse, node.finalbody):
             member[:] = map(self.visit, member.copy())
         node.handlers.insert(0, self._handler)

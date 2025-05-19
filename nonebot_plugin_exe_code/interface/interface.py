@@ -92,16 +92,17 @@ class Interface:
     @classmethod
     def get_all_description(cls) -> tuple[list[str], list[str]]:
         method_dict: dict[str, _Desc] = {}
-        for c in cls.mro():
-            if issubclass(c, Interface):
-                for d in c.__method_description__:
-                    desc = _Desc(
-                        inst_name=cls.__inst_name__,
-                        func_name=d.name,
-                        is_export=is_export_method(d.call),
-                        description=d.format(),
-                    )
-                    method_dict.setdefault(desc.func_name, desc)
+
+        c: type[Interface]
+        for c in filter(lambda c: issubclass(c, Interface), cls.mro()):
+            for d in c.__method_description__:
+                desc = _Desc(
+                    inst_name=cls.__inst_name__,
+                    func_name=d.name,
+                    is_export=is_export_method(d.call),
+                    description=d.format(),
+                )
+                method_dict.setdefault(desc.func_name, desc)
 
         methods = sorted(
             method_dict.values(),
