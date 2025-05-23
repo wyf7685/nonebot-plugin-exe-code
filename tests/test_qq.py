@@ -6,7 +6,12 @@ from nonebug import App
 
 from .conftest import exe_code_group
 from .fake.common import fake_user_id
-from .fake.qq import ensure_qq_api, fake_qq_bot, fake_qq_guild_exe_code
+from .fake.qq import (
+    ensure_qq_api,
+    fake_qq_bot,
+    fake_qq_guild_exe_code,
+    make_qq_session_cache,
+)
 
 
 @pytest.mark.asyncio
@@ -22,10 +27,12 @@ async def test_qq(app: App) -> None:
             "test",
             "print(123)",
         )
+        cleanup = make_qq_session_cache(bot, event)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission()
         ctx.should_call_send(event, Message("123"))
         ctx.should_finished(matcher)
+    cleanup()
 
 
 @pytest.mark.asyncio

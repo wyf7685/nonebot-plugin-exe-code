@@ -2,11 +2,10 @@ from collections.abc import Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 
 import anyio
-import anyio.abc
 import nonebot
 from nonebot.adapters import Adapter, Bot, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Segment, Target, UniMessage
-from nonebot_plugin_session import Session
+from nonebot_plugin_user.models import UserSession
 
 from ..config import config
 from ..typings import T_API_Result, T_Context, T_Message, is_message_t
@@ -43,14 +42,14 @@ def is_super_user(bot: Bot, uin: str) -> bool:
 
 
 class Buffer:
-    _user_buf: ClassVar[dict[str, Self]] = {}
+    _user_buf: ClassVar[dict[int, Self]] = {}
     _buffer: str
 
     def __init__(self) -> None:
         self._buffer = ""
 
     @classmethod
-    def get(cls, uin: str) -> Self:
+    def get(cls, uin: int) -> Self:
         if uin not in cls._user_buf:
             cls._user_buf[uin] = cls()
         return cls._user_buf[uin]
@@ -86,7 +85,7 @@ class Result:
             raise KeyError(f"{key!r} 不能作为索引")
         raise TypeError("返回值 None 不支持索引操作")
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # pragma: no cover
         if self.error is not None:
             return f"<Result error={self.error!r}>"
         return f"<Result data={self._data!r}>"
@@ -163,7 +162,7 @@ def _send_message():  # noqa: ANN202
         call_cnt.pop(key, None)
 
     async def send_message(
-        session: Session,
+        session: UserSession,
         target: Target | None,
         message: T_Message,
     ) -> Receipt:

@@ -18,6 +18,8 @@ def pytest_configure(config: pytest.Config) -> None:
         "host": "127.0.0.1",
         "port": "8080",
         "superusers": [str(superuser)],
+        "sqlalchemy_database_url": "sqlite+aiosqlite://",
+        "alembic_startup_check": False,
         "exe_code": {
             "user": [str(exe_code_user)],
             "group": [str(exe_code_group)],
@@ -31,9 +33,12 @@ async def app() -> AsyncGenerator[App, None]:
     # 加载插件
     nonebot.require("nonebot_plugin_exe_code")
 
+    from nonebot_plugin_orm import init_orm
+
     from nonebot_plugin_exe_code.constant import DATA_DIR
 
     exist_file = {i.name for i in DATA_DIR.iterdir()}
+    await init_orm()
 
     yield App()
 

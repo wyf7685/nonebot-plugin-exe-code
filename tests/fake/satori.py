@@ -30,9 +30,10 @@ from pydantic import create_model
 from .common import ensure_context, fake_api, fake_bot, fake_user_id
 
 if TYPE_CHECKING:
-    from nonebot_plugin_session import Session
-
     from nonebot_plugin_exe_code.interface.adapters.satori import API
+
+
+type MessageEvent = PrivateMessageCreatedEvent | PublicMessageCreatedEvent
 
 
 def fake_satori_login() -> Login:
@@ -136,51 +137,32 @@ def fake_satori_public_exe_code(
 
 
 @overload
-def fake_satori_event_session(
-    bot: Bot,
-) -> tuple[PrivateMessageCreatedEvent, "Session"]: ...
+def fake_satori_event() -> PrivateMessageCreatedEvent: ...
 @overload
-def fake_satori_event_session(
-    bot: Bot, user_id: str
-) -> tuple[PrivateMessageCreatedEvent, "Session"]: ...
+def fake_satori_event(user_id: str) -> PrivateMessageCreatedEvent: ...
 @overload
-def fake_satori_event_session(
-    bot: Bot, *, channel_id: str
-) -> tuple[PublicMessageCreatedEvent, "Session"]: ...
+def fake_satori_event(*, channel_id: str) -> PublicMessageCreatedEvent: ...
 @overload
-def fake_satori_event_session(
-    bot: Bot, user_id: str, channel_id: str
-) -> tuple[PublicMessageCreatedEvent, "Session"]: ...
+def fake_satori_event(user_id: str, channel_id: str) -> PublicMessageCreatedEvent: ...
 @overload
-def fake_satori_event_session(
-    bot: Bot, user_id: str | None, channel_id: str | None
-) -> tuple[PrivateMessageCreatedEvent | PublicMessageCreatedEvent, "Session"]: ...
+def fake_satori_event(user_id: str | None, channel_id: str | None) -> MessageEvent: ...
 
 
-def fake_satori_event_session(
-    bot: Bot,
+def fake_satori_event(
     user_id: str | None = None,
     channel_id: str | None = None,
-) -> tuple[
-    PrivateMessageCreatedEvent | PublicMessageCreatedEvent,
-    "Session",
-]:
-    from nonebot_plugin_session import extract_session
-
+) -> MessageEvent:
     user_id = str(user_id or fake_user_id())
     if channel_id is not None:
-        event = fake_satori_public_message_created_event(
+        return fake_satori_public_message_created_event(
             user_id=user_id,
             channel_id=channel_id,
             content="",
         )
-    else:
-        event = fake_satori_private_message_created_event(
-            user_id=user_id,
-            content="",
-        )
-    session = extract_session(bot, event)
-    return event, session
+    return fake_satori_private_message_created_event(
+        user_id=user_id,
+        content="",
+    )
 
 
 @contextlib.asynccontextmanager
@@ -191,11 +173,11 @@ async def ensure_satori_api(
     channel_id: str | None = None,
 ) -> AsyncGenerator["API"]:
     bot = fake_satori_bot(ctx)
-    event, _ = fake_satori_event_session(bot, user_id=user_id, channel_id=channel_id)
-    api = fake_api(bot, event)
+    event = fake_satori_event(user_id=user_id, channel_id=channel_id)
+    api = await fake_api(bot, event)
 
     try:
-        with ensure_context(bot, event):
+        async with ensure_context(bot, event):
             yield api
     finally:
         ctx.connected_bot.discard(bot)

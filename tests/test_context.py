@@ -7,8 +7,8 @@ import pytest
 from nonebot.adapters.onebot.v11 import Message
 from nonebug import App
 
-from .fake.common import ensure_context
-from .fake.onebot11 import fake_v11_bot, fake_v11_event_session
+from .fake.common import ensure_context, fake_session
+from .fake.onebot11 import fake_v11_bot, fake_v11_event
 
 
 @pytest.mark.asyncio
@@ -17,7 +17,7 @@ async def test_lock(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, _ = fake_v11_event_session(bot)
+        event = fake_v11_event()
 
         async def _test(delay: float, code: str) -> None:
             await asyncio.sleep(delay)
@@ -25,11 +25,12 @@ async def test_lock(app: App) -> None:
 
         ctx.should_call_send(event, Message("1"))
         ctx.should_call_send(event, Message("2"))
+        ctx.should_call_send(event, Message("3"))
 
-        with ensure_context(bot, event):
+        async with ensure_context(bot, event):
             await asyncio.gather(
-                _test(0, "print(1); await sleep(0.1)"),
-                _test(0.01, "print(2)"),
+                _test(0, "print(1); await sleep(0.1); return 2"),
+                _test(0.01, "print(3)"),
             )
 
 
@@ -39,7 +40,8 @@ async def test_cancel(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event = fake_v11_event()
+        session = await fake_session(bot, event)
         result = False
 
         async def _test1() -> None:
@@ -51,7 +53,7 @@ async def test_cancel(app: App) -> None:
             await asyncio.sleep(0.01)
             result = Context.get_context(session).cancel()
 
-        with ensure_context(bot, event):
+        async with ensure_context(bot, event):
             await asyncio.gather(_test1(), _test2())
         assert result
 
@@ -63,8 +65,7 @@ async def test_context_variable(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
     async with app.test_api() as ctx:
-        bot = fake_v11_bot(ctx)
-        _, session = fake_v11_event_session(bot)
+        session = await fake_session(fake_v11_bot(ctx), fake_v11_event())
         context = Context.get_context(session)
 
     key, val = "aaa", 111
@@ -99,24 +100,24 @@ async def test_session_fetch(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
-        wrong_event, _ = fake_v11_event_session(bot)
+        event = fake_v11_event()
+        session = await fake_session(bot, event)
+        wrong_event = fake_v11_event()
 
-        with (
-            ensure_context(bot, wrong_event),
-            pytest.raises(BotEventMismatch),
-        ):
-            Context.get_context(event)
+        async with ensure_context(bot, wrong_event):
+            with pytest.raises(BotEventMismatch):
+                Context.get_context(event)
 
-        with ensure_context(bot, event):
+        async with ensure_context(bot, event):
             with pytest.raises(SessionNotInitialized):
                 Context.get_context(event)
             with pytest.raises(SessionNotInitialized):
                 Context.get_context(event.get_user_id())
 
-            Context.get_context(session)
-            Context.get_context(event)
-            Context.get_context(event.get_user_id())
+            context = Context.get_context(session)
+            assert Context.get_context(event) is context
+            assert Context.get_context(event.get_user_id()) is context
+            assert Context.get_context(context.uin) is context
 
 
 @pytest.mark.asyncio
@@ -128,15 +129,17 @@ async def test_async_generator_executor(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event = fake_v11_event()
+        session = await fake_session(bot, event)
 
         ctx.should_call_send(event, Message("1"))
         ctx.should_call_send(event, Message("2"))
         ctx.should_call_send(event, Message("0"))
-        with ensure_context(bot, event), pytest.raises(ReachLimit):
-            await Context.get_context(session).execute(
-                bot, event, "yield 1\nyield 2\nyield from range(3)"
-            )
+        async with ensure_context(bot, event):
+            with pytest.raises(ReachLimit):
+                await Context.get_context(session).execute(
+                    bot, event, "yield 1\nyield 2\nyield from range(3)"
+                )
 
 
 @pytest.mark.asyncio
@@ -145,9 +148,10 @@ async def test_delete_builtins(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event = fake_v11_event()
+        session = await fake_session(bot, event)
 
-        with ensure_context(bot, event):
+        async with ensure_context(bot, event):
             context = Context.get_context(session)
             assert context.ctx.pop("__builtins__", None) is not None
             await context.execute(bot, event, "api, UniMessage")
@@ -160,9 +164,10 @@ async def test_context_namespace(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, session = fake_v11_event_session(bot)
+        event = fake_v11_event()
+        session = await fake_session(bot, event)
 
-        with ensure_context(bot, event):
+        async with ensure_context(bot, event):
             context = Context.get_context(session)
             await context.execute(bot, event, "a = 1")
             assert context.ctx["a"] == 1
@@ -189,6 +194,13 @@ try:
     yield y
 finally:
     yield from z
+"""
+code_test_ast_node_transformer_try_func_def = """\
+def _() -> X:
+    try:
+        yield y
+    finally:
+        yield from z
 """
 
 
@@ -268,3 +280,29 @@ def test_ast_node_transformer() -> None:
     tree = ast.parse(code_test_ast_node_transformer_try)
     transformed = Transformer().visit(tree)
     Visitor3().visit(transformed)
+
+    class Visitor4(ast.NodeVisitor):
+        yield_visited = False
+        yield_from_visited = False
+
+        @override
+        def visit_Yield(self, node: ast.Yield) -> None:
+            match node.value:
+                case ast.Name(id="y"):
+                    Visitor4.yield_visited = True
+                    return
+            pytest.fail("Yield should not be transformed")
+
+        @override
+        def visit_YieldFrom(self, node: ast.YieldFrom) -> None:
+            match node.value:
+                case ast.Name(id="z"):
+                    Visitor4.yield_from_visited = True
+                    return
+            pytest.fail("YieldFrom should not be transformed")
+
+    tree = ast.parse(code_test_ast_node_transformer_try_func_def)
+    transformed = Transformer().visit(tree)
+    Visitor4().visit(transformed)
+    assert Visitor4.yield_visited, "Yield should not be transformed"
+    assert Visitor4.yield_from_visited, "YieldFrom should not be transformed"

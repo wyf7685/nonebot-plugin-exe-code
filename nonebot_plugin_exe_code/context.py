@@ -7,7 +7,7 @@ import time
 import traceback
 import types
 from collections.abc import Awaitable, Callable, Generator
-from typing import Any, ClassVar, Self, cast, override
+from typing import Any, ClassVar, Self, assert_never, cast, override
 
 import anyio
 import nonebot
@@ -16,14 +16,16 @@ from nonebot.adapters import Bot, Event, Message
 from nonebot.internal.matcher import current_bot, current_event
 from nonebot.utils import escape_tag, run_sync
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
-from nonebot_plugin_session import Session, SessionIdType, extract_session
+from nonebot_plugin_uninfo import get_session
+from nonebot_plugin_user.models import UserSession
+from nonebot_plugin_user.params import get_user_session
 
 from .exception import (
     BotEventMismatch,
     ExecutorFinishedException,
     SessionNotInitialized,
 )
-from .interface import Buffer, get_api_class, get_default_context
+from .interface import Buffer, create_api, get_default_context
 from .typings import T_Context
 
 logger = nonebot.logger.opt(colors=True)
@@ -161,42 +163,47 @@ def solve_code(
 
 
 class Context:
-    __ua2session: ClassVar[dict[tuple[str, str], Session]] = {}
-    __contexts: ClassVar[dict[str, Self]] = {}
+    __ua2uin: ClassVar[dict[tuple[str, str], int]] = {}
+    __contexts: ClassVar[dict[int, Self]] = {}
 
-    uin: str
+    uin: int
     ctx: T_Context
     lock: anyio.Lock
     cancel_scope: anyio.CancelScope | None = None
 
-    def __init__(self, uin: str) -> None:
+    def __init__(self, uin: int) -> None:
         self.uin = uin
         self.ctx = get_default_context()
         self.lock = anyio.Lock()
 
     @classmethod
-    def _session2uin(cls, session: Session | Event | str) -> str:
-        if isinstance(session, Event):
-            if current_event.get() is not session:
-                raise BotEventMismatch
-            key = (session.get_user_id(), current_bot.get().type)
-            if key not in cls.__ua2session:
-                raise SessionNotInitialized(key=key)
-            session = cls.__ua2session[key]
-        elif isinstance(session, str):
-            key = (session, current_bot.get().type)
-            if key not in cls.__ua2session:
-                raise SessionNotInitialized(key=key)
-            session = cls.__ua2session[key]
+    def _session2uin(cls, session: UserSession | Event | str | int) -> int:
+        match session:
+            case UserSession():
+                uin = session.user_id
+                key = (session.platform_user.id, session.adapter)
+                cls.__ua2uin[key] = uin
+            case Event():
+                if current_event.get() is not session:
+                    raise BotEventMismatch
+                key = (session.get_user_id(), current_bot.get().type)
+                if key not in cls.__ua2uin:
+                    raise SessionNotInitialized(key=key)
+                uin = cls.__ua2uin[key]
+            case str():
+                key = (session, current_bot.get().type)
+                if key not in cls.__ua2uin:
+                    raise SessionNotInitialized(key=key)
+                uin = cls.__ua2uin[key]
+            case int():
+                uin = session
+            case _:  # pragma: no cover
+                assert_never(session)
 
-        key = (session.id1 or "", session.bot_type)
-        if key not in cls.__ua2session:
-            cls.__ua2session[key] = session.model_copy()
-
-        return session.get_id(SessionIdType.USER).replace(" ", "_")
+        return uin
 
     @classmethod
-    def get_context(cls, session: Session | Event | str) -> Self:
+    def get_context(cls, session: UserSession | Event | str | int) -> Self:
         uin = cls._session2uin(session)
         if uin not in cls.__contexts:
             logger.debug(f"为用户 <y>{uin}</y> 创建 Context")
@@ -206,7 +213,7 @@ class Context:
 
     @property
     def colored_uin(self) -> str:
-        return f"<y>{escape_tag(self.uin)}</y>"
+        return f"<y>{self.uin}</y>"
 
     def _get_filename(self) -> str:
         return f"<executor_{self.uin}_{int(time.time())}>"
@@ -237,12 +244,15 @@ class Context:
 
     @classmethod
     async def execute(cls, bot: Bot, event: Event, code: str) -> None:
-        self = cls.get_context(session := extract_session(bot, event))
-        api = get_api_class(bot)(bot, event, session, self.ctx)
+        session = await get_user_session(await get_session(bot, event))
+        if session is None:
+            raise NotImplementedError
+
+        self = cls.get_context(session)
 
         # 执行代码时加异步锁，避免出现多段代码分别读写变量
         # api 导出接口到 ctx
-        async with self.lock, api:
+        async with self.lock, await create_api(bot, event, self.ctx):
             executor, ctx = solve_code(code, self._get_filename(), self.ctx)
             logger.debug(
                 f"为用户 {self.colored_uin} 创建 executor: {escape_tag(repr(executor))}"

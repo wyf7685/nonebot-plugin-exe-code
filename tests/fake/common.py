@@ -18,10 +18,12 @@ fake_img_bytes = (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Generator
+    from collections.abc import AsyncGenerator
 
     from nonebot.adapters import qq, satori, telegram
     from nonebot.adapters.onebot import v11 as onebot11
+    from nonebot_plugin_uninfo.fetch import InfoFetcher
+    from nonebot_plugin_user.models import UserSession
 
     from nonebot_plugin_exe_code.interface.adapters.onebot11 import API as V11API
     from nonebot_plugin_exe_code.interface.adapters.qq import API as QQAPI
@@ -30,72 +32,75 @@ if TYPE_CHECKING:
     from nonebot_plugin_exe_code.interface.api import API
 
     @overload
-    def fake_api(bot: onebot11.Bot, event: onebot11.Event) -> V11API: ...
+    async def fake_api(bot: onebot11.Bot, event: onebot11.Event) -> V11API: ...
     @overload
-    def fake_api(bot: qq.Bot, event: qq.Event) -> QQAPI: ...
+    async def fake_api(bot: qq.Bot, event: qq.Event) -> QQAPI: ...
     @overload
-    def fake_api(bot: satori.Bot, event: satori.event.Event) -> SatoriAPI: ...
+    async def fake_api(bot: satori.Bot, event: satori.event.Event) -> SatoriAPI: ...
     @overload
-    def fake_api(bot: telegram.Bot, event: telegram.Event) -> TelegramAPI: ...
+    async def fake_api(bot: telegram.Bot, event: telegram.Event) -> TelegramAPI: ...
     @overload
-    def fake_api[B: Bot, E: Event](bot: B, event: E) -> API[B, E]: ...
+    async def fake_api[B: Bot, E: Event](bot: B, event: E) -> API[B, E]: ...
 
     @overload
-    @contextlib.contextmanager
+    @contextlib.asynccontextmanager
     def ensure_context(
         bot: onebot11.Bot,
         event: onebot11.Event,
         matcher: Matcher | None = None,
-    ) -> Generator[V11API]: ...
+    ) -> AsyncGenerator[V11API]: ...
     @overload
-    @contextlib.contextmanager
+    @contextlib.asynccontextmanager
     def ensure_context(
         bot: qq.Bot,
         event: qq.Event,
         matcher: Matcher | None = None,
-    ) -> Generator[QQAPI]: ...
+    ) -> AsyncGenerator[QQAPI]: ...
     @overload
-    @contextlib.contextmanager
+    @contextlib.asynccontextmanager
     def ensure_context(
         bot: satori.Bot,
         event: satori.event.Event,
         matcher: Matcher | None = None,
-    ) -> Generator[SatoriAPI]: ...
+    ) -> AsyncGenerator[SatoriAPI]: ...
     @overload
-    @contextlib.contextmanager
+    @contextlib.asynccontextmanager
     def ensure_context(
         bot: telegram.Bot,
         event: telegram.Event,
         matcher: Matcher | None = None,
-    ) -> Generator[TelegramAPI]: ...
+    ) -> AsyncGenerator[TelegramAPI]: ...
     @overload
-    @contextlib.contextmanager
+    @contextlib.asynccontextmanager
     def ensure_context[B: Bot, E: Event](
         bot: B,
         event: E,
         matcher: Matcher | None = None,
-    ) -> Generator[API[B, E]]: ...
+    ) -> AsyncGenerator[API[B, E]]: ...
 
 
-def fake_api(bot: Bot, event: Event) -> "API":
-    from nonebot_plugin_session import extract_session
+async def fake_session(bot: Bot, event: Event) -> "UserSession":
+    from nonebot_plugin_uninfo import get_session
+    from nonebot_plugin_user.params import get_user_session
 
-    from nonebot_plugin_exe_code.interface import get_api_class, get_default_context
-
-    return get_api_class(bot)(
-        bot=bot,
-        event=event,
-        session=extract_session(bot, event),
-        context=get_default_context(),
-    )
+    session = await get_user_session(await get_session(bot, event))
+    assert session is not None, "Session is None"
+    return session
 
 
-@contextlib.contextmanager
-def ensure_context(
+async def fake_api(bot: Bot, event: Event) -> "API":
+    from nonebot_plugin_exe_code.interface import create_api, get_default_context
+
+    session = await fake_session(bot, event)
+    return await create_api(bot, event, get_default_context(), session)
+
+
+@contextlib.asynccontextmanager
+async def ensure_context(
     bot: Bot,
     event: Event,
     matcher: Matcher | None = None,
-) -> "Generator[API]":
+) -> "AsyncGenerator[API]":
     # ref: `nonebot.internal.matcher.matcher:Matcher.ensure_context`
     from nonebot.internal.matcher import current_bot, current_event, current_matcher
 
@@ -104,7 +109,7 @@ def ensure_context(
     m = current_matcher.set(matcher) if matcher else None
 
     try:
-        yield fake_api(bot, event)
+        yield await fake_api(bot, event)
     finally:
         current_bot.reset(b)
         current_event.reset(e)
@@ -123,3 +128,12 @@ def fake_bot[B: Bot](
         adapter=nonebot.get_adapter(adapter_base),
         **kwargs,
     )
+
+
+def get_uninfo_fetcher(bot: Bot) -> "InfoFetcher":
+    from nonebot_plugin_uninfo.adapters import INFO_FETCHER_MAPPING, alter_get_fetcher
+
+    adapter = bot.adapter.get_name()
+    fetcher = INFO_FETCHER_MAPPING.get(adapter) or alter_get_fetcher(adapter)
+    assert fetcher is not None, "fetcher is None"
+    return fetcher

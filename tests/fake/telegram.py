@@ -1,7 +1,7 @@
 # ruff: noqa: N806, S106
 
 import contextlib
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable, Generator
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 from nonebot.adapters.telegram import Adapter, Bot, Message
@@ -16,11 +16,9 @@ from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pydantic import create_model
 
-from .common import ensure_context, fake_api, fake_bot, fake_user_id
+from .common import ensure_context, fake_api, fake_bot, fake_user_id, get_uninfo_fetcher
 
 if TYPE_CHECKING:
-    from nonebot_plugin_session import Session
-
     from nonebot_plugin_exe_code.interface.adapters.telegram import API
 
 
@@ -91,48 +89,73 @@ def fake_telegram_group_message_event(**field: Any) -> GroupMessageEvent:
 
 
 @overload
-def fake_telegram_event_session(
-    bot: Bot,
-) -> tuple[PrivateMessageEvent, "Session"]: ...
+def fake_telegram_event() -> PrivateMessageEvent: ...
 @overload
-def fake_telegram_event_session(
-    bot: Bot, user_id: int
-) -> tuple[PrivateMessageEvent, "Session"]: ...
+def fake_telegram_event(user_id: int) -> PrivateMessageEvent: ...
 @overload
-def fake_telegram_event_session(
-    bot: Bot, *, group_id: int
-) -> tuple[GroupMessageEvent, "Session"]: ...
+def fake_telegram_event(*, group_id: int) -> GroupMessageEvent: ...
 @overload
-def fake_telegram_event_session(
-    bot: Bot, user_id: int, group_id: int
-) -> tuple[GroupMessageEvent, "Session"]: ...
+def fake_telegram_event(user_id: int, group_id: int) -> GroupMessageEvent: ...
 @overload
-def fake_telegram_event_session(
-    bot: Bot, user_id: int | None, group_id: int | None
-) -> tuple[PrivateMessageEvent | GroupMessageEvent, "Session"]: ...
+def fake_telegram_event(
+    user_id: int | None, group_id: int | None
+) -> PrivateMessageEvent | GroupMessageEvent: ...
 
 
-def fake_telegram_event_session(
-    bot: Bot,
+def fake_telegram_event(
     user_id: int | None = None,
     group_id: int | None = None,
-) -> tuple[PrivateMessageEvent | GroupMessageEvent, "Session"]:
-    from nonebot_plugin_session import extract_session
-
+) -> PrivateMessageEvent | GroupMessageEvent:
     user_id = user_id or fake_user_id()
     if group_id is not None:
-        event = fake_telegram_private_message_event(
+        return fake_telegram_private_message_event(
             user_id=user_id,
             group_id=group_id,
             message=Message(),
         )
-    else:
-        event = fake_telegram_group_message_event(
-            user_id=user_id,
-            message=Message(),
-        )
-    session = extract_session(bot, event)
-    return event, session
+    return fake_telegram_group_message_event(
+        user_id=user_id,
+        message=Message(),
+    )
+
+
+def make_telegram_session_cache(
+    bot: Bot,
+    event: PrivateMessageEvent | GroupMessageEvent,
+) -> Callable[[], object]:
+    fetcher = get_uninfo_fetcher(bot)
+
+    user = event.from_
+    data = fetcher.supply_self(bot) | {
+        "user_id": str(user.id),
+        "name": user.username or "",
+        "nickname": user.first_name + (f" {user.last_name}" if user.last_name else ""),
+        "avatar": None,
+    }
+    if isinstance(event, GroupMessageEvent):
+        data |= {
+            "chat_id": str(event.chat.id),
+            "chat_name": event.chat.title,
+        }
+
+    session_id = fetcher.get_session_id(event)
+    fetcher.session_cache[session_id] = fetcher.parse(data)
+    return lambda: fetcher.session_cache.pop(session_id, None)
+
+
+@contextlib.contextmanager
+def ensure_telegram_session_cache(
+    bot: Bot,
+    event: PrivateMessageEvent | GroupMessageEvent,
+    *,
+    do_cleanup: bool = True,
+) -> Generator[Callable[[], object]]:
+    cleanup = make_telegram_session_cache(bot, event)
+    try:
+        yield cleanup
+    finally:
+        if do_cleanup:
+            cleanup()
 
 
 @contextlib.asynccontextmanager
@@ -143,12 +166,13 @@ async def ensure_telegram_api(
     group_id: int | None = None,
 ) -> AsyncGenerator["API"]:
     bot = fake_telegram_bot(ctx)
-    event, _ = fake_telegram_event_session(bot, user_id=user_id, group_id=group_id)
-    api = fake_api(bot, event)
+    event = fake_telegram_event(user_id=user_id, group_id=group_id)
 
-    try:
-        with ensure_context(bot, event):
-            yield api
-    finally:
-        ctx.connected_bot.discard(bot)
-        bot.adapter.bot_disconnect(bot)
+    with ensure_telegram_session_cache(bot, event):
+        api = await fake_api(bot, event)
+        async with ensure_context(bot, event):
+            try:
+                yield api
+            finally:
+                ctx.connected_bot.discard(bot)
+                bot.adapter.bot_disconnect(bot)

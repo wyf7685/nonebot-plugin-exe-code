@@ -101,11 +101,15 @@ async def test_ob11_call_api(app: App) -> None:
         ctx.should_call_api("test_action", {"arg": "ping"}, result={"key": "pong"})
         res = await api.test_action(arg="ping")
         assert res["key"] == "pong"
+        with pytest.raises(KeyError, match="不能作为索引"):
+            _ = res[0]
 
         ctx.should_call_api("test_action", {"arg": "ping"}, result=None)
         res = await api.test_action(arg="ping")
         with pytest.raises(TypeError):
             _ = res["key"]
+        with pytest.raises(TypeError, match="不支持索引操作"):
+            _ = res[0]
 
 
 @pytest.mark.asyncio

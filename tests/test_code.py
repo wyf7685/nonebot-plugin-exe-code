@@ -4,7 +4,7 @@ from nonebug import App
 
 from .conftest import exe_code_group
 from .fake.common import fake_user_id
-from .fake.onebot11 import fake_v11_bot, fake_v11_group_exe_code
+from .fake.onebot11 import fake_v11_bot, fake_v11_group_exe_code, make_v11_session_cache
 
 code_test_api_message = """\
 await feedback(1)
@@ -27,6 +27,8 @@ async def test_api_message(app: App) -> None:
             user_id,
             code_test_api_message,
         )
+        cleanup = make_v11_session_cache(bot, event)
+
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, Message("1"))
@@ -48,6 +50,7 @@ async def test_api_message(app: App) -> None:
         )
         ctx.should_call_send(event, Message("4"))
         ctx.should_finished(matcher)
+    cleanup()
 
 
 code_test_extract_code = (
@@ -67,6 +70,8 @@ async def test_extract_code(app: App) -> None:
         bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
         event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_extract_code)
+        cleanup = make_v11_session_cache(bot, event)
+
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, Message("111\n[url]"))
@@ -76,6 +81,7 @@ async def test_extract_code(app: App) -> None:
         event.message = MessageSegment.at(111) + event.message
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
+    cleanup()
 
 
 code_test_return = """return '1234'"""
@@ -89,10 +95,13 @@ async def test_return(app: App) -> None:
         bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
         event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_return)
+        cleanup = make_v11_session_cache(bot, event)
+
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, Message("'1234'"))
         ctx.should_finished(matcher)
+    cleanup()
 
 
 code_test_exception = """a = 1 / 0"""
@@ -110,9 +119,12 @@ async def test_exception(app: App) -> None:
             user_id,
             code_test_exception,
         )
+        cleanup = make_v11_session_cache(bot, event)
+
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(
             event, Message("执行失败: ZeroDivisionError('division by zero')")
         )
         ctx.should_finished(matcher)
+    cleanup()

@@ -4,8 +4,8 @@ import pytest
 from nonebot.adapters.onebot.v11 import Message
 from nonebug import App
 
-from .fake.common import ensure_context, fake_user_id
-from .fake.onebot11 import fake_v11_bot, fake_v11_event_session
+from .fake.common import ensure_context, fake_session, fake_user_id
+from .fake.onebot11 import fake_v11_bot, fake_v11_event
 
 code_test_const_var_1 = """\
 api.set_const("test_var", {"a":[1, "2"]})
@@ -26,16 +26,17 @@ async def test_const_var(app: App) -> None:
         bot = fake_v11_bot(ctx)
         user_id = fake_user_id()
 
-        event, session = fake_v11_event_session(bot, user_id)
-        with ensure_context(bot, event):
+        event = fake_v11_event(user_id)
+        async with ensure_context(bot, event):
             await Context.execute(bot, event, code_test_const_var_1)
 
-        event, session = fake_v11_event_session(bot, user_id)
+        event = fake_v11_event(user_id)
         ctx.should_call_send(event, Message("1"))
-        with ensure_context(bot, event):
+        async with ensure_context(bot, event):
             await Context.execute(bot, event, code_test_const_var_2)
 
-    assert Context.get_context(session).ctx.get("test_var") is None
+        session = await fake_session(bot, event)
+        assert Context.get_context(session).ctx.get("test_var") is None
 
 
 code_test_invalid_const_var_name = """\
@@ -49,12 +50,10 @@ async def test_invalid_const_var_name(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, _ = fake_v11_event_session(bot)
-        with (
-            ensure_context(bot, event),
-            pytest.raises(ValueError, match="'@@@' 不是合法的 Python 标识符"),
-        ):
-            await Context.execute(bot, event, code_test_invalid_const_var_name)
+        event = fake_v11_event()
+        async with ensure_context(bot, event):
+            with pytest.raises(ValueError, match="'@@@' 不是合法的 Python 标识符"):
+                await Context.execute(bot, event, code_test_invalid_const_var_name)
 
 
 code_test_invalid_const_var_value = """\
@@ -68,9 +67,7 @@ async def test_invalid_const_var_value(app: App) -> None:
 
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
-        event, _ = fake_v11_event_session(bot)
-        with (
-            ensure_context(bot, event),
-            pytest.raises(TypeError, match="Invalid argument"),
-        ):
-            await Context.execute(bot, event, code_test_invalid_const_var_value)
+        event = fake_v11_event()
+        async with ensure_context(bot, event):
+            with pytest.raises(TypeError, match="Invalid argument"):
+                await Context.execute(bot, event, code_test_invalid_const_var_value)

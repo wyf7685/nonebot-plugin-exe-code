@@ -1,7 +1,7 @@
 # ruff: noqa: N806, S106
 
 import contextlib
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable, Generator
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
@@ -19,12 +19,13 @@ from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pydantic import create_model
 
-from .common import ensure_context, fake_api, fake_bot, fake_user_id
+from .common import ensure_context, fake_api, fake_bot, fake_user_id, get_uninfo_fetcher
 
 if TYPE_CHECKING:
-    from nonebot_plugin_session import Session
-
     from nonebot_plugin_exe_code.interface.adapters.qq import API
+
+
+type MessageEvent = MessageCreateEvent | C2CMessageCreateEvent
 
 
 def fake_qq_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> Bot:
@@ -103,32 +104,80 @@ def fake_qq_c2c_exe_code(user_id: str, code: str) -> C2CMessageCreateEvent:
     )
 
 
-def fake_qq_event_session(
-    bot: Bot,
+def fake_qq_event(
     user_id: str | None = None,
     channel_id: str | None = None,
     guild_id: str | None = None,
-) -> tuple[MessageCreateEvent | C2CMessageCreateEvent, "Session"]:
+) -> MessageEvent:
     from nonebot.adapters.qq.models.guild import User
     from nonebot.adapters.qq.models.qq import FriendAuthor
-    from nonebot_plugin_session import extract_session
 
     user_id = user_id or str(fake_user_id())
     if channel_id is not None and guild_id is not None:
-        event = fake_qq_message_create_event(
+        return fake_qq_message_create_event(
             channel_id=channel_id,
             guild_id=guild_id,
             user=User(id=user_id),
             content="",
         )
-    else:
-        event = fake_qq_c2c_message_create_event(
-            content="",
-            author=FriendAuthor(id=user_id, user_openid=user_id),
-        )
+    return fake_qq_c2c_message_create_event(
+        content="",
+        author=FriendAuthor(id=user_id, user_openid=user_id),
+    )
 
-    session = extract_session(bot, event)
-    return event, session
+
+def make_qq_session_cache(
+    bot: Bot,
+    event: MessageEvent,
+) -> Callable[[], object]:
+    from nonebot_plugin_uninfo.model import Role
+
+    fetcher = get_uninfo_fetcher(bot)
+    data = fetcher.supply_self(bot)
+
+    if isinstance(event, C2CMessageCreateEvent):
+        data |= {
+            "user_id": event.author.user_openid,
+            "name": "",
+            "nickname": "",
+            "avatar": f"https://q.qlogo.cn/qqapp/{bot.bot_info.id}/{event.author.user_openid}/100",
+        }
+    elif isinstance(event, MessageCreateEvent):
+        data |= {
+            "user_id": event.author.id,
+            "name": event.author.username or "",
+            "nickname": "",
+            "avatar": event.author.avatar,
+            "guild_id": event.guild_id,
+            "channel_id": event.channel_id,
+        }
+
+        if event.member:
+            data |= {
+                "nickname": event.member.nick or "",
+                "role": Role("MEMBER", 1, "成员"),
+                "joined_at": event.member.joined_at,
+            }
+
+    session = fetcher.parse(data)
+    session_id = fetcher.get_session_id(event)
+    fetcher.session_cache[session_id] = session
+    return lambda: fetcher.session_cache.pop(session_id, None)
+
+
+@contextlib.contextmanager
+def ensure_qq_session_cache(
+    bot: Bot,
+    event: MessageEvent,
+    *,
+    do_cleanup: bool = True,
+) -> Generator[Callable[[], object]]:
+    cleanup = make_qq_session_cache(bot, event)
+    try:
+        yield cleanup
+    finally:
+        if do_cleanup:
+            cleanup()
 
 
 @contextlib.asynccontextmanager
@@ -140,17 +189,17 @@ async def ensure_qq_api(
     guild_id: str | None = None,
 ) -> AsyncGenerator["API"]:
     bot = fake_qq_bot(ctx)
-    event, _ = fake_qq_event_session(
-        bot,
+    event = fake_qq_event(
         user_id=user_id,
         channel_id=channel_id,
         guild_id=guild_id,
     )
-    api = fake_api(bot, event)
 
-    try:
-        with ensure_context(bot, event):
-            yield api
-    finally:
-        ctx.connected_bot.discard(bot)
-        bot.adapter.bot_disconnect(bot)
+    with ensure_qq_session_cache(bot, event):
+        api = await fake_api(bot, event)
+        async with ensure_context(bot, event):
+            try:
+                yield api
+            finally:
+                ctx.connected_bot.discard(bot)
+                bot.adapter.bot_disconnect(bot)

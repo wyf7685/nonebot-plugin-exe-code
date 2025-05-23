@@ -11,6 +11,7 @@ from .fake.telegram import (
     fake_telegram_bot,
     fake_telegram_group_message_event,
     fake_telegram_private_message_event,
+    make_telegram_session_cache,
 )
 
 
@@ -24,11 +25,13 @@ async def test_telegram_private(app: App) -> None:
             user_id=superuser,
             message=Message("code print(uid, gid)"),
         )
+        cleanup = make_telegram_session_cache(bot, event)
         expected = Message(f"{superuser} None")
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, expected, reply_markup=None)
         ctx.should_finished(matcher)
+    cleanup()
 
 
 @pytest.mark.asyncio
@@ -43,11 +46,13 @@ async def test_telegram_group(app: App) -> None:
             group_id=exe_code_group,
             message=Message("code print(uid, gid)"),
         )
+        cleanup = make_telegram_session_cache(bot, event)
         expected = Message(f"{user_id} {exe_code_group}")
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(event, expected, reply_markup=None)
         ctx.should_finished(matcher)
+    cleanup()
 
 
 @pytest.mark.asyncio

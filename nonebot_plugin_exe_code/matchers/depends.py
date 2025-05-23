@@ -10,7 +10,7 @@ from nonebot.permission import SUPERUSER, Permission
 from nonebot.rule import Rule
 from nonebot_plugin_alconna.uniseg import UniMessage, UniMsg, reply_fetch
 from nonebot_plugin_alconna.uniseg.segment import At, Image, Reply, Text
-from nonebot_plugin_session import EventSession
+from nonebot_plugin_user import UserSession
 
 from ..config import config
 from ..context import Context
@@ -26,23 +26,25 @@ def _allow_exe_code() -> Permission:
         def check_console(bot: Bot) -> bool:
             return isinstance(bot, ConsoleBot)
 
-    async def check(bot: Bot, session: EventSession) -> bool:
+    async def check(bot: Bot, session: UserSession) -> bool:
         # ConsoleBot 仅有标准输入, 跳过检查
         if check_console(bot):
             return True
 
         # 对于 superuser 和 配置允许的用户, 在任意对话均可触发
-        if (session.id1 or "") in config.user:
+        if session.platform_user.id in config.user:
             return True
 
         # 当触发对话为群组时, 仅配置允许的群组可触发
-        return session.id2 is not None and session.id2 in config.group
+        s = session.session
+        g = s.group or s.channel or s.guild
+        return g is not None and g.id in config.group
 
     return SUPERUSER | check
 
 
 def _code_context() -> Any:
-    async def code_context(session: EventSession) -> Context:
+    async def code_context(session: UserSession) -> Context:
         return Context.get_context(session)
 
     return Depends(code_context)

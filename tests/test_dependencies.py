@@ -13,7 +13,11 @@ from nonebot.internal.params import DependsInner
 from nonebug import App
 
 from .fake.common import ensure_context, fake_img_bytes, fake_user_id
-from .fake.onebot11 import fake_v11_bot, fake_v11_group_message_event
+from .fake.onebot11 import (
+    ensure_v11_session_cache,
+    fake_v11_bot,
+    fake_v11_group_message_event,
+)
 
 
 def parse_handler_dependent(depends: DependsInner) -> Dependent[Any]:
@@ -48,9 +52,10 @@ async def test_extract_code(app: App) -> None:
         state = {}
         stack = AsyncExitStack()
 
-        with ensure_context(bot, event):
-            result = await dependent(bot=bot, event=event, state=state, stack=stack)
-            assert result == expected
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                result = await dependent(bot=bot, event=event, state=state, stack=stack)
+        assert result == expected
 
 
 @pytest.mark.asyncio
@@ -70,11 +75,10 @@ async def test_extract_code_fail(app: App) -> None:
         state = {}
         stack = AsyncExitStack()
 
-        with (
-            ensure_context(bot, event),
-            pytest.raises(ExceptionGroup),
-        ):
-            await dependent(bot=bot, event=event, state=state, stack=stack)
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                with pytest.raises(ExceptionGroup):
+                    await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
 @pytest.mark.asyncio
@@ -115,9 +119,10 @@ async def test_event_image_1(app: App) -> None:
         state = {}
         stack = AsyncExitStack()
         expected = Image(id=f"base64://{base64.b64encode(fake_img_bytes).decode()}")
-        with ensure_context(bot, event):
-            result = await dependent(bot=bot, event=event, state=state, stack=stack)
-            assert result == expected
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                result = await dependent(bot=bot, event=event, state=state, stack=stack)
+        assert result == expected
 
 
 @pytest.mark.asyncio
@@ -141,9 +146,10 @@ async def test_event_image_2(app: App) -> None:
         state = {}
         stack = AsyncExitStack()
         expected = Image(id=f"base64://{base64.b64encode(fake_img_bytes).decode()}")
-        with ensure_context(bot, event):
-            result = await dependent(bot=bot, event=event, state=state, stack=stack)
-            assert result == expected
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                result = await dependent(bot=bot, event=event, state=state, stack=stack)
+        assert result == expected
 
 
 @pytest.mark.asyncio
@@ -166,9 +172,10 @@ async def test_event_image_3(app: App) -> None:
         state = {}
         stack = AsyncExitStack()
         expected = Image(id=f"base64://{base64.b64encode(b'\0\0\0').decode()}")
-        with ensure_context(bot, event):
-            result = await dependent(bot=bot, event=event, state=state, stack=stack)
-            assert result == expected
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                result = await dependent(bot=bot, event=event, state=state, stack=stack)
+        assert result == expected
 
 
 @pytest.mark.asyncio
@@ -184,11 +191,10 @@ async def test_event_image_fail(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        with (
-            ensure_context(bot, event),
-            pytest.raises(BaseExceptionGroup),
-        ):
-            await dependent(bot=bot, event=event, state=state, stack=stack)
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                with pytest.raises(BaseExceptionGroup):
+                    await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
 @pytest.mark.asyncio
@@ -225,9 +231,10 @@ async def test_event_reply(app: App) -> None:
         state = {}
         stack = AsyncExitStack()
         expected = AlcReply(str(reply_obj.message_id), reply_msg, reply_obj)
-        with ensure_context(bot, event):
-            result = await dependent(bot=bot, event=event, state=state, stack=stack)
-            assert result == expected
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                result = await dependent(bot=bot, event=event, state=state, stack=stack)
+        assert result == expected
 
 
 @pytest.mark.asyncio
@@ -242,11 +249,10 @@ async def test_event_reply_fail(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        with (
-            ensure_context(bot, event),
-            pytest.raises(ExceptionGroup),
-        ):
-            await dependent(bot=bot, event=event, state=state, stack=stack)
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                with pytest.raises(ExceptionGroup):
+                    await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
 @pytest.mark.asyncio
@@ -280,9 +286,10 @@ async def test_event_reply_message_1(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        with ensure_context(bot, event):
-            result = await dependent(bot=bot, event=event, state=state, stack=stack)
-            assert result == reply_msg
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                result = await dependent(bot=bot, event=event, state=state, stack=stack)
+        assert result == reply_msg
 
 
 @pytest.mark.asyncio
@@ -316,9 +323,10 @@ async def test_event_reply_message_2(app: App) -> None:
         event.reply.message = reply_msg.extract_plain_text()  # pyright:ignore[reportAttributeAccessIssue]
         state = {}
         stack = AsyncExitStack()
-        with ensure_context(bot, event):
-            result = await dependent(bot=bot, event=event, state=state, stack=stack)
-            assert result == reply_msg
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                result = await dependent(bot=bot, event=event, state=state, stack=stack)
+        assert result == reply_msg
 
 
 @pytest.mark.asyncio
@@ -338,11 +346,10 @@ async def test_event_reply_message_fail_1(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        with (
-            ensure_context(bot, event),
-            pytest.raises(BaseExceptionGroup),
-        ):
-            await dependent(bot=bot, event=event, state=state, stack=stack)
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                with pytest.raises(BaseExceptionGroup):
+                    await dependent(bot=bot, event=event, state=state, stack=stack)
 
 
 @pytest.mark.asyncio
@@ -375,8 +382,7 @@ async def test_event_reply_message_fail_2(app: App) -> None:
         )
         state = {}
         stack = AsyncExitStack()
-        with (
-            ensure_context(bot, event),
-            pytest.raises(ExceptionGroup),
-        ):
-            await dependent(bot=bot, event=event, state=state, stack=stack)
+        with ensure_v11_session_cache(bot, event):
+            async with ensure_context(bot, event):
+                with pytest.raises(BaseExceptionGroup):
+                    await dependent(bot=bot, event=event, state=state, stack=stack)

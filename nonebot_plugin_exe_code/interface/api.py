@@ -4,7 +4,7 @@ from typing import Any, ClassVar, Self, override
 import anyio
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
 from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage, reply_fetch
-from nonebot_plugin_session import Session, SessionIdType
+from nonebot_plugin_user.models import UserSession
 from nonebot_plugin_waiter import prompt as waiter_prompt
 
 from ..exception import BotEventMismatch, ExecutorFinishedException, NoMethodDescription
@@ -51,7 +51,7 @@ class API[B: Bot, E: Event](Interface):
         self,
         bot: B,
         event: E,
-        session: Session,
+        session: UserSession,
         context: T_Context,
     ) -> None:
         if not self._validate(bot, event):
@@ -71,20 +71,25 @@ class API[B: Bot, E: Event](Interface):
         return self.__event
 
     @property
-    def session(self) -> Session:
+    def session(self) -> UserSession:
         return self.__session
 
     @property
     def uid(self) -> str:
-        return self.session.id1 or ""
+        return self.session.platform_user.id
 
     @property
     def gid(self) -> str | None:
-        return self.session.id2
+        s = self.session.session
+        return (g := (s.group or s.channel or s.guild)) and g.id
+
+    @property
+    def uin(self) -> int:
+        return self.session.user_id
 
     @property
     def session_id(self) -> str:
-        return self.session.get_id(SessionIdType.USER).replace(" ", "_")
+        return self.session.session_id
 
     @property
     def mid(self) -> str | int:
@@ -246,7 +251,7 @@ class API[B: Bot, E: Event](Interface):
     @export
     @debug_log
     def print(self, *args: Any, sep: str = " ", end: str = "\n", **_: Any) -> None:
-        Buffer.get(self.session_id).write(str(sep).join(map(str, args)) + str(end))
+        Buffer.get(self.uin).write(str(sep).join(map(str, args)) + str(end))
 
     @export
     @debug_log
@@ -318,11 +323,11 @@ class API[B: Bot, E: Event](Interface):
         for k, v in export_message(self.bot.adapter):
             self._export(k, v)
 
-        if is_super_user(self.bot, self.uid):
+        if is_super_user(self.bot, self.session.platform_user.id):
             for k, v in export_superuser():
                 self._export(k, v)
 
         self._export("http", Http())
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} user_id={self.uid}>"
+        return f"<{self.__class__.__name__} user_id={self.uin}>"

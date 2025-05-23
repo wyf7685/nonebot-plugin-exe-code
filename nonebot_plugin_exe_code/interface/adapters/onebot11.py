@@ -152,7 +152,7 @@ with contextlib.suppress(ImportError):
             except BaseException as e:
                 res = {"error": e}
                 msg = (
-                    f"用户(<c>{escape_tag(self.uid)}<c>) "
+                    f"用户(<c>{self.uid}<c>) "
                     f"调用 api <y>{escape_tag(api)}</y> 时发生错误: "
                     f"<r>{escape_tag(repr(e))}</r>"
                 )
