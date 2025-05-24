@@ -89,7 +89,7 @@ class API[B: Bot, E: Event](Interface):
 
     @property
     def session_id(self) -> str:
-        return self.session.session_id
+        return f"{self.session.platform}_{self.session.platform_user.id}"
 
     @property
     def mid(self) -> str | int:
