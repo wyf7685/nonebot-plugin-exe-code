@@ -33,6 +33,7 @@ context_var(lambda x: Reply(id=str(x)), "Reply")
         URL,
         InternalException,
         __import__,
+        __build_class__,
     }
 ]
 context_var(UniMessage, "U")  # shortcut

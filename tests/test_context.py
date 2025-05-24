@@ -177,6 +177,23 @@ async def test_context_namespace(app: App) -> None:
             assert "a" not in context.ctx
 
 
+@pytest.mark.asyncio
+async def test_create_class(app: App) -> None:
+    from nonebot_plugin_exe_code.context import Context
+
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event = fake_v11_event()
+        session = await fake_session(bot, event)
+
+        async with ensure_context(bot, event):
+            context = Context.get_context(session)
+            await context.execute(bot, event, "class A: ...")
+            cls = context.ctx["A"]
+            assert isinstance(cls, type)
+            assert cls.__name__ == "A"
+
+
 code_test_ast_node_transformer_convert = """\
 yield y
 yield from z
