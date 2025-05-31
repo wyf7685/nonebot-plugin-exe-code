@@ -203,7 +203,7 @@ with contextlib.suppress(ImportError):
         async def send_grp_fwd(self, gid: int | str, msgs: T_ForwardMsg) -> Result:
             return await self.call_api(
                 "send_group_forward_msg",
-                user_id=int(gid),
+                group_id=int(gid),
                 messages=await convert_forward(msgs),
             )
 
