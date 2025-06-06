@@ -1,2 +1,0 @@
-coverage xml
-coverage html
