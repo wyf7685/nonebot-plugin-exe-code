@@ -1,5 +1,3 @@
-# ruff: noqa: S101
-
 import asyncio
 
 import pytest

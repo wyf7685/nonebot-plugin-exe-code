@@ -1,6 +1,3 @@
-# ruff: noqa: N806, N814
-
-
 import pytest
 from nonebot.adapters.onebot.v11 import ActionFailed, Message, MessageSegment
 from nonebot.adapters.onebot.v11.event import Reply, Sender

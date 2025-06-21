@@ -1,5 +1,3 @@
-# ruff: noqa: S101
-
 import asyncio
 from typing import override
 

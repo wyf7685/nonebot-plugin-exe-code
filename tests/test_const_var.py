@@ -1,5 +1,3 @@
-# ruff: noqa: S101
-
 import pytest
 from nonebot.adapters.onebot.v11 import Message
 from nonebug import App

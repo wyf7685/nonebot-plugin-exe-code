@@ -1,4 +1,3 @@
-# ruff: noqa: A005
 import functools
 from collections.abc import Mapping
 from http.cookiejar import CookieJar

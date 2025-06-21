@@ -1,5 +1,3 @@
-# ruff: noqa: S101
-
 import base64
 from contextlib import AsyncExitStack
 from typing import Any

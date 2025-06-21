@@ -1,5 +1,3 @@
-# ruff: noqa: ANN401
-
 import contextlib
 from typing import Annotated, Any
 
@@ -84,7 +82,7 @@ def _event_image() -> Any:
                 msg = await UniMessage.generate(message=reply)
                 return await event_image(msg, _in_reply=True)
 
-        Matcher.skip()  # noqa: RET503  # wtf?
+        return Matcher.skip()
 
     async def dependency(msg: UniMsg) -> Image:
         return await event_image(msg)
@@ -96,7 +94,7 @@ def _event_reply() -> Any:
     async def event_reply(event: Event, bot: Bot) -> Reply:
         if reply := await reply_fetch(event, bot):
             return reply
-        Matcher.skip()  # noqa: RET503  # wtf?
+        return Matcher.skip()
 
     return Depends(event_reply)
 

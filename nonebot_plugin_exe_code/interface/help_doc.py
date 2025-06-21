@@ -1,5 +1,3 @@
-# ruff: noqa: S101
-
 import inspect
 import weakref
 from collections.abc import Callable

@@ -1,4 +1,4 @@
-# ruff: noqa: S101, N814
+# ruff: noqa: N814
 
 import asyncio
 from typing import Any, cast
