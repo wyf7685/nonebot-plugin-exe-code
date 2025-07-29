@@ -1,29 +1,32 @@
-# ruff: noqa: N806
-
+import itertools
 from datetime import datetime
 from typing import Any, Literal
 
-from nonebot.adapters.console import Adapter, Bot, Message, MessageEvent, User
+from nonebot.adapters.console import Adapter, Bot, Message, MessageEvent
 from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
-from pydantic import create_model
+from nonechat.model import Channel, Robot, User
+from pydantic import Field, create_model
 
 from .common import fake_bot
 
+_message_id = itertools.count(1000)
+
 
 def fake_console_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> Bot:
-    return fake_bot(ctx, Adapter, Bot, **kwargs)
+    return fake_bot(ctx, Adapter, Bot, self_id=Robot("robot", "🤖"), **kwargs)
 
 
 def fake_console_message_event(**field: Any) -> MessageEvent:
-    _Fake = create_model("_Fake", __base__=MessageEvent)
-
-    class FakeEvent(_Fake):
-        time: datetime = datetime.now()  # noqa: DTZ005
-        self_id: str = "pytest"
+    class FakeEvent(create_model("_Fake", __base__=MessageEvent)):
+        time: datetime = Field(default_factory=datetime.now)
+        self_id: str = "robot"
         post_type: Literal["message"] = "message"
         user: User = User("nonebug")
+        channel: Channel = Channel("test_channel", "Test Channel")
+        message_id: str = Field(default_factory=lambda: str(next(_message_id)))
         message: Message = Message()
+        to_me: bool = False
 
     return FakeEvent(**field)
 
