@@ -3,7 +3,14 @@ from typing import Any, ClassVar, Self, override
 
 import anyio
 from nonebot.adapters import Adapter, Bot, Event, Message, MessageSegment
-from nonebot_plugin_alconna.uniseg import Receipt, Target, UniMessage, reply_fetch
+from nonebot_plugin_alconna.uniseg import (
+    Receipt,
+    Target,
+    UniMessage,
+    get_message_id,
+    get_target,
+    reply_fetch,
+)
 from nonebot_plugin_user.models import UserSession
 from nonebot_plugin_waiter import prompt as waiter_prompt
 
@@ -93,7 +100,7 @@ class API[B: Bot, E: Event](Interface):
 
     @property
     def mid(self) -> str | int:
-        return UniMessage.get_message_id(self.event, self.bot)
+        return get_message_id(self.event, self.bot)
 
     @classmethod
     def _validate(cls, bot: B, event: E) -> bool:
@@ -230,7 +237,7 @@ class API[B: Bot, E: Event](Interface):
     @debug_log
     @strict
     def is_group(self) -> bool:
-        return not UniMessage.get_target(self.event, self.bot).private
+        return not get_target(self.event, self.bot).private
 
     @descript(
         description="设置环境常量，在每次执行代码时加载",
