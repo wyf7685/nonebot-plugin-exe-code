@@ -76,6 +76,11 @@ class _NodeTransformer(ast.NodeTransformer):
     )
     enabled: bool = True
 
+    @classmethod
+    def transform[T: ast.AST](cls, node: T) -> T:
+        """Transform AST node."""
+        return cls().visit(node)
+
     @staticmethod
     @functools.lru_cache(maxsize=16)
     def _api(name: str) -> ast.expr:
@@ -143,7 +148,7 @@ def solve_code(
     # 可能抛出 SyntaxError, 由 matcher 处理
     parsed = ast.parse(source)
 
-    solved = ast.unparse(ast.fix_missing_locations(_NodeTransformer().visit(parsed)))
+    solved = ast.fix_missing_locations(_NodeTransformer.transform(parsed))
     code: types.CodeType = compile(
         source=solved,
         filename=filename,
@@ -159,7 +164,7 @@ def solve_code(
         executor = run_sync(executor)
 
     ctx["__name__"] = filename
-    return executor, functools.partial(fake_cache, filename, solved)
+    return executor, functools.partial(fake_cache, filename, ast.unparse(solved))
 
 
 class Context:
