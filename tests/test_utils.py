@@ -9,7 +9,7 @@ from nonebug import App
 from .fake.onebot11 import ensure_v11_api
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_as_unimsg(app: App) -> None:
     from nonebot.adapters.onebot.v11 import MessageSegment as V11Seg
     from nonebot_plugin_alconna.uniseg import At, UniMessage
@@ -31,7 +31,7 @@ async def test_as_unimsg(app: App) -> None:
         await test_convert(run_sync(as_unimsg_sync))
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_as_msg(app: App) -> None:
     from nonebot.adapters import Message
     from nonebot.adapters.onebot.v11 import Message as V11Msg
@@ -54,7 +54,7 @@ async def test_as_msg(app: App) -> None:
         await test_convert(as_msg)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("app")
 async def test_driver_startup() -> None:
     from nonebot_plugin_exe_code.interface.utils import _on_driver_startup
@@ -71,7 +71,7 @@ def test_user_str() -> None:
         _ = UserStr("some string") @ 123  # pyright: ignore[reportOperatorIssue]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_call_later() -> None:
     from nonebot_plugin_exe_code.interface.utils import call_later
 

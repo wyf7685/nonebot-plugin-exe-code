@@ -12,7 +12,7 @@ from .fake.qq import (
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_qq(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -33,7 +33,7 @@ async def test_qq(app: App) -> None:
     cleanup()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_qq_mid(app: App) -> None:
     async with app.test_api() as ctx, ensure_qq_api(ctx) as api:
         assert api.mid == api.event.event_id

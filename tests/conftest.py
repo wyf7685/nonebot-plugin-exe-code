@@ -1,5 +1,9 @@
 import os
+import shutil
+import tempfile
 from collections.abc import AsyncGenerator
+from pathlib import Path
+from typing import Any
 
 import nonebot
 import pytest
@@ -28,9 +32,27 @@ def pytest_configure(config: pytest.Config) -> None:
     os.environ["PLUGIN_ALCONNA_TESTENV"] = "1"
 
 
+@pytest.fixture(scope="session", params=[pytest.param("asyncio"), pytest.param("trio")])
+def anyio_backend(request: pytest.FixtureRequest) -> Any:
+    return request.param
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def _fix_localstore() -> AsyncGenerator[None]:
+    localstore_root = Path(tempfile.mkdtemp())
+
+    driver = nonebot.get_driver()
+    for key in "cache", "config", "data":
+        setattr(driver.config, f"localstore_{key}_dir", str(localstore_root / key))
+
+    try:
+        yield
+    finally:
+        shutil.rmtree(localstore_root, ignore_errors=True)
+
+
 @pytest.fixture
-async def app() -> AsyncGenerator[App, None]:
-    # 加载插件
+async def app(anyio_backend: Any) -> AsyncGenerator[App, None]:  # noqa: ARG001
     nonebot.require("nonebot_plugin_exe_code")
 
     from nonebot_plugin_orm import init_orm
@@ -48,7 +70,7 @@ async def app() -> AsyncGenerator[App, None]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def _load_bot() -> None:
+def _load_adapter() -> None:
     # 加载适配器
     driver = nonebot.get_driver()
     driver.register_adapter(console.Adapter)

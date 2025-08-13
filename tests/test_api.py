@@ -1,6 +1,6 @@
-import asyncio
 from typing import Any, cast
 
+import anyio
 import httpx
 import pytest
 import respx
@@ -30,7 +30,7 @@ from .fake.onebot11 import (
 from .fake.satori import fake_satori_bot, fake_satori_event
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_help_method(app: App) -> None:
     from nonebot_plugin_exe_code.interface.utils import get_method_description
 
@@ -45,7 +45,7 @@ async def test_help_method(app: App) -> None:
             await api.help(api.set_const)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_help(app: App) -> None:
     from nonebot_plugin_exe_code.exception import NoMethodDescription
     from nonebot_plugin_exe_code.interface.adapters.onebot11 import API
@@ -100,7 +100,7 @@ async def test_help(app: App) -> None:
                 await api.help(api.export)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("app")
 async def test_doc_annotation() -> None:
     from nonebot.adapters import Message
@@ -114,7 +114,7 @@ async def test_doc_annotation() -> None:
     assert format_annotation(Message) == "Message"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_buffer_size(app: App) -> None:
     from nonebot_plugin_exe_code.config import config
     from nonebot_plugin_exe_code.interface.utils import Buffer
@@ -134,7 +134,7 @@ async def test_buffer_size(app: App) -> None:
             config.buffer_size = original
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_descriptor(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_satori_bot(ctx)
@@ -149,7 +149,7 @@ async def test_descriptor(app: App) -> None:
                 api.abcd = None  # pyright: ignore[reportAttributeAccessIssue]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_superuser(app: App) -> None:
     from nonebot_plugin_exe_code.config import config
     from nonebot_plugin_exe_code.context import Context
@@ -182,7 +182,7 @@ async def test_superuser(app: App) -> None:
         assert str(group_id) in config.group
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_limit(app: App) -> None:
     from nonebot_plugin_exe_code.interface.utils import ReachLimit
 
@@ -200,7 +200,7 @@ async def test_send_limit(app: App) -> None:
                 await api.feedback(6)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_is_group(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -216,7 +216,7 @@ async def test_is_group(app: App) -> None:
                 assert api.is_group()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_private_forward(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -237,7 +237,7 @@ async def test_send_private_forward(app: App) -> None:
             await api.user(event.user_id).send_fwd(["1", "2"])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_group_forward(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -259,7 +259,7 @@ async def test_send_group_forward(app: App) -> None:
                 await api.group(exe_code_group).send_fwd(["1", "2"])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_input(app: App) -> None:
     from nonebot.message import handle_event
 
@@ -284,14 +284,16 @@ async def test_api_input(app: App) -> None:
                 await api.feedback(await api.input(prompt))
 
         async def _test2() -> None:
-            await asyncio.sleep(0.1)
+            await anyio.sleep(0.1)
             await handle_event(bot, input_event)
 
         with ensure_v11_session_cache(bot, event):
-            await asyncio.gather(_test1(), _test2())
+            async with anyio.create_task_group() as tg:
+                tg.start_soon(_test1)
+                tg.start_soon(_test2)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_input_timeout(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -308,7 +310,7 @@ async def test_api_input_timeout(app: App) -> None:
                     await api.input(prompt, timeout=0.01)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_type_mismatch(app: App) -> None:
     from nonebot_plugin_exe_code.exception import BotEventMismatch
     from nonebot_plugin_exe_code.interface.adapters.satori import API
@@ -323,7 +325,7 @@ async def test_api_type_mismatch(app: App) -> None:
             API(bot, event, session, {})  # pyright: ignore[reportArgumentType]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_get_platform(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_console_bot(ctx)
@@ -334,7 +336,7 @@ async def test_api_get_platform(app: App) -> None:
             await api.feedback(await api.get_platform())
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_reply_id(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)
@@ -354,7 +356,7 @@ async def test_api_reply_id(app: App) -> None:
 
 
 @respx.mock
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("app")
 async def test_api_http_request() -> None:
     from nonebot_plugin_exe_code.interface.http import Http
@@ -389,7 +391,7 @@ async def test_api_http_request() -> None:
         resp.raise_for_status().read()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_native_send(app: App) -> None:
     async with app.test_api() as ctx:
         bot = fake_v11_bot(ctx)

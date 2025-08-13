@@ -13,7 +13,7 @@ from .fake.satori import (
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_satori_private(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -30,7 +30,7 @@ async def test_satori_private(app: App) -> None:
         ctx.should_finished(matcher)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_satori_public(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -61,7 +61,7 @@ async def test_satori_public(app: App) -> None:
         ctx.should_finished(matcher)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_satori_set_mute(app: App) -> None:
     from nonebot_plugin_exe_code.exception import ParamMissing
 
@@ -84,13 +84,13 @@ async def test_satori_set_mute(app: App) -> None:
             await api.set_mute(7685)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_satori_mid(app: App) -> None:
     async with app.test_api() as ctx, ensure_satori_api(ctx) as api:
         assert api.mid == api.event.message.id
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_satori_set_reaction(app: App) -> None:
     from nonebot_plugin_exe_code.exception import ParamMissing
 
@@ -123,7 +123,7 @@ async def test_satori_set_reaction(app: App) -> None:
             await api.set_reaction(123, api.mid)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_satori_get_platform(app: App) -> None:
     async with app.test_api() as ctx, ensure_satori_api(ctx) as api:
         ctx.should_call_api("login_get", {}, fake_satori_login())

@@ -88,7 +88,7 @@ def test_strict() -> None:
     assert not hasattr(_Test.staticmethod_, "__wrapped__")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 @pytest.mark.usefixtures("app")
 async def test_overload() -> None:
     from nonebot_plugin_exe_code.interface.decorators import Overload

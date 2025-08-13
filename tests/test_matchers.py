@@ -1,5 +1,4 @@
-import asyncio
-
+import anyio
 import pytest
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from nonebot.adapters.onebot.v11.event import Reply, Sender
@@ -17,7 +16,7 @@ from .fake.onebot11 import (
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_getraw(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.getraw import matcher
@@ -65,7 +64,7 @@ async def test_getraw(app: App) -> None:
             assert gurl is None, "Got unexpected variable `gurl`"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_getmid(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.getmid import matcher
@@ -115,7 +114,7 @@ async def test_getmid(app: App) -> None:
             assert gurl is None, "Got unexpected variable `gurl`"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_getimg(app: App) -> None:
     import PIL.Image
 
@@ -192,7 +191,7 @@ async def test_getimg(app: App) -> None:
     getimg.image_fetch = _image_fetch
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_getimg_exception_1(app: App) -> None:
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
@@ -240,7 +239,7 @@ async def test_getimg_exception_1(app: App) -> None:
     getimg.image_fetch = _image_fetch
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_getimg_exception_2(app: App) -> None:
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
@@ -295,7 +294,7 @@ await feedback("test 2")
 """
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_terminate_1(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.terminate import matcher
@@ -316,7 +315,7 @@ async def test_terminate_1(app: App) -> None:
     cleanup()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_terminate_2(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.terminate import matcher
 
@@ -337,7 +336,7 @@ async def test_terminate_2(app: App) -> None:
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_terminate_3(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.terminate import handle_terminate
@@ -356,17 +355,19 @@ async def test_terminate_3(app: App) -> None:
         ctx.should_call_send(event, expected)
 
         async def _test1() -> None:
-            with pytest.raises(asyncio.CancelledError):
+            with pytest.raises(anyio.get_cancelled_exc_class()):
                 await Context.execute(bot, event, code_test_terminate)
 
         async def _test2() -> None:
-            await asyncio.sleep(0.05)
+            await anyio.sleep(0.05)
             with pytest.raises(FinishedException):
                 await handle_terminate(
                     target=str(user_id),
                     context=Context.get_context(str(user_id)),
                 )
 
-        async with ensure_context(bot, event):
-            await asyncio.gather(_test1(), _test2())
+        async with ensure_context(bot, event), anyio.create_task_group() as tg:
+            tg.start_soon(_test1)
+            tg.start_soon(_test2)
+
     cleanup()

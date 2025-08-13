@@ -16,7 +16,7 @@ reset()
 """
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_const_var(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
@@ -42,7 +42,7 @@ api.set_const('@@@', 123)
 """
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_invalid_const_var_name(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
@@ -59,7 +59,7 @@ api.set_const('test_var', object())
 """
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_invalid_const_var_value(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 

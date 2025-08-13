@@ -1,6 +1,6 @@
-import asyncio
 from typing import override
 
+import anyio
 import pytest
 from nonebot.adapters.onebot.v11 import Message
 from nonebug import App
@@ -9,7 +9,7 @@ from .fake.common import ensure_context, fake_session
 from .fake.onebot11 import fake_v11_bot, fake_v11_event
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_lock(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
@@ -18,21 +18,19 @@ async def test_lock(app: App) -> None:
         event = fake_v11_event()
 
         async def _test(delay: float, code: str) -> None:
-            await asyncio.sleep(delay)
+            await anyio.sleep(delay)
             await Context.execute(bot, event, code)
 
         ctx.should_call_send(event, Message("1"))
         ctx.should_call_send(event, Message("2"))
         ctx.should_call_send(event, Message("3"))
 
-        async with ensure_context(bot, event):
-            await asyncio.gather(
-                _test(0, "print(1); await sleep(0.1); return 2"),
-                _test(0.01, "print(3)"),
-            )
+        async with ensure_context(bot, event), anyio.create_task_group() as tg:
+            tg.start_soon(_test, 0, "print(1); await sleep(0.1); return 2")
+            tg.start_soon(_test, 0.01, "print(3)")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cancel(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
@@ -40,23 +38,25 @@ async def test_cancel(app: App) -> None:
         bot = fake_v11_bot(ctx)
         event = fake_v11_event()
         session = await fake_session(bot, event)
-        cancel_result = False
+        result = False
 
         async def _test1() -> None:
-            with pytest.raises(asyncio.CancelledError):
+            with pytest.raises(anyio.get_cancelled_exc_class()):
                 await Context.execute(bot, event, "await sleep(1); return 1")
 
         async def _test2() -> None:
-            nonlocal cancel_result
-            await asyncio.sleep(0.1)
-            cancel_result = Context.get_context(session).cancel()
+            nonlocal result
+            await anyio.sleep(0.1)
+            result = Context.get_context(session).cancel()
 
-        async with ensure_context(bot, event):
-            await asyncio.gather(_test1(), _test2())
-            assert cancel_result
+        async with ensure_context(bot, event), anyio.create_task_group() as tg:
+            tg.start_soon(_test1)
+            tg.start_soon(_test2)
+
+        assert result
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_context_variable(app: App) -> None:
     from nonebot_plugin_alconna.uniseg import Image, UniMessage
 
@@ -88,7 +88,7 @@ async def test_context_variable(app: App) -> None:
     assert key not in context.ctx
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_session_fetch(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.exception import (
@@ -118,7 +118,7 @@ async def test_session_fetch(app: App) -> None:
             assert Context.get_context(context.uin) is context
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_async_generator_executor(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.interface.utils import ReachLimit
@@ -140,7 +140,7 @@ async def test_async_generator_executor(app: App) -> None:
                 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_builtins(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
@@ -156,7 +156,7 @@ async def test_delete_builtins(app: App) -> None:
             assert "__builtins__" in context.ctx
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_context_namespace(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 
@@ -175,7 +175,7 @@ async def test_context_namespace(app: App) -> None:
             assert "a" not in context.ctx
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_class(app: App) -> None:
     from nonebot_plugin_exe_code.context import Context
 

@@ -5,7 +5,7 @@ from nonebug import App
 from .fake.console import fake_console_bot, fake_console_message_event
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_console(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 

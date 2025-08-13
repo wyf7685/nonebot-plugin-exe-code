@@ -8,7 +8,7 @@ from .fake.common import fake_group_id
 from .fake.onebot11 import ensure_v11_api
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_recall(app: App) -> None:
     async with (
         app.test_api() as ctx,
@@ -18,7 +18,7 @@ async def test_ob11_recall(app: App) -> None:
         await api.recall(1)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_get_msg(app: App) -> None:
     async with (
         app.test_api() as ctx,
@@ -32,7 +32,7 @@ async def test_ob11_get_msg(app: App) -> None:
         assert await api.get_msg(1) == Message("123")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_get_fwd(app: App) -> None:
     async with (
         app.test_api() as ctx,
@@ -46,7 +46,7 @@ async def test_ob11_get_fwd(app: App) -> None:
         assert (await api.get_fwd(1))[0] == Message("123")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_exception(app: App) -> None:
     async with (
         app.test_api() as ctx,
@@ -64,7 +64,7 @@ async def test_ob11_exception(app: App) -> None:
             _ = api.__not_an_attr__
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_call_api(app: App) -> None:
     async with (
         app.test_api() as ctx,
@@ -88,7 +88,7 @@ async def test_ob11_call_api(app: App) -> None:
             _ = res[0]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_set_card(app: App) -> None:
     async with (
         app.test_api() as ctx,
@@ -105,7 +105,7 @@ async def test_ob11_set_card(app: App) -> None:
         await api.set_card("test_card")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_set_card_failed(app: App) -> None:
     from nonebot_plugin_exe_code.exception import ParamMissing
 
@@ -114,7 +114,7 @@ async def test_ob11_set_card_failed(app: App) -> None:
             await api.set_card("test_card")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_set_mute(app: App) -> None:
     async with (
         app.test_api() as ctx,
@@ -131,7 +131,7 @@ async def test_ob11_set_mute(app: App) -> None:
         await api.set_mute(114514, uid=api.uid)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_set_mute_failed(app: App) -> None:
     from nonebot_plugin_exe_code.exception import ParamMissing
 
@@ -145,7 +145,7 @@ await api.send_like(10)
 """
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_send_like(app: App) -> None:
     async with (
         app.test_api() as ctx,
@@ -158,7 +158,7 @@ async def test_ob11_send_like(app: App) -> None:
         await api.send_like(10)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_send_private_file(app: App) -> None:
     from nonebot_plugin_exe_code.exception import ParamMismatch
 
@@ -176,7 +176,7 @@ async def test_ob11_send_private_file(app: App) -> None:
             await api.send_private_file("file", "name", "string")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_send_group_file(app: App) -> None:
     from nonebot_plugin_exe_code.exception import ParamMismatch, ParamMissing
 
@@ -198,7 +198,7 @@ async def test_ob11_send_group_file(app: App) -> None:
             await api.send_group_file("file", "name")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_send_file(app: App) -> None:
     async with app.test_api() as ctx, ensure_v11_api(ctx) as api:
         ctx.should_call_api(
@@ -216,7 +216,7 @@ async def test_ob11_send_file(app: App) -> None:
         await api.send_file("file", "name")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_file2str(app: App) -> None:
     import io
     import pathlib
@@ -246,13 +246,13 @@ async def test_ob11_file2str(app: App) -> None:
         fp.unlink()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_mid(app: App) -> None:
     async with app.test_api() as ctx, ensure_v11_api(ctx) as api:
         assert api.mid == str(api.event.message_id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_send_fwd(app: App) -> None:
     from nonebot_plugin_exe_code.typings import UserStr
 
@@ -284,7 +284,7 @@ async def test_ob11_send_fwd(app: App) -> None:
         await api.send_fwd([UserStr("123") @ "1" @ "test", "2"])
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_get_platform(app: App) -> None:
     async with app.test_api() as ctx, ensure_v11_api(ctx) as api:
         ctx.should_call_api(
@@ -295,7 +295,7 @@ async def test_ob11_get_platform(app: App) -> None:
         assert await api.get_platform() == "[OneBot V11] app_name app_version"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_set_reaction(app: App) -> None:
     from nonebot_plugin_exe_code.exception import APICallFailed
 
@@ -385,7 +385,7 @@ async def test_ob11_set_reaction(app: App) -> None:
         await api.set_reaction(123)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ob11_group_poke(app: App) -> None:
     from nonebot_plugin_exe_code.exception import ParamMissing
 

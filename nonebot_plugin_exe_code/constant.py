@@ -1,3 +1,3 @@
-from nonebot_plugin_localstore import get_data_dir
+from nonebot_plugin_localstore import get_plugin_data_dir
 
-DATA_DIR = get_data_dir("nonebot_plugin_exe_code")
+DATA_DIR = get_plugin_data_dir()

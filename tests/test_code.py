@@ -15,7 +15,7 @@ await sleep(0)
 """
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_api_message(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -62,7 +62,7 @@ code_test_extract_code = (
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_extract_code_1(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -78,7 +78,7 @@ async def test_extract_code_1(app: App) -> None:
     cleanup()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_extract_code_2(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -96,7 +96,7 @@ async def test_extract_code_2(app: App) -> None:
 code_test_return = """return '1234'"""
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_return(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -116,7 +116,7 @@ async def test_return(app: App) -> None:
 code_test_exception = """a = 1 / 0"""
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_exception(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 

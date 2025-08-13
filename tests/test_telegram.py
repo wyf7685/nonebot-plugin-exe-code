@@ -15,7 +15,7 @@ from .fake.telegram import (
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_telegram_private(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -34,7 +34,7 @@ async def test_telegram_private(app: App) -> None:
     cleanup()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_telegram_group(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
@@ -55,13 +55,13 @@ async def test_telegram_group(app: App) -> None:
     cleanup()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_telegram_mid(app: App) -> None:
     async with app.test_api() as ctx, ensure_telegram_api(ctx) as api:
         assert api.mid == str(api.event.message_id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_telegram_set_reaction(app: App) -> None:
     from nonebot_plugin_exe_code.exception import APICallFailed, ParamMismatch
 
