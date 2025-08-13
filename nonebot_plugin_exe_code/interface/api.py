@@ -135,16 +135,15 @@ class API[B: Bot, E: Event](Interface):
         result="bot.send 的返回值",
     )
     @debug_log
-    @strict
     async def native_send(
         self,
         msg: Any,
-        **kwds: Any,
+        **kwargs: Any,
     ) -> Any:
         return await self.bot.send(
             event=self.event,
             message=await as_msg(msg),
-            **kwds,
+            **kwargs,
         )
 
     @descript(
