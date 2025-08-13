@@ -355,7 +355,8 @@ async def test_api_reply_id(app: App) -> None:
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_api_http_request(app: App) -> None:  # noqa: ARG001
+@pytest.mark.usefixtures("app")
+async def test_api_http_request() -> None:
     from nonebot_plugin_exe_code.interface.http import Http
 
     url = "https://example.com/"
@@ -386,3 +387,13 @@ async def test_api_http_request(app: App) -> None:  # noqa: ARG001
     assert route_fail.called
     with pytest.raises(RuntimeError):
         resp.raise_for_status().read()
+
+
+@pytest.mark.asyncio
+async def test_api_native_send(app: App) -> None:
+    async with app.test_api() as ctx:
+        bot = fake_v11_bot(ctx)
+        event = fake_v11_event()
+        ctx.should_call_send(event, V11Message("123"), arg="test")
+        async with ensure_context(bot, event) as api:
+            await api.native_send("123", arg="test")

@@ -130,7 +130,7 @@ class API[B: Bot, E: Event](Interface):
         description="调用 bot.send 向当前会话发送平台消息",
         parameters=dict(
             msg="要发送的消息",
-            kwds="任意额外参数",
+            kwargs="任意额外参数",
         ),
         result="bot.send 的返回值",
     )

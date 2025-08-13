@@ -40,20 +40,20 @@ async def test_cancel(app: App) -> None:
         bot = fake_v11_bot(ctx)
         event = fake_v11_event()
         session = await fake_session(bot, event)
-        result = False
+        cancel_result = False
 
         async def _test1() -> None:
             with pytest.raises(asyncio.CancelledError):
-                await Context.execute(bot, event, "await sleep(1); print(1)")
+                await Context.execute(bot, event, "await sleep(1); return 1")
 
         async def _test2() -> None:
-            nonlocal result
-            await asyncio.sleep(0.01)
-            result = Context.get_context(session).cancel()
+            nonlocal cancel_result
+            await asyncio.sleep(0.1)
+            cancel_result = Context.get_context(session).cancel()
 
         async with ensure_context(bot, event):
             await asyncio.gather(_test1(), _test2())
-        assert result
+            assert cancel_result
 
 
 @pytest.mark.asyncio
