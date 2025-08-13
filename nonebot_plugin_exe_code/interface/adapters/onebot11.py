@@ -15,7 +15,6 @@ from ...exception import APICallFailed as BaseAPICallFailed
 from ...exception import ParamMismatch, ParamMissing
 from ...typings import T_ForwardMsg, UserStr
 from ..api import API as BaseAPI
-from ..api import register_api
 from ..decorators import Overload, debug_log, export, strict
 from ..group import Group as BaseGroup
 from ..help_doc import descript
@@ -101,8 +100,7 @@ with contextlib.suppress(ImportError):
         async def send_fwd(self, msgs: T_ForwardMsg) -> Result:
             return await self.api.send_grp_fwd(self.uid, msgs)
 
-    @register_api(Adapter)
-    class API(BaseAPI[Bot, MessageEvent]):
+    class API(BaseAPI[Bot, MessageEvent], adapter=Adapter):
         __slots__ = ()
 
         @classmethod

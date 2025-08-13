@@ -39,17 +39,6 @@ api_registry: dict[type[Adapter], type["API"]] = {}
 message_alia(Message, MessageSegment)
 
 
-def register_api[A: type["API"]](adapter: type[Adapter]) -> Callable[[A], A]:
-    def decorator(api: A) -> A:
-        api_registry[adapter] = api
-        adapter_name = adapter.get_name()
-        for desc in api.__method_description__:
-            desc.description = f"[{adapter_name}] {desc.description}"
-        return api
-
-    return decorator
-
-
 class API[B: Bot, E: Event](Interface):
     __inst_name__: ClassVar[str] = "api"
     __slots__ = ("__bot", "__event", "__session")
@@ -68,6 +57,13 @@ class API[B: Bot, E: Event](Interface):
         self.__bot = bot
         self.__event = event
         self.__session = session
+
+    def __init_subclass__(cls, adapter: type[Adapter], **kwargs: object) -> None:
+        super().__init_subclass__(**kwargs)
+        api_registry[adapter] = cls
+        adapter_name = adapter.get_name()
+        for desc in cls.__method_description__:
+            desc.description = f"[{adapter_name}] {desc.description}"
 
     @property
     def bot(self) -> B:

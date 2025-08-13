@@ -4,14 +4,12 @@ from typing import override
 from nonebot.adapters import Event
 
 from ..api import API as BaseAPI
-from ..api import register_api
 
 with contextlib.suppress(ImportError):
     from nonebot.adapters.qq import Adapter, Bot
     from nonebot.adapters.qq.event import MessageEvent
 
-    @register_api(Adapter)
-    class API(BaseAPI[Bot, MessageEvent]):
+    class API(BaseAPI[Bot, MessageEvent], adapter=Adapter):
         __slots__ = ()
 
         @classmethod

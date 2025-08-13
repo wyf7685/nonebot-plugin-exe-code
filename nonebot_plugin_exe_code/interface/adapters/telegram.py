@@ -7,7 +7,6 @@ from nonebot.exception import ActionFailed
 from ...exception import APICallFailed as BaseAPICallFailed
 from ...exception import ParamMismatch
 from ..api import API as BaseAPI
-from ..api import register_api
 from ..decorators import debug_log, strict
 from ..help_doc import descript
 
@@ -19,8 +18,7 @@ with contextlib.suppress(ImportError):
 
     class APICallFailed(BaseAPICallFailed, ActionFailed): ...
 
-    @register_api(Adapter)
-    class API(BaseAPI[Bot, MessageEvent]):
+    class API(BaseAPI[Bot, MessageEvent], adapter=Adapter):
         __slots__ = ()
 
         @classmethod

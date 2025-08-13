@@ -6,15 +6,13 @@ from nonebot.exception import ActionFailed
 
 from ...exception import ParamMissing
 from ..api import API as BaseAPI
-from ..api import register_api
 from ..decorators import debug_log, strict
 from ..help_doc import descript
 
 with contextlib.suppress(ImportError):
     from nonebot.adapters.satori import Adapter, Bot, MessageEvent
 
-    @register_api(Adapter)
-    class API(BaseAPI[Bot, MessageEvent]):
+    class API(BaseAPI[Bot, MessageEvent], adapter=Adapter):
         __slots__ = ()
 
         @classmethod
