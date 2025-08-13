@@ -57,13 +57,13 @@ code_test_extract_code = (
     MessageSegment.text("print(")
     + MessageSegment.at(111)
     + MessageSegment.text(")\nprint(")
-    + MessageSegment.image(b"")
+    + MessageSegment.image("https://example.com/image.png")
     + MessageSegment.text(")\n")
 )
 
 
 @pytest.mark.asyncio
-async def test_extract_code(app: App) -> None:
+async def test_extract_code_1(app: App) -> None:
     from nonebot_plugin_exe_code.matchers.code import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -71,13 +71,22 @@ async def test_extract_code(app: App) -> None:
         user_id = fake_user_id()
         event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_extract_code)
         cleanup = make_v11_session_cache(bot, event)
-
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
-        ctx.should_call_send(event, Message("111\n[url]"))
+        ctx.should_call_send(event, Message("111\nhttps://example.com/image.png"))
         ctx.should_finished(matcher)
+    cleanup()
 
+
+@pytest.mark.asyncio
+async def test_extract_code_2(app: App) -> None:
+    from nonebot_plugin_exe_code.matchers.code import matcher
+
+    async with app.test_matcher(matcher) as ctx:
+        bot = fake_v11_bot(ctx)
+        user_id = fake_user_id()
         event = fake_v11_group_exe_code(exe_code_group, user_id, code_test_extract_code)
+        cleanup = make_v11_session_cache(bot, event)
         event.message = MessageSegment.at(111) + event.message
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)

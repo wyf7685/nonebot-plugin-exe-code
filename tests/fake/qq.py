@@ -19,7 +19,14 @@ from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pydantic import create_model
 
-from .common import ensure_context, fake_api, fake_bot, fake_user_id, get_uninfo_fetcher
+from .common import (
+    ensure_context,
+    fake_api,
+    fake_bot,
+    fake_message_id,
+    fake_user_id,
+    get_uninfo_fetcher,
+)
 
 if TYPE_CHECKING:
     from nonebot_plugin_exe_code.interface.adapters.qq import API
@@ -46,7 +53,7 @@ def fake_qq_message_create_event(**field: Any) -> MessageCreateEvent:
     _Fake = create_model("_Fake", __base__=MessageCreateEvent)
 
     class FakeEvent(_Fake):
-        id: str = "id"
+        id: str = str(fake_message_id())
         event_id: str | None = "event_id"
         channel_id: str = "20000"
         guild_id: str = "30000"
@@ -72,7 +79,7 @@ def fake_qq_c2c_message_create_event(**field: Any) -> C2CMessageCreateEvent:
     _Fake = create_model("_Fake", __base__=C2CMessageCreateEvent)
 
     class FakeEvent(_Fake):
-        id: str = "id"
+        id: str = str(fake_message_id())
         event_id: str | None = "event_id"
         content: str = "test"
         timestamp: str = "1000000"

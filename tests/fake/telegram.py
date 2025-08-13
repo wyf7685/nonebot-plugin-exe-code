@@ -16,7 +16,14 @@ from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pydantic import create_model
 
-from .common import ensure_context, fake_api, fake_bot, fake_user_id, get_uninfo_fetcher
+from .common import (
+    ensure_context,
+    fake_api,
+    fake_bot,
+    fake_message_id,
+    fake_user_id,
+    get_uninfo_fetcher,
+)
 
 if TYPE_CHECKING:
     from nonebot_plugin_exe_code.interface.adapters.telegram import API
@@ -37,7 +44,7 @@ def fake_telegram_private_message_event(**field: Any) -> PrivateMessageEvent:
     user_id = field.pop("user_id", None) or 10
 
     class FakeEvent(_Fake):
-        message_id: int = 1
+        message_id: int = fake_message_id()
         date: int = 1000000
         chat: Chat = Chat(id=10000, type="private")
         forward_from: User | None = None
@@ -65,7 +72,7 @@ def fake_telegram_group_message_event(**field: Any) -> GroupMessageEvent:
     group_id = field.pop("group_id", 10000)
 
     class FakeEvent(_Fake):
-        message_id: int = 1
+        message_id: int = fake_message_id()
         date: int = 1000000
         chat: Chat = Chat(id=group_id, type="group")
         forward_from: User | None = None

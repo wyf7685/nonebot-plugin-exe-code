@@ -117,7 +117,6 @@ async def test_getmid(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_getimg(app: App) -> None:
-    # sourcery skip: use-fstring-for-concatenation
     import PIL.Image
 
     from nonebot_plugin_exe_code.context import Context
@@ -132,8 +131,12 @@ async def test_getimg(app: App) -> None:
     getimg.image_fetch = image_fetch
 
     async def _test(varname: str | None = None) -> None:
-        reply_msg = "some" + MessageSegment.image(file=fake_img_bytes) + "text"
-        msg = MessageSegment.reply(1) + "getimg"
+        reply_msg = (
+            MessageSegment.text("some")
+            + MessageSegment.image(file=fake_img_bytes)
+            + MessageSegment.text("text")
+        )
+        msg = MessageSegment.reply(1) + MessageSegment.text("getimg")
         if varname is not None:
             msg += f" {varname}"
             msg.reduce()
@@ -191,7 +194,6 @@ async def test_getimg(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_getimg_exception_1(app: App) -> None:
-    # sourcery skip: use-fstring-for-concatenation
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
 
@@ -202,8 +204,12 @@ async def test_getimg_exception_1(app: App) -> None:
 
     getimg.image_fetch = image_fetch
 
-    reply_msg = "some" + MessageSegment.image(file=fake_img_bytes) + "text"
-    msg = MessageSegment.reply(1) + "getimg"
+    reply_msg = (
+        MessageSegment.text("some")
+        + MessageSegment.image(file=fake_img_bytes)
+        + MessageSegment.text("text")
+    )
+    msg = MessageSegment.reply(1) + MessageSegment.text("getimg")
     event = fake_v11_group_message_event(
         message=msg,
         user_id=superuser,
@@ -236,7 +242,6 @@ async def test_getimg_exception_1(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_getimg_exception_2(app: App) -> None:
-    # sourcery skip: use-fstring-for-concatenation
     from nonebot_plugin_exe_code.matchers import getimg
     from nonebot_plugin_exe_code.matchers.getimg import matcher
 
@@ -247,8 +252,12 @@ async def test_getimg_exception_2(app: App) -> None:
 
     getimg.image_fetch = image_fetch
 
-    reply_msg = "some" + MessageSegment.image(file=fake_img_bytes) + "text"
-    msg = MessageSegment.reply(1) + "getimg"
+    reply_msg = (
+        MessageSegment.text("some")
+        + MessageSegment.image(file=fake_img_bytes)
+        + MessageSegment.text("text")
+    )
+    msg = MessageSegment.reply(1) + MessageSegment.text("getimg")
     event = fake_v11_group_message_event(
         message=msg,
         user_id=superuser,
@@ -309,7 +318,6 @@ async def test_terminate_1(app: App) -> None:
 
 @pytest.mark.asyncio
 async def test_terminate_2(app: App) -> None:
-    # sourcery skip: use-fstring-for-concatenation
     from nonebot_plugin_exe_code.matchers.terminate import matcher
 
     async with app.test_matcher(matcher) as ctx:
@@ -318,9 +326,8 @@ async def test_terminate_2(app: App) -> None:
         event = fake_v11_group_message_event(
             group_id=exe_code_group,
             user_id=superuser,
-            message="terminate" + MessageSegment.at(target_id),
+            message=MessageSegment.text("terminate ") + MessageSegment.at(target_id),
         )
-        cleanup = make_v11_session_cache(bot, event)
         ctx.receive_event(bot, event)
         ctx.should_pass_permission(matcher)
         ctx.should_call_send(
@@ -329,12 +336,9 @@ async def test_terminate_2(app: App) -> None:
             f"SessionNotInitialized: None, key=('{target_id}', '{bot.type}')",
         )
 
-    cleanup()
-
 
 @pytest.mark.asyncio
 async def test_terminate_3(app: App) -> None:
-    # sourcery skip: use-fstring-for-concatenation
     from nonebot_plugin_exe_code.context import Context
     from nonebot_plugin_exe_code.matchers.terminate import handle_terminate
 
@@ -344,7 +348,11 @@ async def test_terminate_3(app: App) -> None:
         event = fake_v11_event(user_id)
         cleanup = make_v11_session_cache(bot, event)
         ctx.should_call_send(event, Message("test 1"))
-        expected = "中止" + MessageSegment.at(user_id) + "的执行任务"
+        expected = (
+            MessageSegment.text("中止")
+            + MessageSegment.at(user_id)
+            + MessageSegment.text("的执行任务")
+        )
         ctx.should_call_send(event, expected)
 
         async def _test1() -> None:

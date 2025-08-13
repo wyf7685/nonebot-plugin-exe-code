@@ -1,4 +1,3 @@
-import itertools
 from datetime import datetime
 from typing import Any, Literal
 
@@ -8,9 +7,7 @@ from nonebug.mixin.process import MatcherContext
 from nonechat.model import Channel, Robot, User
 from pydantic import Field, create_model
 
-from .common import fake_bot
-
-_message_id = itertools.count(1000)
+from .common import fake_bot, fake_message_id
 
 
 def fake_console_bot(ctx: ApiContext | MatcherContext, **kwargs: Any) -> Bot:
@@ -24,7 +21,7 @@ def fake_console_message_event(**field: Any) -> MessageEvent:
         post_type: Literal["message"] = "message"
         user: User = User("nonebug")
         channel: Channel = Channel("test_channel", "Test Channel")
-        message_id: str = Field(default_factory=lambda: str(next(_message_id)))
+        message_id: str = str(fake_message_id())
         message: Message = Message()
         to_me: bool = False
 

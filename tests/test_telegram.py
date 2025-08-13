@@ -58,7 +58,7 @@ async def test_telegram_group(app: App) -> None:
 @pytest.mark.asyncio
 async def test_telegram_mid(app: App) -> None:
     async with app.test_api() as ctx, ensure_telegram_api(ctx) as api:
-        assert api.mid == "1"
+        assert api.mid == str(api.event.message_id)
 
 
 @pytest.mark.asyncio

@@ -14,7 +14,14 @@ from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pydantic import create_model
 
-from .common import ensure_context, fake_api, fake_bot, fake_user_id, get_uninfo_fetcher
+from .common import (
+    ensure_context,
+    fake_api,
+    fake_bot,
+    fake_message_id,
+    fake_user_id,
+    get_uninfo_fetcher,
+)
 
 if TYPE_CHECKING:
     from nonebot_plugin_exe_code.interface.adapters.onebot11 import API
@@ -37,7 +44,7 @@ def fake_v11_group_message_event(**field: Any) -> GroupMessageEvent:
         user_id: int = 10
         message_type: Literal["group"] = "group"
         group_id: int = 10000
-        message_id: int = 1
+        message_id: int = fake_message_id()
         message: Message = Message("test")
         raw_message: str = "test"
         font: int = 0
@@ -65,7 +72,7 @@ def fake_v11_private_message_event(**field: Any) -> PrivateMessageEvent:
         sub_type: str = "friend"
         user_id: int = 10
         message_type: Literal["private"] = "private"
-        message_id: int = 1
+        message_id: int = fake_message_id()
         message: Message = Message("test")
         raw_message: str = "test"
         font: int = 0

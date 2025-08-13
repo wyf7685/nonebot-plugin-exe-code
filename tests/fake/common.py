@@ -11,6 +11,7 @@ from nonebug.mixin.process import MatcherContext
 
 fake_user_id = (lambda: (g := itertools.count(100000)) and (lambda: next(g)))()
 fake_group_id = (lambda: (g := itertools.count(200000)) and (lambda: next(g)))()
+fake_message_id = (lambda: (g := itertools.count(1)) and (lambda: next(g)))()
 fake_img_bytes = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
     b"\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc```"

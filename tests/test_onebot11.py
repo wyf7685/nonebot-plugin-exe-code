@@ -9,27 +9,6 @@ from .fake.onebot11 import ensure_v11_api
 
 
 @pytest.mark.asyncio
-async def test_ob11_img_summary(app: App) -> None:
-    from nonebot_plugin_exe_code.context import Context
-    from nonebot_plugin_exe_code.exception import ParamMissing
-
-    url = "http://localhost:8080/image.png"
-    expected = Message(MessageSegment.image(url))
-    expected[0].data["summary"] = "test"
-
-    async with (
-        app.test_api() as ctx,
-        ensure_v11_api(ctx, group_id=exe_code_group) as api,
-    ):
-        with pytest.raises(ParamMissing, match="无效 url"):
-            await api.img_summary("test")
-
-        Context.get_context(api.session).ctx["gurl"] = url
-        ctx.should_call_send(api.event, expected)
-        await api.img_summary("test")
-
-
-@pytest.mark.asyncio
 async def test_ob11_recall(app: App) -> None:
     async with (
         app.test_api() as ctx,
@@ -270,7 +249,7 @@ async def test_ob11_file2str(app: App) -> None:
 @pytest.mark.asyncio
 async def test_ob11_mid(app: App) -> None:
     async with app.test_api() as ctx, ensure_v11_api(ctx) as api:
-        assert api.mid == "1"
+        assert api.mid == str(api.event.message_id)
 
 
 @pytest.mark.asyncio
@@ -321,6 +300,8 @@ async def test_ob11_set_reaction(app: App) -> None:
     from nonebot_plugin_exe_code.exception import APICallFailed
 
     async with app.test_api() as ctx, ensure_v11_api(ctx) as api:
+        message_id = int(api.mid)
+
         # 1. NapCat
         ctx.should_call_api(
             "get_version_info",
@@ -329,10 +310,10 @@ async def test_ob11_set_reaction(app: App) -> None:
         )
         ctx.should_call_api(
             "set_msg_emoji_like",
-            {"message_id": 1, "emoji_id": 123},
+            {"message_id": message_id, "emoji_id": 123},
             result=None,
         )
-        await api.set_reaction(123, api.mid, 456)
+        await api.set_reaction(123, message_id, 456)
 
         # 2. LLOneBot
         ctx.should_call_api(
@@ -342,10 +323,10 @@ async def test_ob11_set_reaction(app: App) -> None:
         )
         ctx.should_call_api(
             "set_msg_emoji_like",
-            {"message_id": 1, "emoji_id": 123},
+            {"message_id": message_id, "emoji_id": 123},
             result=None,
         )
-        await api.set_reaction(123, api.mid, 456)
+        await api.set_reaction(123, message_id, 456)
 
         # 3. Lagrange with gid
         ctx.should_call_api(
@@ -355,10 +336,10 @@ async def test_ob11_set_reaction(app: App) -> None:
         )
         ctx.should_call_api(
             "set_group_reaction",
-            {"group_id": 456, "message_id": 1, "code": "123"},
+            {"group_id": 456, "message_id": message_id, "code": "123"},
             result=None,
         )
-        await api.set_reaction(123, api.mid, 456)
+        await api.set_reaction(123, message_id, 456)
 
         # 3. Lagrange without gid
         ctx.should_call_api(
@@ -367,7 +348,7 @@ async def test_ob11_set_reaction(app: App) -> None:
             {"app_name": "Lagrange", "app_version": "app_version"},
         )
         with pytest.raises(TypeError, match="Lagrange"):
-            await api.set_reaction(123, api.mid)
+            await api.set_reaction(123, message_id)
 
         # 4. Unkown platform
         ctx.should_call_api(
@@ -376,7 +357,7 @@ async def test_ob11_set_reaction(app: App) -> None:
             {"app_name": "Unkown Platform", "app_version": "app_version"},
         )
         with pytest.raises(APICallFailed, match="unkown platform"):
-            await api.set_reaction(123, api.mid, 456)
+            await api.set_reaction(123, message_id, 456)
 
         # 5. without mid
         api.event.reply = Reply(

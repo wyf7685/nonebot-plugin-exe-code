@@ -77,10 +77,10 @@ def _event_image() -> Any:
         if msg.has(Image):
             return msg[Image, 0]
         if msg.has(Reply) and not _in_reply:
+            msg = await msg.attach_reply()
             reply = msg[Reply, 0].msg
             if isinstance(reply, Message):
-                msg = await UniMessage.generate(message=reply)
-                return await event_image(msg, _in_reply=True)
+                return await event_image(UniMessage.of(reply), _in_reply=True)
 
         return Matcher.skip()
 
@@ -92,9 +92,9 @@ def _event_image() -> Any:
 
 def _event_reply() -> Any:
     async def event_reply(event: Event, bot: Bot) -> Reply:
-        if reply := await reply_fetch(event, bot):
-            return reply
-        return Matcher.skip()
+        if (reply := await reply_fetch(event, bot)) is None:
+            Matcher.skip()
+        return reply
 
     return Depends(event_reply)
 

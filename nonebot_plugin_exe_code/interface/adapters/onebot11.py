@@ -75,7 +75,6 @@ with contextlib.suppress(ImportError):
         Bot,
         Message,
         MessageEvent,
-        MessageSegment,
     )
 
     class APICallFailed(BaseAPICallFailed, ActionFailed): ...
@@ -294,29 +293,6 @@ with contextlib.suppress(ImportError):
                 raise_text="获取合并转发消息失败",
             )
             return [Message(i["raw_message"]) for i in res["messages"]]
-
-        @descript(
-            description="[NapCat] 发送带有外显文本的图片",
-            parameters=dict(
-                summary="外显文本",
-                url="图片链接，默认为当前环境gurl",
-            ),
-        )
-        @debug_log
-        @strict
-        async def img_summary(self, summary: str, url: str | None = None) -> None:
-            if url is None:
-                from ...context import Context
-
-                url = Context.get_context(self.session).ctx.get("gurl")
-
-            if not url:
-                raise ParamMissing("无效 url")
-
-            logger.debug(f"[NapCat] 创建图片外显: <y>{summary}</y>, <c>{url}</c>")
-            seg = MessageSegment.image(url)
-            seg.data["summary"] = summary
-            await self.native_send(Message(seg))
 
         @descript(
             description="设置群名片",

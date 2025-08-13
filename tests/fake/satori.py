@@ -27,7 +27,7 @@ from nonebug.mixin.call_api import ApiContext
 from nonebug.mixin.process import MatcherContext
 from pydantic import create_model
 
-from .common import ensure_context, fake_api, fake_bot, fake_user_id
+from .common import ensure_context, fake_api, fake_bot, fake_message_id, fake_user_id
 
 if TYPE_CHECKING:
     from nonebot_plugin_exe_code.interface.adapters.satori import API
@@ -66,7 +66,7 @@ def fake_satori_private_message_created_event(
 
     class FakeEvent(_Fake):
         __type__ = EventType.MESSAGE_CREATED
-        id: int = 10000
+        id: int = fake_message_id()
         type: str = "message"
         platform: str = "fake"
         self_id: str = "100"
@@ -96,7 +96,7 @@ def fake_satori_public_message_created_event(
 
     class FakeEvent(_Fake):
         __type__ = EventType.MESSAGE_CREATED
-        id: int = 10000
+        id: int = fake_message_id()
         type: str = "message"
         platform: str = "fake"
         self_id: str = "100"

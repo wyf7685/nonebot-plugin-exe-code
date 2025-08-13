@@ -1,5 +1,3 @@
-# ruff: noqa: N814
-
 import asyncio
 from typing import Any, cast
 
@@ -8,7 +6,7 @@ import pytest
 import respx
 from nonebot.adapters.console import Message as ConsoleMessage
 from nonebot.adapters.onebot.v11 import Message as V11Message
-from nonebot.adapters.onebot.v11 import MessageSegment as V11MS
+from nonebot.adapters.onebot.v11 import MessageSegment as V11MS  #  noqa: N814
 from nonebot.adapters.onebot.v11.event import Reply, Sender
 from nonebot.adapters.satori import Message as SatoriMessage
 from nonebot.adapters.satori import MessageSegment as SatoriMessageSegment
