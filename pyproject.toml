@@ -1,10 +1,10 @@
 [project]
 name = "nonebot-plugin-exe-code"
-version = "1.1.5"
+version = "1.2.0"
 description = "在聊天中执行带有上下文的 Python 代码"
 authors = [{ name = "wyf7685", email = "wyf7685@163.com" }]
 dependencies = [
-  "nonebot2>=2.3.3",
+  "nonebot2>=2.4.0",
   "nonebot-plugin-alconna>=0.57.0",
   "nonebot-plugin-localstore>=0.7.0",
   "nonebot-plugin-uninfo>=0.7.0",

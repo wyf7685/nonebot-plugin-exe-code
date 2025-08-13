@@ -55,6 +55,13 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
     <summary>使用包管理器安装</summary>
     在 nonebot2 项目的插件目录下, 打开命令行, 根据你使用的包管理器, 输入相应的安装命令
 
+<details open>
+    <summary>uv</summary>
+
+    uv add nonebot-plugin-exe-code
+
+</details>
+
 <details>
     <summary>pip</summary>
 
@@ -93,11 +100,11 @@ _✨ 在聊天中执行带有上下文的 Python 代码 ✨_
 
 在 nonebot2 项目的 `.env` 文件中添加下表中的配置
 
-|         配置项          | 必填  | 默认值 |              说明               |
-| :---------------------: | :---: | :----: | :-----------------------------: |
-|    `exe_code__user`     |  否   |   []   |      允许执行代码的用户 ID      |
-|    `exe_code__group`    |  否   |   []   |      允许执行代码的群组 ID      |
-| `exe_code__buffer_size` |  否   |  8192  | 执行代码时 `print` 的缓冲区大小 |
+|         配置项          | 必填 | 默认值 |              说明               |
+| :---------------------: | :--: | :----: | :-----------------------------: |
+|    `exe_code__user`     |  否  |   []   |      允许执行代码的用户 ID      |
+|    `exe_code__group`    |  否  |   []   |      允许执行代码的群组 ID      |
+| `exe_code__buffer_size` |  否  |  8192  | 执行代码时 `print` 的缓冲区大小 |
 
 ### 📄 权限说明
 
@@ -195,8 +202,16 @@ await receipt.recall()  # 撤回消息
 
 <details>
     <summary>更新日志</summary>
-  
+
 <!-- CHANGELOG -->
+
+- 2025.08.13 v1.2.0
+
+  - _Breaking Change_: 使用 `nonebot-plugin-user` 标识用户 (原为 `nonebot-plugin-session`)
+  - 使用 `nonebot-plugin-uninfo` 获取用户信息
+  - 调整 nonebot2 依赖为 `>=2.4.0`
+  - 重构代码解析, 使用 ast 替换 `return`/`yield`/`yield from` 为对应 api 调用
+  - 重构代码执行
 
 - 2025.02.13 v1.1.5
 
@@ -280,7 +295,7 @@ await receipt.recall()  # 撤回消息
 
 - 2024.07.21 v1.0.1
 
-  - 插件开源
+  - 插件上传
 
 </details>
 
@@ -289,5 +304,6 @@ await receipt.recall()  # 撤回消息
 - [`nonebot/nonebot2`](https://github.com/nonebot/nonebot2): 跨平台 Python 异步机器人框架
 - [`nonebot/plugin-alconna`](https://github.com/nonebot/plugin-alconna): 跨平台的消息处理接口
 - [`nonebot/plugin-localstore`](https://github.com/nonebot/plugin-localstore): 插件数据存储
-- [`noneplugin/nonebot-plugin-session`](https://github.com/noneplugin/nonebot-plugin-session): 会话信息提取
+- [`he0119/nonebot-plugin-user`](https://github.com/he0119/nonebot-plugin-user): 获取用户标识
+- [`RF-Tar-Railt/nonebot-plugin-uninfo`](https://github.com/RF-Tar-Railt/nonebot-plugin-uninfo): 多平台会话信息获取
 - [`RF-Tar-Railt/nonebot-plugin-waiter`](https://github.com/RF-Tar-Railt/nonebot-plugin-waiter): 灵活获取用户输入
