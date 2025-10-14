@@ -22,5 +22,5 @@ async def handle_getmid(
 ) -> NoReturn:
     async with ctx.lock:
         ctx.set_gem(reply_msg)
-        ctx.set_gurl(await UniMessage.generate(message=reply_msg))
+        ctx.set_gurl(UniMessage.of(message=reply_msg))
     await UniMessage.text(reply.id).finish()

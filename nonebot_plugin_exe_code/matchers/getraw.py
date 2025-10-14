@@ -15,5 +15,5 @@ async def handle_getraw(
 ) -> NoReturn:
     async with ctx.lock:
         ctx.set_gem(message)
-        ctx.set_gurl(await UniMessage.generate(message=message))
+        ctx.set_gurl(UniMessage.of(message=message))
     await UniMessage.text(str(message)).finish()

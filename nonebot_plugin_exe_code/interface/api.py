@@ -12,7 +12,7 @@ from nonebot_plugin_alconna.uniseg import (
     reply_fetch,
 )
 from nonebot_plugin_user.models import UserSession
-from nonebot_plugin_waiter import prompt as waiter_prompt
+from nonebot_plugin_waiter.unimsg import prompt as waiter_prompt
 
 from ..exception import BotEventMismatch, ExecutorFinishedException, NoMethodDescription
 from ..typings import T_ConstVar, T_Context, T_Message, is_message_t
@@ -263,13 +263,9 @@ class API[B: Bot, E: Event](Interface):
         prompt: T_Message | None = None,
         timeout: float = 30,  # noqa: ASYNC109
     ) -> UniMessage:
-        prompt = (
-            await (await as_unimsg(prompt)).export(self.bot)
-            if prompt is not None
-            else ""
-        )
+        prompt = (await as_unimsg(prompt)) if prompt is not None else ""
         if result := await waiter_prompt(prompt, timeout=timeout):
-            return await UniMessage.generate(message=result)
+            return result
         raise TimeoutError("input 超时")
 
     @descript(

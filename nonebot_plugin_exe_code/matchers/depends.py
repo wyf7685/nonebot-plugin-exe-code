@@ -50,7 +50,7 @@ def _code_context() -> Any:
 
 def _extract_code() -> Any:
     async def extract_code(event: Event) -> str:
-        msg = UniMessage.generate_without_reply(message=event.get_message())
+        msg = UniMessage.of(message=event.get_message())
         code = ""
         for seg in msg:
             if isinstance(seg, Text):

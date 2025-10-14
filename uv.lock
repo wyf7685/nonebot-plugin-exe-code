@@ -998,7 +998,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "anyio", specifier = ">=4.6.2.post1" },
-    { name = "nonebot-plugin-alconna", specifier = ">=0.57.0" },
+    { name = "nonebot-plugin-alconna", specifier = ">=0.59.0" },
     { name = "nonebot-plugin-localstore", specifier = ">=0.7.0" },
     { name = "nonebot-plugin-uninfo", specifier = ">=0.7.0" },
     { name = "nonebot-plugin-user", specifier = ">=0.5.0" },

@@ -102,22 +102,7 @@ async def as_unimsg(message: Any) -> UniMessage[Any]:
     elif isinstance(msg, Segment):
         msg = UniMessage(msg)
     elif isinstance(msg, Message):
-        msg = await UniMessage.generate(message=msg)
-    return msg
-
-
-def as_unimsg_sync(message: Any) -> UniMessage[Any]:
-    msg = message
-    if not is_message_t(msg):
-        msg = str(msg)
-    if isinstance(msg, MessageSegment):
-        msg = cast(type[Message], msg.get_message_class())(msg)
-    if isinstance(msg, str):
-        msg = UniMessage.text(msg)
-    elif isinstance(msg, Segment):
-        msg = UniMessage(msg)
-    elif isinstance(msg, Message):
-        msg = UniMessage.generate_sync(message=msg)
+        msg = UniMessage.of(message=msg)
     return msg
 
 

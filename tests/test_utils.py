@@ -3,7 +3,6 @@ from typing import Any
 
 import anyio
 import pytest
-from nonebot.utils import run_sync
 from nonebug import App
 
 from .fake.onebot11 import ensure_v11_api
@@ -14,21 +13,17 @@ async def test_as_unimsg(app: App) -> None:
     from nonebot.adapters.onebot.v11 import MessageSegment as V11Seg
     from nonebot_plugin_alconna.uniseg import At, UniMessage
 
-    from nonebot_plugin_exe_code.interface.utils import as_unimsg, as_unimsg_sync
-
-    async def test_convert(call: Callable[[Any], Awaitable[UniMessage]]) -> None:
-        # fmt: off
-        assert await call("1234") == UniMessage.text("1234")
-        assert await call(1234) == UniMessage.text("1234")
-        assert await call([1234]) == UniMessage.text("[1234]")
-        assert await call(V11Seg.at(1234)) == UniMessage.at("1234")
-        assert await call(V11Seg.at(123) + V11Seg.text("456")) == UniMessage.at("123").text("456")  # noqa: E501
-        assert await call(At("user", "123")) == UniMessage.at("123")
-        assert await call(UniMessage("12345")) == UniMessage("12345")
+    from nonebot_plugin_exe_code.interface.utils import as_unimsg
 
     async with app.test_api() as ctx, ensure_v11_api(ctx):
-        await test_convert(as_unimsg)
-        await test_convert(run_sync(as_unimsg_sync))
+        # fmt: off
+        assert await as_unimsg("1234") == UniMessage.text("1234")
+        assert await as_unimsg(1234) == UniMessage.text("1234")
+        assert await as_unimsg([1234]) == UniMessage.text("[1234]")
+        assert await as_unimsg(V11Seg.at(1234)) == UniMessage.at("1234")
+        assert await as_unimsg(V11Seg.at(123) + V11Seg.text("456")) == UniMessage.at("123").text("456")  # noqa: E501
+        assert await as_unimsg(At("user", "123")) == UniMessage.at("123")
+        assert await as_unimsg(UniMessage("12345")) == UniMessage("12345")
 
 
 @pytest.mark.anyio
