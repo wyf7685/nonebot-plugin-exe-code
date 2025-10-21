@@ -294,7 +294,7 @@ class Context:
     def set_gem(self, msg: Message) -> None:
         self.set_value("gem", msg)
 
-    def set_gurl(self, msg: UniMessage[Image] | Image) -> None:
+    def set_gurl(self, msg: UniMessage | Image) -> None:
         url: str | None = None
         if isinstance(msg, UniMessage) and msg.has(Image):
             url = msg[Image, 0].url
