@@ -146,7 +146,7 @@ def solve_code(
     ctx: dict[str, object],
 ) -> tuple[T_Executor, T_ExecutorCtx]:
     # 可能抛出 SyntaxError, 由 matcher 处理
-    parsed = ast.parse(source)
+    parsed = ast.parse(source, filename, "exec")
 
     solved = ast.fix_missing_locations(_NodeTransformer.transform(parsed))
     code: types.CodeType = compile(
