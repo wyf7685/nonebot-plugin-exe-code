@@ -221,6 +221,8 @@ async def test_ob11_file2str(app: App) -> None:
     import io
     import pathlib
 
+    import anyio
+
     async with app.test_api() as ctx, ensure_v11_api(ctx) as api:
         user_id = api.event.user_id
 
@@ -240,10 +242,10 @@ async def test_ob11_file2str(app: App) -> None:
             "upload_private_file",
             {"user_id": user_id, "file": "base64://ZmlsZQ==", "name": "name"},
         )
-        fp = pathlib.Path("__tmp_file__").resolve()
-        fp.write_bytes(b"file")
-        await api.send_file(fp, "name")
-        fp.unlink()
+        fp = await anyio.Path("__tmp_file__").resolve()
+        await fp.write_bytes(b"file")
+        await api.send_file(pathlib.Path(fp), "name")
+        await fp.unlink()
 
 
 @pytest.mark.anyio
