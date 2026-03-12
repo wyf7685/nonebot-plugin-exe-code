@@ -2,7 +2,6 @@ import contextlib
 from typing import override
 
 from nonebot.adapters import Event
-from nonebot.exception import ActionFailed
 
 from ...exception import ParamMissing
 from ..api import API as BaseAPI
@@ -57,36 +56,3 @@ with contextlib.suppress(ImportError):
                 user_id=str(uid or self.uid),
                 duration=float(duration) * 1000,
             )
-
-        @descript(
-            description="[LLOneBot/nekobox] 群聊消息回应",
-            parameters=dict(
-                emoji_id="回应的表情ID",
-                message_id="需要回应的消息ID，可通过getmid获取",
-                channel_id="指定群组ID，默认为当前群组",
-            ),
-        )
-        @debug_log
-        @strict
-        async def set_reaction(
-            self,
-            emoji_id: str | int,
-            message_id: str | int,
-            channel_id: str | int | None = None,
-        ) -> None:
-            if channel_id is None:
-                channel_id = self.gid
-            if (channel_id := str(channel_id)).startswith("private:"):
-                raise ParamMissing("未指定群组ID")
-
-            with contextlib.suppress(ActionFailed):
-                await self.bot.reaction_create(
-                    channel_id=channel_id,
-                    message_id=str(message_id),
-                    emoji=str(emoji_id),
-                )
-                await self.bot.reaction_create(
-                    channel_id=channel_id,
-                    message_id=str(message_id),
-                    emoji=f"face:{emoji_id}",
-                )
