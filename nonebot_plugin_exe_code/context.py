@@ -145,12 +145,14 @@ def solve_code(
     filename: str,
     ctx: dict[str, object],
 ) -> tuple[T_Executor, T_ExecutorCtx]:
-    # 可能抛出 SyntaxError, 由 matcher 处理
-    parsed = ast.parse(source, filename, "exec")
+    # ast.parse 可能抛出 SyntaxError, 由 matcher 处理
+    module = ast.parse(source, filename, "exec")
+    if module.body and isinstance((last := module.body[-1]), ast.Expr):
+        module.body[-1] = ast.Return(last.value)
+    transformed = ast.fix_missing_locations(_NodeTransformer.transform(module))
 
-    solved = ast.fix_missing_locations(_NodeTransformer.transform(parsed))
     code: types.CodeType = compile(
-        source=solved,
+        source=transformed,
         filename=filename,
         mode="exec",
         flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT,
@@ -164,7 +166,7 @@ def solve_code(
         executor = run_sync(executor)
 
     ctx["__name__"] = filename
-    return executor, functools.partial(fake_cache, filename, ast.unparse(solved))
+    return executor, functools.partial(fake_cache, filename, ast.unparse(transformed))
 
 
 class Context:
@@ -255,8 +257,6 @@ class Context:
 
         self = cls.get_context(session)
 
-        # 执行代码时加异步锁，避免出现多段代码分别读写变量
-        # api 导出接口到 ctx
         async with self.lock, await create_api(bot, event, self.ctx):
             executor, ctx = solve_code(code, self._get_filename(), self.ctx)
             logger.debug(
