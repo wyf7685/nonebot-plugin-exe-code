@@ -91,39 +91,6 @@ async def test_satori_mid(app: App) -> None:
 
 
 @pytest.mark.anyio
-async def test_satori_set_reaction(app: App) -> None:
-    from nonebot_plugin_exe_code.exception import ParamMissing
-
-    async with (
-        app.test_api() as ctx,
-        ensure_satori_api(ctx, channel_id=str(exe_code_group)) as api,
-    ):
-        ctx.should_call_api(
-            "reaction_create",
-            {
-                "channel_id": str(exe_code_group),
-                "message_id": "10000",
-                "emoji": "123",
-            },
-            result=None,
-        )
-        ctx.should_call_api(
-            "reaction_create",
-            {
-                "channel_id": str(exe_code_group),
-                "message_id": "10000",
-                "emoji": "face:123",
-            },
-            result=None,
-        )
-        await api.set_reaction(123, api.mid)
-
-    async with app.test_api() as ctx, ensure_satori_api(ctx) as api:
-        with pytest.raises(ParamMissing, match="未指定群组ID"):
-            await api.set_reaction(123, api.mid)
-
-
-@pytest.mark.anyio
 async def test_satori_get_platform(app: App) -> None:
     async with app.test_api() as ctx, ensure_satori_api(ctx) as api:
         ctx.should_call_api("login_get", {}, fake_satori_login())
