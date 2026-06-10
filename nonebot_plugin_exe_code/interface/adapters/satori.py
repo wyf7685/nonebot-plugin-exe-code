@@ -83,10 +83,10 @@ with contextlib.suppress(ImportError):
                 await self.bot.reaction_create(
                     channel_id=channel_id,
                     message_id=str(message_id),
-                    emoji=str(emoji_id),
+                    emoji_id=str(emoji_id),
                 )
                 await self.bot.reaction_create(
                     channel_id=channel_id,
                     message_id=str(message_id),
-                    emoji=f"face:{emoji_id}",
+                    emoji_id=f"face:{emoji_id}",
                 )

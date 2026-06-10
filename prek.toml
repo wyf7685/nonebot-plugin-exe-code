@@ -1,0 +1,23 @@
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "ruff-check"
+name = "ruff check"
+entry = "uv run ruff check --fix --force-exclude ."
+language = "python"
+types_or = ["python", "pyi"]
+
+[[repos.hooks]]
+id = "ruff-format"
+name = "ruff format"
+entry = "uv run ruff format --force-exclude ."
+language = "python"
+types_or = ["python", "pyi"]
+
+[[repos.hooks]]
+id = "basedpyright"
+name = "basedpyright lint"
+entry = "uv run basedpyright ."
+language = "python"
+types_or = ["python", "pyi"]

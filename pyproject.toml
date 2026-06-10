@@ -4,14 +4,14 @@ version = "1.2.0"
 description = "在聊天中执行带有上下文的 Python 代码"
 authors = [{ name = "wyf7685", email = "wyf7685@163.com" }]
 dependencies = [
-  "nonebot2>=2.4.0",
-  "nonebot-plugin-alconna>=0.59.0",
+  "nonebot2>=2.5.0",
+  "nonebot-plugin-alconna>=0.62.0",
   "nonebot-plugin-localstore>=0.7.0",
   "nonebot-plugin-uninfo>=0.7.0",
-  "nonebot-plugin-user>=0.5.0",
+  "nonebot-plugin-user>=0.6.0",
   "nonebot-plugin-waiter>=0.8.0",
-  "tarina>=0.6.1",
-  "anyio>=4.6.2.post1",
+  "tarina>=0.7.5",
+  "anyio>=4.10.0",
 ]
 requires-python = ">=3.12,<4.0"
 readme = "README.md"
@@ -37,9 +37,9 @@ dev = [
   { include-group = "test" },
 ]
 test = [
-  "nonebot-adapter-console>=0.9.0",
-  "nonebot-adapter-qq>=1.6.0",
-  "nonebot-adapter-satori>=0.13.1",
+  "nonebot-adapter-console>=0.10.0",
+  "nonebot-adapter-qq>=1.7.0",
+  "nonebot-adapter-satori>=1.3.0",
   "nonebot-adapter-telegram>=0.1.0b20",
   "nonebot-plugin-orm[aiosqlite]>=0.7.7",
   "trio>=0.27.0",
@@ -52,9 +52,9 @@ test = [
   "pillow>=11.0.0",
 ]
 lint = [
-    "basedpyright>=1.31.3",
-    "pre-commit>=4.1.0",
-    "ruff>=0.12.0",
+  "basedpyright>=1.39.7",
+  "prek>=0.4.4",
+  "ruff>=0.15.16",
 ]
 debug = [
   "nonebot2[fastapi,httpx,websockets]>=2.4.0",
