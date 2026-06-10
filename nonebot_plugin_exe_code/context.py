@@ -18,7 +18,7 @@ from nonebot.utils import escape_tag, run_sync
 from nonebot_plugin_alconna.uniseg import Image, UniMessage
 from nonebot_plugin_uninfo import get_session
 from nonebot_plugin_user.models import UserSession
-from nonebot_plugin_user.params import get_user_session
+from nonebot_plugin_user.params import get_user, get_user_session
 
 from .exception import (
     BotEventMismatch,
@@ -251,7 +251,9 @@ class Context:
 
     @classmethod
     async def execute(cls, bot: Bot, event: Event, code: str) -> None:
-        session = await get_user_session(await get_session(bot, event))
+        info = await get_session(bot, event)
+        user = await get_user(info)
+        session = await get_user_session(info, user)
         if session is None:
             raise NotImplementedError
 
