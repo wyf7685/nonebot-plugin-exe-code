@@ -259,7 +259,7 @@ class Context:
 
         self = cls.get_context(session)
 
-        async with self.lock, await create_api(bot, event, self.ctx):
+        async with self.lock, await create_api(bot, event, self.ctx, session):
             executor, ctx = solve_code(code, self._get_filename(), self.ctx)
             logger.debug(
                 f"为用户 {self.colored_uin} 创建 executor: {escape_tag(repr(executor))}"

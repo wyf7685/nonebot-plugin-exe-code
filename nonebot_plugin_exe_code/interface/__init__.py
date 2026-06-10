@@ -1,7 +1,5 @@
 from nonebot.adapters import Bot, Event
-from nonebot_plugin_uninfo import get_session
 from nonebot_plugin_user.models import UserSession
-from nonebot_plugin_user.params import get_user_session
 
 from ..typings import T_Context
 from . import adapters as adapters
@@ -15,7 +13,7 @@ async def create_api(
     bot: Bot,
     event: Event,
     context: T_Context,
-    session: UserSession | None = None,
+    session: UserSession,
 ) -> API[Bot, Event]:
     for cls in api_registry:
         if isinstance(bot.adapter, cls):
@@ -23,9 +21,6 @@ async def create_api(
             break
     else:
         api = API
-
-    if session is None:
-        session = await get_user_session(await get_session(bot, event))
 
     assert session is not None, "Session is None"
     return api(bot, event, session, context)
