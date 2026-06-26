@@ -147,6 +147,7 @@ def _send_message():  # noqa: ANN202
         call_cnt.pop(key, None)
 
     async def send_message(
+        bot: Bot,
         session: UserSession,
         target: Target | None,
         message: T_Message,
@@ -162,7 +163,7 @@ def _send_message():  # noqa: ANN202
             raise ReachLimit("消息发送触发次数限制")
 
         msg = await as_unimsg(message)
-        return await msg.send(target)
+        return await msg.send(target, bot=bot)
 
     return send_message
 

@@ -153,6 +153,7 @@ class API[B: Bot, E: Event](Interface):
     @strict
     async def send_prv(self, uid: int | str, msg: T_Message) -> Receipt:
         return await send_message(
+            self.bot,
             session=self.session,
             target=Target.user(str(uid)),
             message=msg,
@@ -169,6 +170,7 @@ class API[B: Bot, E: Event](Interface):
     @strict
     async def send_grp(self, gid: int | str, msg: T_Message) -> Receipt:
         return await send_message(
+            self.bot,
             session=self.session,
             target=Target.group(str(gid)),
             message=msg,
@@ -185,6 +187,7 @@ class API[B: Bot, E: Event](Interface):
             msg = str(msg)
 
         return await send_message(
+            self.bot,
             session=self.session,
             target=None,
             message=msg,
