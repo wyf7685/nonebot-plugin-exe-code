@@ -252,10 +252,14 @@ class Context:
     @classmethod
     async def execute(cls, bot: Bot, event: Event, code: str) -> None:
         info = await get_session(bot, event)
+        if info is None:
+            raise NotImplementedError("无法获取会话信息")
         user = await get_user(info)
+        if user is None:
+            raise NotImplementedError("无法获取用户信息")
         session = await get_user_session(info, user)
         if session is None:
-            raise NotImplementedError
+            raise NotImplementedError("无法获取用户会话信息")
 
         self = cls.get_context(session)
 
