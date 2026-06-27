@@ -15,7 +15,14 @@ from nonebot_plugin_user.models import UserSession
 from nonebot_plugin_waiter.unimsg import prompt as waiter_prompt
 
 from ..exception import BotEventMismatch, ExecutorFinishedException, NoMethodDescription
-from ..typings import T_ConstVar, T_Context, T_Message, is_message_t
+from ..typings import (
+    T_ConstVar,
+    T_Context,
+    T_GroupID,
+    T_Message,
+    T_UserID,
+    is_message_t,
+)
 from .decorators import debug_log, export, strict
 from .group import Group
 from .help_doc import descript, message_alia
@@ -214,7 +221,7 @@ class API[B: Bot, E: Event](Interface):
     )
     @export
     @strict
-    def user(self, uid: int | str) -> User[Self]:
+    def user(self, uid: T_UserID) -> User[Self]:
         return User(self, str(uid))
 
     @descript(
@@ -224,7 +231,7 @@ class API[B: Bot, E: Event](Interface):
     )
     @export
     @strict
-    def group(self, gid: int | str) -> Group[Self]:
+    def group(self, gid: T_GroupID) -> Group[Self]:
         return Group(self, str(gid))
 
     @descript(

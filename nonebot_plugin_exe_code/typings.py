@@ -34,6 +34,8 @@ class UserStr(UserString):
         return self.__user_str_args__.copy()
 
 
+T_UserID = int | str | UserStr
+T_GroupID = int | str
 T_ForwardMsg = list[str] | list[T_Message] | list[UserStr] | list[T_Message | UserStr]
 
 
