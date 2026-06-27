@@ -42,6 +42,7 @@ def fake_satori_login() -> Login:
         status=LoginStatus.ONLINE,
         adapter="satori",
         platform="platform",
+        user=User(id="0"),
     )
 
 

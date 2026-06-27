@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 from collections.abc import AsyncGenerator
 from pathlib import Path
@@ -24,6 +23,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "superusers": [str(superuser)],
         "sqlalchemy_database_url": "sqlite+aiosqlite://",
         "alembic_startup_check": False,
+        "console_headless_mode": True,
         "exe_code": {
             "user": [str(exe_code_user)],
             "group": [str(exe_code_group)],
@@ -32,41 +32,41 @@ def pytest_configure(config: pytest.Config) -> None:
     os.environ["PLUGIN_ALCONNA_TESTENV"] = "1"
 
 
-@pytest.fixture(scope="session", params=[pytest.param("asyncio"), pytest.param("trio")])
+@pytest.fixture(
+    scope="session",
+    params=[
+        pytest.param("asyncio"),
+        pytest.param("trio"),
+    ],
+)
 def anyio_backend(request: pytest.FixtureRequest) -> Any:
     return request.param
 
 
-@pytest.fixture(scope="session", autouse=True)
-async def _fix_localstore() -> AsyncGenerator[None]:
-    localstore_root = Path(tempfile.mkdtemp())
-
-    driver = nonebot.get_driver()
-    for key in "cache", "config", "data":
-        setattr(driver.config, f"localstore_{key}_dir", str(localstore_root / key))
-
-    try:
+@pytest.fixture(scope="session")
+async def fix_localstore() -> AsyncGenerator[None]:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as root:
+        root = Path(root)
+        driver = nonebot.get_driver()
+        for key in "cache", "config", "data":
+            setattr(driver.config, f"localstore_{key}_dir", str(root / key))
+        setattr(  # noqa: B010
+            driver.config,
+            "sqlalchemy_database_url",
+            f"sqlite+aiosqlite:///{root / 'db.sqlite3'}",
+        )
         yield
-    finally:
-        shutil.rmtree(localstore_root, ignore_errors=True)
 
 
 @pytest.fixture
-async def app(anyio_backend: Any) -> AsyncGenerator[App, None]:  # noqa: ARG001
+async def app(anyio_backend: object, fix_localstore: object) -> App:  # noqa: ARG001
     nonebot.require("nonebot_plugin_exe_code")
 
     from nonebot_plugin_orm import init_orm
 
-    from nonebot_plugin_exe_code.constant import DATA_DIR
-
-    exist_file = {i.name for i in DATA_DIR.iterdir()}
     await init_orm()
 
-    yield App()
-
-    for fp in DATA_DIR.iterdir():
-        if fp.name not in exist_file:
-            fp.unlink()
+    return App()
 
 
 @pytest.fixture(scope="session", autouse=True)

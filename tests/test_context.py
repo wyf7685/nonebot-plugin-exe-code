@@ -149,7 +149,7 @@ async def test_delete_builtins(app: App) -> None:
         async with ensure_context(bot, event):
             context = Context.get_context(session)
             assert context.ctx.pop("__builtins__", None) is not None
-            await context.execute(bot, event, "api, UniMessage")
+            await context.execute(bot, event, "_ = api, UniMessage")
             assert "__builtins__" in context.ctx
 
 

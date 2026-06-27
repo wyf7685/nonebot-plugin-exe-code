@@ -82,9 +82,11 @@ if TYPE_CHECKING:
 
 async def fake_session(bot: Bot, event: Event) -> "UserSession":
     from nonebot_plugin_uninfo import get_session
-    from nonebot_plugin_user.params import get_user_session
+    from nonebot_plugin_user.params import get_user, get_user_session
 
-    session = await get_user_session(await get_session(bot, event))
+    uninfo = await get_session(bot, event)
+    user = await get_user(uninfo)
+    session = await get_user_session(uninfo, user)
     assert session is not None, "Session is None"
     return session
 
